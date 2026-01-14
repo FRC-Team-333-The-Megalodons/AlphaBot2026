@@ -4,14 +4,61 @@
 
 package frc.robot.subsystems.turret;
 
+import java.lang.System.Logger;
+
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.vision.Vision;
 
 public class Turret extends SubsystemBase {
-  /** Creates a new Turret. */
-  public Turret() {}
+  private final TurretIO io;
+  private final TurretIOInputsAutoLogged inputs = new TurretIOInputsAutoLogged();
+  private final Vision vision;
+
+  // Map: Distance in meters -> {RPM, HoodAngle}
+  private final InterpolatingDoubleTreeMap rpmMap = new InterpolatingDoubleTreeMap();
+  private final InterpolatingDoubleTreeMap hoodMap = new InterpolatingDoubleTreeMap();
+
+  public Turret(TurretIO io, Vision vision) {
+    this.io = io;
+    this.vision = vision;
+    setupInterpolation();
+  }
+
+  private void setupInterpolation() {
+    //flyWheel
+    rpmMap.put(1.0, 2500.0);
+    rpmMap.put(5.0, 4500.0); 
+    // Distance (meters), Hood Angle (Degrees)
+    hoodMap.put(1.0, 15.0);
+    hoodMap.put(3.0, 30.0);
+    // We will add more 
+  }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    io.updateInputs(inputs);
+    Logger.processInputs("Turret", inputs);
+  }
+  public double calculateDistance(){}
+
+  /** The Full Auto-Aim Command */
+  public Command aimAtHub() {
+    return this.run(() -> {
+      Rotation2d tx = vision.getTargetX(0); 
+      double distance = calculateDistance(); // Use ty and trig
+
+      // 1. Turret: Relative move based on tx
+      Rotation2d targetAngle = Rotation2d.fromRadians(inputs.turretPositionRad).plus(tx);
+      io.setTurretPosition(targetAngle);
+
+      // 2. Flywheel & Hood: Lookup from Map
+      io.setShooterVelocity(rpmMap.get(distance));
+      io.setHoodPosition(Rotation2d.fromDegrees(hoodMap.get(distance)));
+
+      Logger.recordOutput("Turret/TargetAngle", targetAngle);
+    });
   }
 }
