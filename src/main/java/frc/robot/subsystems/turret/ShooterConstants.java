@@ -1,4 +1,4 @@
-package frc.robot.subsystems.shooter;
+package frc.robot.subsystems.turret;
 
 public class ShooterConstants {
 
@@ -17,6 +17,6 @@ public class ShooterConstants {
 
     }
     public class HoodConstants{
-        
+
     }
 }
