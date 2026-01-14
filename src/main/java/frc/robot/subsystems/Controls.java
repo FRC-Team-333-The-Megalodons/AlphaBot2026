@@ -3,11 +3,14 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.event.EventLoop;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.util.Binding;
+import frc.robot.util.Binds;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 /**
  * Class that handles the switching of contro schemes deterministically, by setting the active button/trigger
@@ -17,34 +20,59 @@ import java.util.Map;
  */
 public class Controls extends SubsystemBase {
 
-  private Map<String, EventLoop> bindingsMap;
+  private Map<String, Binds> bindingsMap;
   Alert invalidBindAlert;
 
   public Controls() {
     bindingsMap = new HashMap<>();
-    invalidBindAlert = new Alert("Binding not found", AlertType.kWarning);
+    invalidBindAlert = new Alert("Bind not found", AlertType.kWarning);
     invalidBindAlert.set(false);
   }
 
   /**
    * Create a new control scheme.
    *
-   * @return A Binding object, for use with Controller & Trigger objects.
+   * @return A Binds object, for use with Controller & Trigger objects.
    * 
-   * @param controlSchemeName A friendly name for your conrol scheme.
+   * @param controlSchemeName A friendly name for your control scheme.
    */
-  public Binding createScheme(String controlSchemeName) {
-    return new Binding((bind) -> bindingsMap.put(controlSchemeName, bind));
+  public Binds createScheme(String controlSchemeName) {
+    return new Binds((bind) -> bindingsMap.put(controlSchemeName, bind));
   }
 
   /**
    * Check if an existing bind has been created by this name.
    *
    * @param bindName The name of the bind.
-   * @return A boolean indicating wheter the Binding has been created before.
+   * @return A boolean indicating wheter the Binds has been created before.
    */
   public boolean hasScheme(String controlSchemeName) {
     return bindingsMap.containsKey(controlSchemeName);
+  }
+
+  /**
+   * Convert your binds to a Command.
+   *  Switch control schemes on-the-fly with a button press.
+   * 
+   * @param schemeName The name of your Control Scheme.
+   * @param cancellationScheme An Optional String, in case the Command gets interrupted and you need to fall back/return to a non-default control scheme.
+   * 
+   * @return A Command for use with the WPILib Command Framework.
+   */
+  public Command registerScheme(
+    String schemeName,
+    Optional<String> cancellationScheme
+  ) {
+    if(!this.hasScheme(schemeName))
+      throw new NoSuchElementException("Error: Control Scheme "+ schemeName +" does not exist. Did you create it beforehand?");
+  
+    return this.runOnce(() -> this.setActiveScheme(schemeName))
+      .andThen(this.idle()
+        .handleInterrupt(() -> this.setActiveScheme(cancellationScheme.get()))
+        .onlyIf(() -> cancellationScheme.isPresent())
+      )
+      .ignoringDisable(true)
+      .withName(schemeName +"ControlScheme");
   }
 
   /**
@@ -57,9 +85,12 @@ public class Controls extends SubsystemBase {
     EventLoop newActiveLoop;
 
     if (bindingsMap.containsKey(controlSchemeName)) {
-      newActiveLoop = bindingsMap.get(controlSchemeName);
+      newActiveLoop = bindingsMap.get(controlSchemeName).eventLoop();
     } else {
-      invalidBindAlert.setText("Binding \'"+ controlSchemeName +"\'' not found - selecting default control scheme instead");
+
+      // Really programmer shouldn't make calls to nonexistent Control Schemes,
+      //    But we really can't afford to error out on the field.
+      invalidBindAlert.setText("Bind \'"+ controlSchemeName +"\'' not found - selecting default control scheme instead");
       invalidBindAlert.set(true);
       newActiveLoop = CommandScheduler.getInstance().getDefaultButtonLoop();
     }
