@@ -10,20 +10,18 @@ package frc.robot;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.Controls;
+import frc.robot.subsystems.controls.Controls;
+import frc.robot.subsystems.controls.ControlsIOReal;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -31,11 +29,6 @@ import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
 import frc.robot.util.Binds;
-
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.function.Consumer;
-
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -70,8 +63,6 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.BackLeft),
                 new ModuleIOTalonFX(TunerConstants.BackRight));
 
-        controls = new Controls();
-
         // The ModuleIOTalonFXS implementation provides an example implementation for
         // TalonFXS controller connected to a CANdi with a PWM encoder. The
         // implementations
@@ -100,8 +91,6 @@ public class RobotContainer {
                 new ModuleIOSim(TunerConstants.FrontRight),
                 new ModuleIOSim(TunerConstants.BackLeft),
                 new ModuleIOSim(TunerConstants.BackRight));
-
-        controls = new Controls();
         break;
 
       default:
@@ -113,10 +102,11 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
-        
-        controls = new Controls();
         break;
     }
+
+    // Going to have joysticks whether real or simulated.
+    controls = new Controls(new ControlsIOReal());
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -149,47 +139,54 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
 
-    Binds.configureTestBinds((eventLoop) -> {
+    // Configure binds for test mode
+    Binds.configureTestBinds(
+        (eventLoop) -> {
 
-        // Default command, normal field-relative drive
-        new Trigger(eventLoop, () -> controls.getCurrentCommand() == null).onTrue(
-            DriveCommands.joystickDrive(
-                drive,
-                () -> -controller.getLeftY(),
-                () -> -controller.getLeftX(),
-                () -> -controller.getRightX()
-        ));
-        
-        // Lock to 0° when A button is held
-        controller.a(eventLoop).whileTrue(
-            DriveCommands.joystickDriveAtAngle(
-                drive,
-                () -> -controller.getLeftY(),
-                () -> -controller.getLeftX(),
-                () -> Rotation2d.kZero
-        ));
+          // Default command, normal field-relative drive
+          // Do not call .setDefaultCommand(), use this pattern instead.
+          new Trigger(eventLoop, () -> drive.getCurrentCommand() == null)
+              .onTrue(
+                  DriveCommands.joystickDrive(
+                      drive,
+                      () -> -controller.getLeftY(),
+                      () -> -controller.getLeftX(),
+                      () -> -controller.getRightX()));
 
-        // Switch to X pattern when X button is pressed
-        controller.x(eventLoop).onTrue(Commands.runOnce(drive::stopWithX, drive));
+          // Lock to 0° when A button is held
+          controller
+              .a(eventLoop)
+              .whileTrue(
+                  DriveCommands.joystickDriveAtAngle(
+                      drive,
+                      () -> -controller.getLeftY(),
+                      () -> -controller.getLeftX(),
+                      () -> Rotation2d.kZero));
 
-        // Reset gyro to 0° when B button is pressed
-        controller.b(eventLoop).onTrue(
-            drive.runOnce(() -> {
-                drive.setPose(
-                    new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)
-                );
-            }).ignoringDisable(true)
-        );
-    });
+          // Switch to X pattern when X button is pressed
+          controller.x(eventLoop).onTrue(Commands.runOnce(drive::stopWithX, drive));
 
-    controls.createScheme("test")
-        .addTestBinds()
-        .save();
+          // Reset gyro to 0° when B button is pressed
+          controller
+              .b(eventLoop)
+              .onTrue(
+                  drive
+                      .runOnce(
+                          () -> {
+                            drive.setPose(
+                                new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero));
+                          })
+                      .ignoringDisable(true));
+        });
 
-    RobotModeTriggers.test().onTrue(controls.runOnce(() -> controls.registerScheme(
-        "test",
-        Optional.empty()
-    )));
+    // Create control scheme for test mode & quickly add in preconfigured test binds
+    controls.createScheme("test").addTestBinds().save();
+    
+    // Create command to switch to control schemes
+    Command switchToTestControlScheme = controls.registerScheme("test");
+
+    // On test mode, load in the correct control scheme to use
+    RobotModeTriggers.test().onTrue(switchToTestControlScheme);
   }
 
   /**
