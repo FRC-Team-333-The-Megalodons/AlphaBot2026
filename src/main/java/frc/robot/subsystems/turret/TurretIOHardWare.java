@@ -5,9 +5,6 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 
@@ -15,7 +12,7 @@ public class TurretIOHardWare implements TurretIO {
   CANBus rioBus = CANBus.roboRIO();
   private final TalonFX turret = new TalonFX(0, rioBus);
   private final TalonFX hood = new TalonFX(0, rioBus);
-  private final SparkFlex shooter = new SparkFlex(0, MotorType.kBrushless);
+  // private final SparkFlex shooter = new SparkFlex(0, MotorType.kBrushless);
 
   private final MotionMagicVoltage turretRequest = new MotionMagicVoltage(0);
   private final MotionMagicVoltage hoodRequest = new MotionMagicVoltage(0);
@@ -40,7 +37,7 @@ public class TurretIOHardWare implements TurretIO {
     hood.getConfigurator().apply(hoodConfig);
 
     // shooter config
-    shooter.getConfigurator().apply(shooterConfig);
+    // shooter.getConfigurator().apply(shooterConfig);
   }
 
   @Override
@@ -58,8 +55,8 @@ public class TurretIOHardWare implements TurretIO {
 
     // Shooter Inputs
     // getVelocity() returns Rotations per Second -> multiply by 60 for RPM
-    inputs.shooterVelocityRpm = shooter.getVelocity().getValueAsDouble() * 60.0;
-    inputs.shooterAppliedVolts = shooter.getMotorVoltage().getValueAsDouble();
+    // inputs.shooterVelocityRpm = shooter.getVelocity().getValueAsDouble() * 60.0;
+    // inputs.shooterAppliedVolts = shooter.getMotorVoltage().getValueAsDouble();
   }
 
   @Override
@@ -75,13 +72,13 @@ public class TurretIOHardWare implements TurretIO {
   @Override
   public void setShooterVelocity(double rpm) {
     // withVelocity expects Rotations per Second
-    shooter.setControl(shooterRequest.withVelocity(rpm / 60.0));
+    // shooter.setControl(shooterRequest.withVelocity(rpm / 60.0));
   }
 
   @Override
   public void stop() {
     turret.stopMotor();
     hood.stopMotor();
-    shooter.stopMotor();
+    // shooter.stopMotor();
   }
 }

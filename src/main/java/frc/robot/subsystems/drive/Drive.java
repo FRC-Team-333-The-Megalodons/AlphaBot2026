@@ -33,8 +33,6 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
-import edu.wpi.first.networktables.DoublePublisher;
-import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -47,9 +45,6 @@ import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
 import frc.robot.util.LocalADStarAK;
-
-import java.security.PublicKey;
-import java.util.concurrent.Flow.Publisher;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -106,7 +101,7 @@ public class Drive extends SubsystemBase {
       };
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, Pose2d.kZero);
-  
+
   public Drive(
       GyroIO gyroIO,
       ModuleIO flModuleIO,
@@ -119,12 +114,9 @@ public class Drive extends SubsystemBase {
     modules[1] = new Module(frModuleIO, 1, TunerConstants.FrontRight);
     modules[2] = new Module(blModuleIO, 2, TunerConstants.BackLeft);
     modules[3] = new Module(brModuleIO, 3, TunerConstants.BackRight);
-    
-    posePublisher = NetworkTableInstance
-      .getDefault()
-      .getTable("Drive")
-      .getDoubleArrayTopic("Pose")
-      .publish();
+
+    posePublisher =
+        NetworkTableInstance.getDefault().getTable("Drive").getDoubleArrayTopic("Pose").publish();
 
     // Usage reporting for swerve template
     HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_AdvantageKit);
@@ -220,11 +212,12 @@ public class Drive extends SubsystemBase {
       poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
       Pose2d pose = poseEstimator.getEstimatedPosition();
 
-      posePublisher.set(new double[] {
-        pose.getTranslation().getX(),
-        pose.getTranslation().getY(),
-        pose.getRotation().getDegrees()
-      });
+      posePublisher.set(
+          new double[] {
+            pose.getTranslation().getX(),
+            pose.getTranslation().getY(),
+            pose.getRotation().getDegrees()
+          });
     }
 
     // Update gyro alert
