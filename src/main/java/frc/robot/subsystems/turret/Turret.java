@@ -6,13 +6,22 @@ package frc.robot.subsystems.turret;
 
 import java.lang.System.Logger;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+import edu.wpi.first.networktables.DoubleArrayPublisher;
+import edu.wpi.first.networktables.DoubleArraySubscriber;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.vision.Vision;
+import frc.robot.util.PoseRecorder;
 
-public class Turret extends SubsystemBase {
+public class Turret extends SubsystemBase implements PoseRecorder {
+  private final NetworkTableInstance inst;
+  private DoubleArraySubscriber poseSub;
   private final TurretIO io;
   private final TurretIOInputsAutoLogged inputs = new TurretIOInputsAutoLogged();
   private final Vision vision;
@@ -22,9 +31,21 @@ public class Turret extends SubsystemBase {
   private final InterpolatingDoubleTreeMap hoodMap = new InterpolatingDoubleTreeMap();
 
   public Turret(TurretIO io, Vision vision) {
+    inst = NetworkTableInstance.getDefault();
+    poseSub = inst.getTable("Drive").getDoubleArrayTopic("Pose").subscribe(new double[]{0,0,0});
     this.io = io;
     this.vision = vision;
     setupInterpolation();
+  }
+  private Pose2d getPose(){
+    double[] poseData = poseSub.get();
+    return new Pose2d(
+      poseData[0],
+      poseData[1],
+      Rotation2d.fromDegrees(poseData[2])
+    );
+
+
   }
 
   private void setupInterpolation() {
@@ -42,13 +63,25 @@ public class Turret extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Turret", inputs);
   }
-  public double calculateDistance(){}
+  public double calculateDistance(){
+    Translation2d robotCoordinate = getPose().getTranslation();
+    Translation2d goalCoordinates = this.blueHub();
 
+    return robotCoordinate.getDistance(goalCoordinates);
+  }
+  public double calculateAngle(){
+    Translation2d robotCoordinate = getPose().getTranslation();
+
+    // Pick based on alliance 
+    Translation2d goalCoordinates = this.blueHub();
+
+    return robotCoordinate.minus(goalCoordinates).getAngle().getDegrees();
+  }
   /** The Full Auto-Aim Command */
   public Command aimAtHub() {
     return this.run(() -> {
       Rotation2d tx = vision.getTargetX(0); 
-      double distance = calculateDistance(); // Use ty and trig
+      double distance = calculateDistance();
 
       // 1. Turret: Relative move based on tx
       Rotation2d targetAngle = Rotation2d.fromRadians(inputs.turretPositionRad).plus(tx);
