@@ -5,7 +5,7 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 
-public interface PoseRecorder {
+public interface FieldLayout {
   static AprilTagFieldLayout tagLayout =
       AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 

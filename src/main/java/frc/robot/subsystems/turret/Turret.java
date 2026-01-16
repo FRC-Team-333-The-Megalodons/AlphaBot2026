@@ -13,10 +13,10 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.vision.Vision;
-import frc.robot.util.PoseRecorder;
+import frc.robot.util.FieldLayout;
 import org.littletonrobotics.junction.Logger;
 
-public class Turret extends SubsystemBase implements PoseRecorder {
+public class Turret extends SubsystemBase implements FieldLayout {
   private final NetworkTableInstance inst;
   private DoubleArraySubscriber poseSub;
   private final TurretIO io;
