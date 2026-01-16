@@ -58,7 +58,7 @@ public class Turret extends SubsystemBase implements FieldLayout {
 
   public double calculateDistance() {
     Translation2d robotCoordinate = getPose().getTranslation();
-    Translation2d goalCoordinates = this.blueHub();
+    Translation2d goalCoordinates = this.getHub();
 
     return robotCoordinate.getDistance(goalCoordinates);
   }
@@ -67,7 +67,7 @@ public class Turret extends SubsystemBase implements FieldLayout {
     Translation2d robotCoordinate = getPose().getTranslation();
 
     // Pick based on alliance
-    Translation2d goalCoordinates = this.blueHub();
+    Translation2d goalCoordinates = this.getHub();
 
     return robotCoordinate.minus(goalCoordinates).getAngle().getDegrees();
   }
