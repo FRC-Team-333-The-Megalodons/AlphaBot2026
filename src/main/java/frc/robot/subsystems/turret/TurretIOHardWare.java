@@ -3,60 +3,59 @@ package frc.robot.subsystems.turret;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 
 public class TurretIOHardWare implements TurretIO {
   CANBus rioBus = CANBus.roboRIO();
-  private final TalonFX turret = new TalonFX(0, rioBus);
-  private final TalonFX hood = new TalonFX(0, rioBus);
-  // private final SparkFlex shooter = new SparkFlex(0, MotorType.kBrushless);
+  private final TalonFX turret = new TalonFX(10, rioBus);
+  private final TalonFX hood = new TalonFX(11, rioBus);
+  private final SparkFlex shooterFlex = new SparkFlex(12, MotorType.kBrushless);
+
+  /*This is Kraken option -> uncomment if needed
+  private final TalonFX shooterKraken = new TalonFX(0, rioBus);
+  private final VelocityVoltage shooterRequest = new VelocityVoltage(0);
+  */
 
   private final MotionMagicVoltage turretRequest = new MotionMagicVoltage(0);
   private final MotionMagicVoltage hoodRequest = new MotionMagicVoltage(0);
-  private final VelocityVoltage shooterRequest = new VelocityVoltage(0);
 
   public TurretIOHardWare() {
-    // turret config
-    TalonFXConfiguration turretConfig = new TalonFXConfiguration();
-    /*for now I will just assume the 120:1 gear ratio but later needs to be changed
-    This is also assuming that we will have the absolute encoder on the output shaft
-    TODO: Make sure to change these based on the actual gear ratio*/
-    turretConfig.Feedback.SensorToMechanismRatio = 120;
-    turretConfig.MotionMagic.MotionMagicCruiseVelocity = 2; // rps
-    turretConfig.MotionMagic.MotionMagicAcceleration = 4; // rps^2
-    turret.getConfigurator().apply(turretConfig);
+    TalonFXConfiguration config = new TalonFXConfiguration();
+    config.Feedback.SensorToMechanismRatio = 120.0;
+    turret.getConfigurator().apply(config);
 
-    // hood config
-    TalonFXConfiguration hoodConfig = new TalonFXConfiguration();
-    hoodConfig.Feedback.SensorToMechanismRatio = 80.0;
-    hoodConfig.MotionMagic.MotionMagicCruiseVelocity = 1.5;
-    hoodConfig.MotionMagic.MotionMagicAcceleration = 3.0;
-    hood.getConfigurator().apply(hoodConfig);
-
-    // shooter config
-    // shooter.getConfigurator().apply(shooterConfig);
+    SparkFlexConfig flexConfig = new SparkFlexConfig();
+    flexConfig.idleMode(com.revrobotics.spark.config.SparkBaseConfig.IdleMode.kCoast);
+    shooterFlex.configure(
+        flexConfig,
+        SparkFlex.ResetMode.kResetSafeParameters,
+        SparkFlex.PersistMode.kPersistParameters);
   }
 
   @Override
   public void updateInputs(TurretIOInputs inputs) {
-    // Turret Inputs
     inputs.turretPositionRad = Units.rotationsToRadians(turret.getPosition().getValueAsDouble());
     inputs.turretVelocityRadPerSec =
         Units.rotationsToRadians(turret.getVelocity().getValueAsDouble());
-    inputs.turretAppliedVolts = turret.getMotorVoltage().getValueAsDouble();
-    inputs.turretCurrentAmps = new double[] {turret.getStatorCurrent().getValueAsDouble()};
+    inputs.shooterVelocityRpm = shooterFlex.getEncoder().getVelocity();
 
-    // Hood Inputs
-    inputs.hoodPositionRad = Units.rotationsToRadians(hood.getPosition().getValueAsDouble());
-    inputs.hoodAppliedVolts = hood.getMotorVoltage().getValueAsDouble();
+    /* For Kraken:
+    inputs.shooterVelocityRpm = shooterKraken.getVelocity().getValueAsDouble() * 60.0;
+    */
+  }
 
-    // Shooter Inputs
-    // getVelocity() returns Rotations per Second -> multiply by 60 for RPM
-    // inputs.shooterVelocityRpm = shooter.getVelocity().getValueAsDouble() * 60.0;
-    // inputs.shooterAppliedVolts = shooter.getMotorVoltage().getValueAsDouble();
+  @Override
+  public void setShooterVelocity(double rpm) {
+    shooterFlex.getClosedLoopController().setReference(rpm, SparkFlex.ControlType.kVelocity);
+
+    /* For Kraken:
+    shooterKraken.setControl(shooterRequest.withVelocity(rpm / 60.0));
+    */
   }
 
   @Override
@@ -70,15 +69,9 @@ public class TurretIOHardWare implements TurretIO {
   }
 
   @Override
-  public void setShooterVelocity(double rpm) {
-    // withVelocity expects Rotations per Second
-    // shooter.setControl(shooterRequest.withVelocity(rpm / 60.0));
-  }
-
-  @Override
   public void stop() {
     turret.stopMotor();
     hood.stopMotor();
-    // shooter.stopMotor();
+    shooterFlex.stopMotor();
   }
 }

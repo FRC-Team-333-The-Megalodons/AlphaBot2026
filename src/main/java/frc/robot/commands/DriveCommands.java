@@ -23,6 +23,8 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.util.FieldLayout;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
@@ -92,6 +94,25 @@ public class DriveCommands {
                   isFlipped
                       ? drive.getRotation().plus(new Rotation2d(Math.PI))
                       : drive.getRotation()));
+        },
+        drive);
+  }
+  /** Faces the alliance specific Hub by prioritizing Vision over Odometry */
+  public static Command faceHub(
+      Drive drive, Vision vision, DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
+    return Commands.run(
+        () -> {
+          Rotation2d targetRotation;
+          Rotation2d visionTx = vision.getTargetX(0); // Camera 0
+
+          if (visionTx.getDegrees() != 0) {
+            targetRotation = drive.getRotation().plus(visionTx);
+          } else {
+            Translation2d hubLocation = FieldLayout.getStaticHub();
+            targetRotation = hubLocation.minus(drive.getPose().getTranslation()).getAngle();
+          }
+
+          joystickDriveAtAngle(drive, xSupplier, ySupplier, () -> targetRotation).execute();
         },
         drive);
   }

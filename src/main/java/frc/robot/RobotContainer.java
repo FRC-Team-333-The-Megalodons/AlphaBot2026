@@ -44,6 +44,7 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final Vision vision;
+  // private final Turret turret;
 
   // Controller
   private final CommandPS5Controller controller = new CommandPS5Controller(0);
@@ -180,6 +181,16 @@ public class RobotContainer {
                             new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
                     drive)
                 .ignoringDisable(true));
+    controller
+        .square()
+        .whileTrue(
+            DriveCommands.faceHub(
+                drive, vision, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
+
+    // Turret Auto-Aim
+    /*controller.circle().whileTrue(
+    turret.aimAtHub());
+    */
   }
 
   /**
