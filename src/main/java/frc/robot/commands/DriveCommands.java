@@ -102,17 +102,38 @@ public class DriveCommands {
       Drive drive, Vision vision, DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
     return Commands.run(
         () -> {
-          Rotation2d targetRotation;
-          Rotation2d visionTx = vision.getTargetX(0); // Camera 0
+          // Ensure drive and vision objects aren't null
+          if (drive == null || vision == null) return;
 
-          if (visionTx.getDegrees() != 0) {
+          Rotation2d targetRotation;
+          Rotation2d visionTx = vision.getTargetX(0);
+
+          // Check if vision actually sees the target (tx != 0)
+          if (Math.abs(visionTx.getDegrees()) > 1e-6) {
             targetRotation = drive.getRotation().plus(visionTx);
           } else {
+            // Use the new safe static hub lookup
             Translation2d hubLocation = FieldLayout.getStaticHub();
-            targetRotation = hubLocation.minus(drive.getPose().getTranslation()).getAngle();
+            Translation2d robotLocation = drive.getPose().getTranslation();
+            targetRotation = hubLocation.minus(robotLocation).getAngle();
           }
 
-          joystickDriveAtAngle(drive, xSupplier, ySupplier, () -> targetRotation).execute();
+          // We use the 'execute' logic of joystickDriveAtAngle manually here
+          // to avoid recursive command scheduling which causes crashes.
+          Translation2d linearVelocity =
+              getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+
+          // This math is usually handled by the PID inside joystickDriveAtAngle,
+          // but for a single button command, we call the drive method directly:
+          drive.runVelocity(
+              ChassisSpeeds.fromFieldRelativeSpeeds(
+                  new ChassisSpeeds(
+                      linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+                      linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                      // Basic P-loop for rotation if you don't want to use the full ProfiledPID
+                      // here
+                      targetRotation.minus(drive.getRotation()).getRadians() * 5.0),
+                  drive.getRotation()));
         },
         drive);
   }
