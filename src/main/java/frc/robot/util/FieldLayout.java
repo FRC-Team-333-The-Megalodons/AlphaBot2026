@@ -11,7 +11,8 @@ public interface FieldLayout {
       AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
   public static final int[] redHubIDs = new int[] {10, 4};
-  public static final int[] blueHubIDs = new int[] {26, 20};
+  //not the right tags for the blue hub tags
+  public static final int[] blueHubIDs = new int[] {7, 8};
 
   public static Translation2d getStaticHub() {
     boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
