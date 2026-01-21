@@ -57,13 +57,17 @@ public class VisionIOPhotonVision implements VisionIO {
         var multitagResult = result.multitagResult.get();
 
         // Calculate robot pose
-        Transform3d fieldToCamera = multitagResult.estimatedPose.best;
+        Transform3d fieldToCamera =
+            multitagResult.estimatedPose.best; // camera lens location relative to the fieled origin
+        // `estimatedPose` - gets multiple possible solutions .best` is used to get the most likely
+        // solution
         Transform3d fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
         Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
 
-        // Calculate average tag distance
+        // Calculate average tag distance from the camera lens
         double totalTagDistance = 0.0;
         for (var target : result.targets) {
+          // `totalTagDistance` tells the robot how much it should trust the vision date
           totalTagDistance += target.bestCameraToTarget.getTranslation().getNorm();
         }
 

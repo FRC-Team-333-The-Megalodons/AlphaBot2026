@@ -11,7 +11,7 @@ public interface FieldLayout {
       AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
   public static final int[] redHubIDs = new int[] {10, 4};
-  //not the right tags for the blue hub tags
+  // not the right tags for the blue hub tags
   public static final int[] blueHubIDs = new int[] {7, 8};
 
   public static Translation2d getStaticHub() {
