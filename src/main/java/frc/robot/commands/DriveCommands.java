@@ -23,7 +23,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.vision.Vision;
 import frc.robot.util.FieldLayout;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -34,7 +33,7 @@ import java.util.function.Supplier;
 
 public class DriveCommands {
   private static final double DEADBAND = 0.1;
-  private static final double ANGLE_KP = 5.0;
+  private static final double ANGLE_KP = 2.5;
   private static final double ANGLE_KD = 0.4;
   private static final double ANGLE_MAX_VELOCITY = 8.0;
   private static final double ANGLE_MAX_ACCELERATION = 20.0;
@@ -97,42 +96,27 @@ public class DriveCommands {
         },
         drive);
   }
-  /** Faces the alliance specific Hub by prioritizing Vision over Odometry */
-  public static Command faceHub(
-      Drive drive, Vision vision, DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
+  /** Faces the alliance specific Hub using Odometry */
+  public static Command faceHub(Drive drive, DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
     return Commands.run(
         () -> {
-          // Ensure drive and vision objects aren't null
-          if (drive == null || vision == null) return;
+          if (drive == null) return;
+          Translation2d hubLocation = FieldLayout.getStaticHub();
+          Translation2d robotLocation = drive.getPose().getTranslation();
+          Rotation2d targetRotation = hubLocation.minus(robotLocation).getAngle();
 
-          Rotation2d targetRotation;
-          Rotation2d visionTx = vision.getTargetX(0);
-
-          // Check if vision actually sees the target (tx != 0)
-          if (Math.abs(visionTx.getDegrees()) > 1e-6) {
-            targetRotation = drive.getRotation().plus(visionTx);
-          } else {
-            // Use the new safe static hub lookup
-            Translation2d hubLocation = FieldLayout.getStaticHub();
-            Translation2d robotLocation = drive.getPose().getTranslation();
-            targetRotation = hubLocation.minus(robotLocation).getAngle();
-          }
-
-          // We use the 'execute' logic of joystickDriveAtAngle manually here
-          // to avoid recursive command scheduling which causes crashes.
           Translation2d linearVelocity =
               getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
 
-          // This math is usually handled by the PID inside joystickDriveAtAngle,
-          // but for a single button command, we call the drive method directly:
+          double rotationError = targetRotation.minus(drive.getRotation()).getRadians();
+          double omega = rotationError * 2.0;
+
           drive.runVelocity(
               ChassisSpeeds.fromFieldRelativeSpeeds(
                   new ChassisSpeeds(
                       linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
                       linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-                      // Basic P-loop for rotation if you don't want to use the full ProfiledPID
-                      // here
-                      targetRotation.minus(drive.getRotation()).getRadians() * 5.0),
+                      omega),
                   drive.getRotation()));
         },
         drive);
