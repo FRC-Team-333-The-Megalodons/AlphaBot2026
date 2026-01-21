@@ -8,11 +8,11 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 public interface FieldLayout {
   static AprilTagFieldLayout tagLayout =
-      AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+      AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
 
   public static final int[] redHubIDs = new int[] {10, 4};
   // not the right tags for the blue hub tags
-  public static final int[] blueHubIDs = new int[] {7, 8};
+  public static final int[] blueHubIDs = new int[] {25, 20};
 
   public static Translation2d getStaticHub() {
     boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
