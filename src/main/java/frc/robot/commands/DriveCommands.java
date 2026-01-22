@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.util.FieldLayout;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
@@ -32,8 +33,8 @@ import java.util.function.Supplier;
 
 public class DriveCommands {
   private static final double DEADBAND = 0.1;
-  private static final double ANGLE_KP = 5.0;
-  private static final double ANGLE_KD = 0.4;
+  private static final double ANGLE_KP = 0.5;
+  private static final double ANGLE_KD = 10;
   private static final double ANGLE_MAX_VELOCITY = 8.0;
   private static final double ANGLE_MAX_ACCELERATION = 20.0;
   private static final double FF_START_DELAY = 2.0; // Secs
@@ -95,7 +96,50 @@ public class DriveCommands {
         },
         drive);
   }
+  /** Faces the alliance specific Hub using Odometry */
+  public static Command faceHub(
+      Drive drive,
+      DoubleSupplier xSupplier,
+      DoubleSupplier ySupplier,
+      DoubleSupplier omegaSupplier) {
 
+    ProfiledPIDController angleController =
+        new ProfiledPIDController(10, 0.0, 0.4, new TrapezoidProfile.Constraints(6.0, 15.0));
+    angleController.enableContinuousInput(-Math.PI, Math.PI);
+
+    return Commands.run(
+            () -> {
+              if (drive == null) return;
+
+              Translation2d linearVelocity =
+                  getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+              double omega;
+              Pose2d currentPose = drive.getPose();
+
+              if (FieldLayout.isInAllianceZone(currentPose)) {
+                Translation2d hubLocation = FieldLayout.getStaticHub();
+                Rotation2d targetRotation =
+                    hubLocation.minus(currentPose.getTranslation()).getAngle();
+                omega =
+                    angleController.calculate(
+                        currentPose.getRotation().getRadians(), targetRotation.getRadians());
+              } else {
+                // if outside the zone -> fall back to manual control
+                omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
+                omega = Math.copySign(omega * omega, omega);
+                omega *= drive.getMaxAngularSpeedRadPerSec();
+              }
+              drive.runVelocity(
+                  ChassisSpeeds.fromFieldRelativeSpeeds(
+                      new ChassisSpeeds(
+                          linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+                          linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                          omega),
+                      currentPose.getRotation()));
+            },
+            drive)
+        .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
+  }
   /**
    * Field relative drive command using joystick for linear control and PID for angular control.
    * Possible use cases include snapping to an angle, aiming at a vision target, or controlling

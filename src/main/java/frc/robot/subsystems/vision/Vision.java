@@ -113,7 +113,12 @@ public class Vision extends SubsystemBase {
         } else {
           robotPosesAccepted.add(observation.pose());
         }
-
+        // Added this to prevent noisy updates when doing high speed maneuvers
+        double angularVelocity =
+            Math.abs(inputs[cameraIndex].latestTargetObservation.tx().getRadians());
+        if (angularVelocity > Math.toRadians(720)) {
+          rejectPose = true;
+        }
         // Skip if rejected
         if (rejectPose) {
           continue;
