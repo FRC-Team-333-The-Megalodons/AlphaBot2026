@@ -183,10 +183,13 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
     controller
-        .square()
+        .R2()
         .whileTrue(
             DriveCommands.faceHub(
-                drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
+                drive,
+                () -> controller.getLeftY(),
+                () -> controller.getLeftX(),
+                () -> -controller.getRightX()));
 
     // Turret Auto-Aim
     /*controller.circle().whileTrue(

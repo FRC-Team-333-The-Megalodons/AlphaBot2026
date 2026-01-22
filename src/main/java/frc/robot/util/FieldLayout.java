@@ -2,6 +2,7 @@ package frc.robot.util;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -27,5 +28,16 @@ public interface FieldLayout {
 
   public default Translation2d getHub() {
     return getStaticHub();
+  }
+  /** Checks if the robot is in its own alliance's scoring zone */
+  public static boolean isInAllianceZone(Pose2d robotPose) {
+    var alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+    double x = robotPose.getX();
+
+    if (alliance == Alliance.Blue) {
+      return x >= 0.0 && x <= 5.8;
+    } else {
+      return x >= 11.7 && x <= 17.55;
+    }
   }
 }
