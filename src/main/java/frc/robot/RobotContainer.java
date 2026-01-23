@@ -185,12 +185,11 @@ public class RobotContainer {
     controller
         .R2()
         .whileTrue(
-            DriveCommands.faceHub(
+            DriveCommands.faceHubAlternative(
                 drive,
-                () -> controller.getLeftY(),
-                () -> controller.getLeftX(),
+                () -> -controller.getLeftY(),
+                () -> -controller.getLeftX(),
                 () -> -controller.getRightX()));
-
     // Turret Auto-Aim
     /*controller.circle().whileTrue(
     turret.aimAtHub());

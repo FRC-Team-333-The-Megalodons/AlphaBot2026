@@ -25,7 +25,7 @@ public interface FieldLayout {
 
     return pos1.plus(pos2).div(2);
   }
-
+  /** Gets the postion of the alliance designated Hub */
   public default Translation2d getHub() {
     return getStaticHub();
   }

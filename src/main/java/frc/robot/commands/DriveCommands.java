@@ -140,6 +140,22 @@ public class DriveCommands {
             drive)
         .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
   }
+  //*alliance-flexible command that dynamically switches between auto-aiming and manual driving. */
+  public static Command faceHubAlternative(
+      Drive drive,
+      DoubleSupplier xSupplier,
+      DoubleSupplier ySupplier,
+      DoubleSupplier omegaSupplier) {
+
+    return Commands.either(
+        joystickDriveAtAngle(
+            drive,
+            xSupplier,
+            ySupplier,
+            () -> FieldLayout.getStaticHub().minus(drive.getPose().getTranslation()).getAngle()),
+        joystickDrive(drive, xSupplier, ySupplier, omegaSupplier),
+        () -> FieldLayout.isInAllianceZone(drive.getPose()));
+  }
   /**
    * Field relative drive command using joystick for linear control and PID for angular control.
    * Possible use cases include snapping to an angle, aiming at a vision target, or controlling
