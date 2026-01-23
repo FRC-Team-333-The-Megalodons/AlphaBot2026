@@ -140,7 +140,7 @@ public class DriveCommands {
             drive)
         .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
   }
-  //*alliance-flexible command that dynamically switches between auto-aiming and manual driving. */
+  /**alliance-flexible command that dynamically switches between auto-aiming and manual driving. */
   public static Command faceHubAlternative(
       Drive drive,
       DoubleSupplier xSupplier,
