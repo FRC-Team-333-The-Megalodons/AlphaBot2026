@@ -7,9 +7,9 @@ import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 
 public class IntakeIOKrakenSim implements IntakeIO {
-  private static final LinearSystem<N1, N1, N1> intakePlant = 
+  private static final LinearSystem<N1, N1, N1> intakePlant =
       LinearSystemId.createFlywheelSystem(DCMotor.getKrakenX60(1), 0.001, 1.0);
- 
+
   private FlywheelSim sim = new FlywheelSim(intakePlant, DCMotor.getKrakenX60(1), 0.001);
   private double appliedVolts = 0.0;
 
