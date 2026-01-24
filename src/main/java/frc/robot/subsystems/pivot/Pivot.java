@@ -17,9 +17,10 @@ public class Pivot extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Pivot", inputs);
   }
+
   public Command setAngleCommand(double rad) {
-  return runOnce(() -> this.setGoal(rad));
-}
+    return runOnce(() -> this.setGoal(rad));
+  }
 
   public void setGoal(double rad) {
     io.setPosition(rad);

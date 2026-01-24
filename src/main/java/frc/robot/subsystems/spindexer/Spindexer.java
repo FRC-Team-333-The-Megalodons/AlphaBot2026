@@ -17,8 +17,9 @@ public class Spindexer extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Spindexer", inputs);
   }
+
   public Command activeSpindexerCommand() {
-  return runEnd(this::run, this::stop);
+    return runEnd(this::run, this::stop);
   }
 
   public void run() {

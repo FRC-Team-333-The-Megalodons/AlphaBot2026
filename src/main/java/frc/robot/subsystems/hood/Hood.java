@@ -21,8 +21,9 @@ public class Hood extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Hood", inputs);
   }
+
   public Command setHoodAngleCommand(double rad) {
-       return runOnce(() -> this.setAngle(rad));
+    return runOnce(() -> this.setAngle(rad));
   }
 
   public void setAngle(double rad) {

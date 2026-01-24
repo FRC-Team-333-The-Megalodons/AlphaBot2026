@@ -17,12 +17,13 @@ public class Shooter extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Shooter", inputs);
   }
+
   public Command spinUpCommand(double rpm) {
-      return runEnd(() -> this.setRPM(rpm), this::stop);
+    return runEnd(() -> this.setRPM(rpm), this::stop);
   }
 
   public Command stopShooterCommand() {
-       return runOnce(this::stop);
+    return runOnce(this::stop);
   }
 
   public void setRPM(double rpm) {
