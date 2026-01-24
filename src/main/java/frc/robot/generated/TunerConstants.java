@@ -22,7 +22,7 @@ public class TunerConstants {
   // output type specified by SwerveModuleConstants.SteerMotorClosedLoopOutput
   private static final Slot0Configs steerGains =
       new Slot0Configs()
-          .withKP(10)
+          .withKP(40)
           .withKI(0)
           .withKD(1.5)
           .withKS(0.1)
@@ -60,7 +60,7 @@ public class TunerConstants {
 
   // The stator current at which the wheels start to slip;
   // This needs to be tuned to your individual robot
-  private static final Current kSlipCurrent = Amps.of(120);
+  private static final Current kSlipCurrent = Amps.of(40);
 
   // Initial configs for the drive and steer motors and the azimuth encoder; these cannot be null.
   // Some configs will be overwritten; check the `with*InitialConfigs()` API documentation.
@@ -100,8 +100,8 @@ public class TunerConstants {
   private static final int kPigeonId = 2;
 
   // These are only used for simulation
-  private static final MomentOfInertia kSteerInertia = KilogramSquareMeters.of(0.01);
-  private static final MomentOfInertia kDriveInertia = KilogramSquareMeters.of(0.01);
+  private static final MomentOfInertia kSteerInertia = KilogramSquareMeters.of(0.004);
+  private static final MomentOfInertia kDriveInertia = KilogramSquareMeters.of(0.025);
   // Simulated voltage necessary to overcome friction
   private static final Voltage kSteerFrictionVoltage = Volts.of(0.2);
   private static final Voltage kDriveFrictionVoltage = Volts.of(0.2);
