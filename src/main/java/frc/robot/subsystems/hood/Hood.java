@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.hood;
 
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
@@ -19,6 +20,9 @@ public class Hood extends SubsystemBase {
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Hood", inputs);
+  }
+  public Command setHoodAngleCommand(double rad) {
+       return runOnce(() -> this.setAngle(rad));
   }
 
   public void setAngle(double rad) {

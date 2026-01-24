@@ -1,5 +1,6 @@
 package frc.robot.subsystems.transfer;
 
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
@@ -16,6 +17,9 @@ public class Transfer extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Transfer", inputs);
   }
+  public Command feedShooterCommand() {
+  return runEnd(this::run, this::stop);
+}
 
   public void run() {
     io.setVoltage(TransferConstants.SPEED * 12.0);

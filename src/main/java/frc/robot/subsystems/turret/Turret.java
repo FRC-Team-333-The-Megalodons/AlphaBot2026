@@ -21,6 +21,14 @@ public class Turret extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Turret", inputs);
   }
+  public Command trackHubCommand(Supplier<Pose2d> robotPose) {
+  return run(() -> {
+    Translation2d robotTrans = robotPose.get().getTranslation();
+    Rotation2d angleToHub = TurretConstants.HUB_LOCATION.minus(robotTrans).getAngle();
+    Rotation2d robotRelative = angleToHub.minus(robotPose.get().getRotation());
+    io.setPosition(robotRelative.getRadians());
+  });
+}
 
   public void setAngle(Rotation2d angle) {
     io.setPosition(angle.getRadians());
