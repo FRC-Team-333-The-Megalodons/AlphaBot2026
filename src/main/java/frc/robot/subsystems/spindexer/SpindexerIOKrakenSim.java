@@ -22,7 +22,7 @@ public class SpindexerIOKrakenSim implements SpindexerIO {
 
   @Override
   public void setVelocity(double rps) {
-    setVoltage(rps * 0.5); //rough kV -> will tune once i get the robot
+    setVoltage(rps * 0.5); // rough kV -> will tune once i get the robot
   }
 
   @Override
