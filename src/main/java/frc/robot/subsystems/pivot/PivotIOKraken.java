@@ -1,0 +1,28 @@
+package frc.robot.subsystems.pivot;
+
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.hardware.TalonFX;
+import edu.wpi.first.math.util.Units;
+
+public class PivotIOKraken implements PivotIO {
+  private final TalonFX motor = new TalonFX(PivotConstants.MOTOR_ID);
+
+  public PivotIOKraken() {
+    var config = new TalonFXConfiguration();
+    config.Feedback.SensorToMechanismRatio = PivotConstants.GEAR_RATIO;
+    config.Slot0.kP = PivotConstants.kP;
+    motor.getConfigurator().apply(config);
+  }
+
+  @Override
+  public void updateInputs(PivotIOInputs inputs) {
+    inputs.positionRad = Units.rotationsToRadians(motor.getPosition().getValueAsDouble());
+    inputs.appliedVolts = motor.getMotorVoltage().getValueAsDouble();
+  }
+
+  @Override
+  public void setPosition(double rad) {
+    motor.setControl(new PositionVoltage(Units.radiansToRotations(rad)));
+  }
+}
