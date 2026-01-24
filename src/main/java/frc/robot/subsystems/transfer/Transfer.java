@@ -1,0 +1,27 @@
+package frc.robot.subsystems.transfer;
+
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.Logger;
+
+public class Transfer extends SubsystemBase {
+  private final TransferIO io;
+  private final TransferIOInputsAutoLogged inputs = new TransferIOInputsAutoLogged();
+
+  public Transfer(TransferIO io) {
+    this.io = io;
+  }
+
+  @Override
+  public void periodic() {
+    io.updateInputs(inputs);
+    Logger.processInputs("Transfer", inputs);
+  }
+
+  public void run() {
+    io.setVoltage(TransferConstants.SPEED * 12.0);
+  }
+
+  public void stop() {
+    io.setVoltage(0.0);
+  }
+}
