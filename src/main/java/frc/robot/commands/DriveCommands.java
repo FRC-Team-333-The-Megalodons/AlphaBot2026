@@ -116,8 +116,8 @@ public class DriveCommands {
               double omega;
               Pose2d currentPose = drive.getPose();
 
-              if (FieldLayout.isInAllianceZone(currentPose)) {
-                Translation2d hubLocation = FieldLayout.getStaticHub();
+              if (FieldLayout.AutoAimingConstants.isInAllianceZone(currentPose)) {
+                Translation2d hubLocation = FieldLayout.AutoAimingConstants.getHub();
                 Rotation2d targetRotation =
                     hubLocation.minus(currentPose.getTranslation()).getAngle();
                 omega =
@@ -152,9 +152,9 @@ public class DriveCommands {
             drive,
             xSupplier,
             ySupplier,
-            () -> FieldLayout.getStaticHub().minus(drive.getPose().getTranslation()).getAngle()),
+            () -> FieldLayout.AutoAimingConstants.getHub().minus(drive.getPose().getTranslation()).getAngle()),
         joystickDrive(drive, xSupplier, ySupplier, omegaSupplier),
-        () -> FieldLayout.isInAllianceZone(drive.getPose()));
+        () -> FieldLayout.AutoAimingConstants.isInAllianceZone(drive.getPose()));
   }
   /**
    * Field relative drive command using joystick for linear control and PID for angular control.

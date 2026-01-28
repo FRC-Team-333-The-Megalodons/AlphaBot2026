@@ -10,5 +10,5 @@ public final class TurretConstants {
   public static final double kI = 0.0;
   public static final double kD = 0.05;
 
-  public static final Translation2d HUB_LOCATION = FieldLayout.getStaticHub();
+  public static final Translation2d HUB_LOCATION = FieldLayout.AutoAimingConstants.getHub();
 }
