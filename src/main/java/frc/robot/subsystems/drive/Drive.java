@@ -108,10 +108,10 @@ public class Drive extends SubsystemBase {
       ModuleIO brModuleIO) {
 
     this.gyroIO = gyroIO;
-    modules[0] = new Module(flModuleIO, 0, TunerConstants.FrontLeft);
-    modules[1] = new Module(frModuleIO, 1, TunerConstants.FrontRight);
-    modules[2] = new Module(blModuleIO, 2, TunerConstants.BackLeft);
-    modules[3] = new Module(brModuleIO, 3, TunerConstants.BackRight);
+    modules[0] = new Module(flModuleIO, 0, TunerConstants.FrontLeft, this);
+    modules[1] = new Module(frModuleIO, 1, TunerConstants.FrontRight, this);
+    modules[2] = new Module(blModuleIO, 2, TunerConstants.BackLeft, this);
+    modules[3] = new Module(brModuleIO, 3, TunerConstants.BackRight, this);
 
     // posePublisher =
     //
