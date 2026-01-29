@@ -78,8 +78,6 @@ public class FieldLayout {
     public static final Translation2d DEPOT_CENTER =
         new Translation2d(DEPTH, (FIELD_WIDTH / 2) + DISTANCE_FROM_CENTER_Y);
   }
-  public static class  Outpost {
-      
-    
-  }
+
+  public static class Outpost {}
 }
