@@ -152,7 +152,10 @@ public class DriveCommands {
             drive,
             xSupplier,
             ySupplier,
-            () -> FieldLayout.AutoAimingConstants.getHub().minus(drive.getPose().getTranslation()).getAngle()),
+            () ->
+                FieldLayout.AutoAimingConstants.getHub()
+                    .minus(drive.getPose().getTranslation())
+                    .getAngle()),
         joystickDrive(drive, xSupplier, ySupplier, omegaSupplier),
         () -> FieldLayout.AutoAimingConstants.isInAllianceZone(drive.getPose()));
   }
