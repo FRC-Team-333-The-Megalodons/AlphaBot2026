@@ -26,6 +26,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.util.FieldLayout;
+import frc.robot.util.MatchStateCalculator;
+
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
@@ -118,8 +120,8 @@ public class DriveCommands {
               double omega;
               Pose2d currentPose = drive.getPose();
 
-              if (FieldLayout.AutoAimingConstants.isInAllianceZone(currentPose)) {
-                Translation2d hubLocation = FieldLayout.AutoAimingConstants.getHub();
+              if (MatchStateCalculator.isInAllianceZone(currentPose)) {
+                Translation2d hubLocation = MatchStateCalculator.getHub();
                 Rotation2d targetRotation =
                     hubLocation.minus(currentPose.getTranslation()).getAngle();
                 omega =
@@ -155,11 +157,11 @@ public class DriveCommands {
             xSupplier,
             ySupplier,
             () ->
-                FieldLayout.AutoAimingConstants.getHub()
+                MatchStateCalculator.getHub()
                     .minus(drive.getPose().getTranslation())
                     .getAngle()),
         joystickDrive(drive, xSupplier, ySupplier, omegaSupplier),
-        () -> FieldLayout.AutoAimingConstants.isInAllianceZone(drive.getPose()));
+        () -> MatchStateCalculator.isInAllianceZone(drive.getPose()));
   }
 
   
