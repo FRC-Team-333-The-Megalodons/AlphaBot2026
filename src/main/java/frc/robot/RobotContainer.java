@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.PathfindCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
@@ -136,7 +137,7 @@ public class RobotContainer {
         "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-    SmartDashboard.putData("Pathfind to Depot", DriveCommands.pathFindToDepot(drive));
+    SmartDashboard.putData("Pathfind to Depot", PathfindCommands.pathfindToDepot(drive));
 
     // Configure the button bindings
     configureButtonBindings();
@@ -189,7 +190,8 @@ public class RobotContainer {
                 () -> -controller.getLeftX(),
                 () -> -controller.getRightX()));
 
-    controller.triangle().onTrue(DriveCommands.pathFindToDepot(drive));
+    controller.triangle().onTrue(PathfindCommands.pathfindToDepot(drive));
+    controller.square().onTrue(PathfindCommands.pathfindToHub(drive));
     // Turret Auto-Aim
     /*controller.circle().whileTrue(
     turret.aimAtHub());

@@ -162,14 +162,7 @@ public class DriveCommands {
         () -> FieldLayout.AutoAimingConstants.isInAllianceZone(drive.getPose()));
   }
 
-  public static Command pathFindToDepot(Drive drive) {
-    Pose2d targetPose = new Pose2d(FieldLayout.Depot.DEPOT_CENTER, Rotation2d.kZero);
-
-    PathConstraints constraints =
-        new PathConstraints(3.0, 3.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
-
-    return AutoBuilder.pathfindToPose(targetPose, constraints, 0.0);
-  }
+  
   /**
    * Field relative drive command using joystick for linear control and PID for angular control.
    * Possible use cases include snapping to an angle, aiming at a vision target, or controlling
