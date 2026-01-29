@@ -17,6 +17,7 @@ public interface ControlsIO {
    * @param controlSchemeName A friendly name for your control scheme.
    */
   Binds createScheme(String controlSchemeName);
+  Binds createScheme(String controlSchemeName, boolean useDefault);
 
   /**
    * Check if an existing bind has been created by this name.

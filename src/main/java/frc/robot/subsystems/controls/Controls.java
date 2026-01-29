@@ -1,7 +1,11 @@
 package frc.robot.subsystems.controls;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.util.Binds;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -19,6 +23,27 @@ public class Controls extends SubsystemBase {
 
   public Controls(ControlsIO io) {
     this.io = io;
+    this.createDefaultScheme();
+  }
+
+  /**
+   * Add binds to default loop.
+   * 
+   * <p>
+   * When the robot first powers on, the default control scheme is loaded in.
+   * 
+   * <p>
+   * Thus, we must configure the default control scheme to switch to the other schemes, based on active mode.
+   * 
+   * <p>
+   * If the robot disconnects during the match, it also makes sense to swap back to the default loop, as a reset/safe mode.
+   */
+  private void createDefaultScheme() {
+    io.createScheme("default", true).addBinds((eventLoop) -> {
+      RobotModeTriggers.autonomous().onFalse(this.runOnce(() -> io.setActiveScheme("teleop")));
+      RobotModeTriggers.teleop().onTrue(this.runOnce(() -> io.setActiveScheme("teleop")));
+      RobotModeTriggers.test().onTrue(this.runOnce(() -> io.setActiveScheme("test")));
+    }).save();
   }
 
   /**
@@ -28,7 +53,16 @@ public class Controls extends SubsystemBase {
    * @return A {@code Binds} object, to use with your controller.
    */
   public Binds createScheme(String schemeName) {
-    return io.createScheme(schemeName);
+
+    // All new schemes should revert to default control scheme if connection is lost.
+    return io.createScheme(schemeName).addBinds((eventLoop) -> {
+      new Trigger(eventLoop, DriverStation::isDisabled).onTrue(
+        Commands.sequence(
+          this.runOnce(() -> io.setActiveScheme("default")).ignoringDisable(true),
+          Commands.print("Lost connection! Reverting to default control scheme.")
+        )
+      );
+    });
   }
 
   /**
@@ -39,21 +73,26 @@ public class Controls extends SubsystemBase {
    *     to fall back/return to a non-default control scheme.
    * @return A Command for use with the WPILib Command Framework.
    */
-  public Command registerScheme(String schemeName, Optional<String> cancellationScheme) {
+  public Command useScheme(String schemeName, Optional<String> cancellationScheme) {
     if (!io.hasScheme(schemeName))
       throw new NoSuchElementException(
         "Error: Control Scheme " + schemeName + " does not exist. Did you create it beforehand?");
 
-    return this.runOnce(() -> io.setActiveScheme(schemeName))
-      .andThen(this.idle()
-        .handleInterrupt(() -> io.setActiveScheme(cancellationScheme.get()))
-        .onlyIf(() -> cancellationScheme.isPresent()))
-      .ignoringDisable(true)
-      .withName(schemeName + "ControlScheme");
+    return Commands.sequence(
+      this.runOnce(() -> io.setActiveScheme(schemeName)),
+      this.idle()
+    ).finallyDo((interrupted) -> {
+      if(cancellationScheme.isPresent())
+        io.setActiveScheme(cancellationScheme.get());
+    }).withName(schemeName + "ControlScheme");
   }
 
-  public Command registerScheme(String schemeName) {
-    return this.registerScheme(schemeName, Optional.empty());
+  public Command useScheme(String schemeName) {
+    return this.useScheme(schemeName, Optional.empty());
+  }
+
+  public Command defaultScheme() {
+    return this.useScheme("default").ignoringDisable(true);
   }
 
   @Override

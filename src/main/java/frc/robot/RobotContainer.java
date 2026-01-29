@@ -8,15 +8,11 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
@@ -28,7 +24,9 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
-import frc.robot.util.Binds;
+
+import java.util.Optional;
+
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -43,7 +41,7 @@ public class RobotContainer {
   private final Controls controls;
 
   // Controller
-  private final CommandXboxController controller = new CommandXboxController(0);
+  private final CommandPS5Controller controller = new CommandPS5Controller(0);
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -128,21 +126,22 @@ public class RobotContainer {
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     // Configure the button bindings
+    configureTestBindings();
     configureButtonBindings();
   }
 
-  /**
-   * Use this method to define your button->command mappings. Buttons can be created by
-   * instantiating a {@link GenericHID} or one of its subclasses ({@link
-   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
-   * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
-   */
-  private void configureButtonBindings() {
-
+  private void configureTestBindings() {
+    
     // Configure binds for test mode
-    Binds.configureTestBinds(
+    controls.createScheme("test").addBinds(
         (eventLoop) -> {
 
+          controller.L1(eventLoop).onTrue(Commands.print("test mode"));
+          controller.square(eventLoop).whileTrue(controls.useScheme("square", Optional.of("test")));
+          controller.cross(eventLoop).onTrue(controls.useScheme("cross"));
+          controller.triangle(eventLoop).debounce(1.0).onTrue(controls.useScheme("triangle"));
+
+          /*
           // Default command, normal field-relative drive
           // Do not call .setDefaultCommand(), use this pattern instead.
           new Trigger(eventLoop, () -> drive.getCurrentCommand() == null)
@@ -177,16 +176,45 @@ public class RobotContainer {
                                 new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero));
                           })
                       .ignoringDisable(true));
-        });
+            */
 
-    // Create control scheme for test mode & quickly add in preconfigured test binds
-    controls.createScheme("test").addTestBinds().save();
+        }).save();
+        
+        // Assume this scheme is self-cancellable due to whileTrue().
+        controls.createScheme("square").addBinds(
+            (eventLoop) -> {
+                controller.L1(eventLoop).onTrue(Commands.print("square mode"));
+            }
+        ).save();
+
+        // Assume this scheme requires a button release to revert to test scheme.
+        // An explicit "exit bind" needs to be declared.
+        controls.createScheme("cross").addBinds(
+            (eventLoop) -> {
+                controller.L1(eventLoop).onTrue(Commands.print("cross mode"));
+                controller.cross(eventLoop).debounce(2.0).onFalse(controls.useScheme("test"));
+            }
+        );
+
+        // Assume this scheme needs a button toggle to revert to test scheme.
+        // An explicit "exit bind" needs to be declared.
+        controls.createScheme("triangle").addBinds(
+            (eventLoop) -> {
+                controller.L1(eventLoop).onTrue(Commands.print("triangle mode"));
+                controller.triangle().debounce(1.0).onTrue(controls.useScheme("test"));
+            }
+        );
+  }
+
+  /**
+   * Use this method to define your button->command mappings. Buttons can be created by
+   * instantiating a {@link GenericHID} or one of its subclasses ({@link
+   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
+   * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
+   */
+  private void configureButtonBindings() {
+
     
-    // Create command to switch to control schemes
-    Command switchToTestControlScheme = controls.registerScheme("test");
-
-    // On test mode, load in the correct control scheme to use
-    RobotModeTriggers.test().onTrue(switchToTestControlScheme);
   }
 
   /**

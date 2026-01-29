@@ -21,7 +21,11 @@ public class ControlsIOReal implements ControlsIO {
   }
 
   public Binds createScheme(String controlSchemeName) {
-    return new Binds((bind) -> bindingsMap.put(controlSchemeName, bind));
+    return new Binds((bind) -> bindingsMap.put(controlSchemeName, bind), false);
+  }
+
+  public Binds createScheme(String controlSchemeName, boolean useDefault) {
+    return new Binds((bind) -> bindingsMap.put(controlSchemeName, bind), useDefault);
   }
   
   public boolean hasScheme(String controlSchemeName) {
