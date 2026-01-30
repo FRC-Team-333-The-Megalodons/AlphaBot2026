@@ -1,4 +1,4 @@
-package frc.robot.subsystems.turret;
+package frc.robot.subsystems.shooter.turret;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.util.MatchStateCalculator;

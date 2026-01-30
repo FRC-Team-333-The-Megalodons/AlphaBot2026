@@ -1,17 +1,17 @@
-package frc.robot.subsystems.shooter;
+package frc.robot.subsystems.shooter.flywheel;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.util.Units;
 
-public class ShooterIOKraken implements ShooterIO {
-  private final TalonFX motor = new TalonFX(ShooterConstants.MOTOR_ID);
+public class FlywheelIOKraken implements FlywheelIO {
+  private final TalonFX motor = new TalonFX(FlywheelConstants.MOTOR_ID);
 
-  public ShooterIOKraken() {
+  public FlywheelIOKraken() {
     var config = new TalonFXConfiguration();
-    config.Slot0.kV = ShooterConstants.kV;
-    config.Slot0.kP = ShooterConstants.kP;
+    config.Slot0.kV = FlywheelConstants.kV;
+    config.Slot0.kP = FlywheelConstants.kP;
     motor.getConfigurator().apply(config);
   }
 

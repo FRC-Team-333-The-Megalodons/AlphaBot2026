@@ -1,15 +1,16 @@
-package frc.robot.subsystems.hood;
+package frc.robot.subsystems.shooter.turret;
 
 import org.littletonrobotics.junction.AutoLog;
 
-public interface HoodIO {
+public interface TurretIO {
   @AutoLog
-  public static class HoodIOInputs {
+  public static class TurretIOInputs {
     public double positionRad = 0.0;
+    public double velocityRadPerSec = 0.0;
     public double appliedVolts = 0.0;
   }
 
-  public default void updateInputs(HoodIOInputs inputs) {}
+  public default void updateInputs(TurretIOInputs inputs) {}
 
   public default void setPosition(double rad) {}
 
