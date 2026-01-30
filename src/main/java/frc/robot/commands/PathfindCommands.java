@@ -9,6 +9,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.util.FieldLayout;
+import frc.robot.util.MatchStateCalculator;
 
 public class PathfindCommands {
   public static Command pathfindTo(Translation2d translation, Rotation2d rotation, Drive drive) {
@@ -24,8 +25,14 @@ public class PathfindCommands {
   }
 
   public static Command pathfindToHub(Drive drive) {
-    double x = FieldLayout.Hub.NEAR_FACE.getX() + 0.7;
+    double x =
+        MatchStateCalculator.isBlueAlliance()
+            ? FieldLayout.Hub.NEAR_FACE.getX() - 0.7
+            : FieldLayout.Hub.NEAR_FACE.getX() + 0.7;
     Translation2d targetTranslation = new Translation2d(x, FieldLayout.Hub.NEAR_FACE.getY());
-    return pathfindTo(targetTranslation, Rotation2d.k180deg, drive);
+    return pathfindTo(
+        targetTranslation,
+        MatchStateCalculator.isBlueAlliance() ? Rotation2d.kZero : Rotation2d.k180deg,
+        drive);
   }
 }

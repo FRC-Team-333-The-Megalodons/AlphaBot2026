@@ -5,8 +5,6 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 public class FieldLayout {
   static AprilTagFieldLayout tagLayout =
@@ -15,7 +13,7 @@ public class FieldLayout {
   static double FIELD_LENGTH = tagLayout.getFieldLength();
 
   public static class Hub {
-    public static boolean isBlue = DriverStation.getAlliance().equals(Alliance.Blue);
+    public static boolean isBlue = MatchStateCalculator.isBlueAlliance();
     public static final Pose2d NEAR_FACE =
         isBlue
             ? tagLayout.getTagPose(26).get().toPose2d()
