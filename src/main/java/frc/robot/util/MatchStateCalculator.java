@@ -46,4 +46,17 @@ public class MatchStateCalculator {
       return x >= 11.7 && x <= 17.55;
     }
   }
+  public static boolean isInOppAllianceZone(Pose2d robotPose){
+    var alliance = DriverStation .getAlliance().orElse(Alliance.Blue);
+    double x = robotPose.getX();
+    if (alliance == Alliance.Blue) {
+      return x >= 11.7 && x <= 17.55;
+    }else {
+      return x >= 0.0 && x <= 5.8;
+    }
+  }
+  public static boolean isInNeutralZone(Pose2d robotPose){
+    double x = robotPose.getX();
+    return x > 5.8 && x < 11.7;
+  }
 }
