@@ -16,7 +16,7 @@ public class FlywheelIOKraken implements FlywheelIO {
   }
 
   @Override
-  public void updateInputs(ShooterIOInputs inputs) {
+  public void updateInputs(FlywheelIOInputs inputs) {
     inputs.velocityRadPerSec = Units.rotationsToRadians(motor.getVelocity().getValueAsDouble());
     inputs.appliedVolts = motor.getMotorVoltage().getValueAsDouble();
   }
