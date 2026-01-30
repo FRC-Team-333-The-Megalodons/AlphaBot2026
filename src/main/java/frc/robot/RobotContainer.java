@@ -190,8 +190,8 @@ public class RobotContainer {
                 () -> -controller.getLeftX(),
                 () -> -controller.getRightX()));
 
-    controller.triangle().onTrue(PathfindCommands.pathfindToDepot(drive));
-    controller.square().onTrue(PathfindCommands.pathfindToHub(drive));
+    controller.triangle().whileTrue(PathfindCommands.pathfindToDepot(drive));
+    controller.square().whileTrue(PathfindCommands.pathfindToHub(drive));
     // Turret Auto-Aim
     /*controller.circle().whileTrue(
     turret.aimAtHub());

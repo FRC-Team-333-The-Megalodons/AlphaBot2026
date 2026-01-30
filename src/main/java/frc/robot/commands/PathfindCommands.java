@@ -14,7 +14,7 @@ public class PathfindCommands {
   public static Command pathfindTo(Translation2d translation, Rotation2d rotation, Drive drive) {
     Pose2d targetPose = new Pose2d(translation, rotation);
     PathConstraints constraints =
-        new PathConstraints(3.0, 3.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
+        new PathConstraints(2.0, 2.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
 
     return AutoBuilder.pathfindToPose(targetPose, constraints, 0.0);
   }
@@ -24,6 +24,8 @@ public class PathfindCommands {
   }
 
   public static Command pathfindToHub(Drive drive) {
-    return pathfindTo(FieldLayout.Hub.NEAR_FACE.getTranslation(), Rotation2d.k180deg, drive);
+    double x = FieldLayout.Hub.NEAR_FACE.getX() + 0.7;
+    Translation2d targetTranslation = new Translation2d(x, FieldLayout.Hub.NEAR_FACE.getY());
+    return pathfindTo(targetTranslation, Rotation2d.k180deg, drive);
   }
 }
