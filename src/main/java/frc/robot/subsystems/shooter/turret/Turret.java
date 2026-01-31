@@ -1,48 +1,35 @@
 package frc.robot.subsystems.shooter.turret;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 public class Turret extends SubsystemBase {
   private final TurretIO io;
   private final TurretIOInputsAutoLogged inputs = new TurretIOInputsAutoLogged();
+  
+  private final PIDController pid = new PIDController(1.0, 0.0, 0.0);
+
+  private double targetPositionRad = 0.0;
 
   public Turret(TurretIO io) {
     this.io = io;
+    pid.enableContinuousInput(-Math.PI, Math.PI);
   }
 
   @Override
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Turret", inputs);
+
+    double outputVolts = pid.calculate(inputs.positionRad, targetPositionRad);
+
+    io.setVoltage(outputVolts);
+    
+    Logger.recordOutput("Turret/TargetPositionRad", targetPositionRad);
   }
 
-  public Command trackHubCommand(Supplier<Pose2d> robotPose) {
-    return run(
-        () -> {
-          Translation2d robotTrans = robotPose.get().getTranslation();
-          Rotation2d angleToHub = TurretConstants.HUB_LOCATION.minus(robotTrans).getAngle();
-          Rotation2d robotRelative = angleToHub.minus(robotPose.get().getRotation());
-          io.setPosition(robotRelative.getRadians());
-        });
-  }
-
-  public void setAngle(Rotation2d angle) {
-    io.setPosition(angle.getRadians());
-  }
-
-  public Command trackHub(Supplier<Pose2d> robotPose) {
-    return run(
-        () -> {
-          Translation2d robotTrans = robotPose.get().getTranslation();
-          Rotation2d angleToHub = TurretConstants.HUB_LOCATION.minus(robotTrans).getAngle();
-          Rotation2d robotRelative = angleToHub.minus(robotPose.get().getRotation());
-          io.setPosition(robotRelative.getRadians());
-        });
+  public void setTargetPosition(double rad) {
+    this.targetPositionRad = rad;
   }
 }

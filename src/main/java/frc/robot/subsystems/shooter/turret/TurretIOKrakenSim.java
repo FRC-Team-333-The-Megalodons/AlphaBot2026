@@ -23,7 +23,7 @@ public class TurretIOKrakenSim implements TurretIO {
   public void updateInputs(TurretIOInputs inputs) {
     sim.update(0.02);
     inputs.positionRad = sim.getAngleRads();
-    inputs.velocityRadPerSec = sim.getVelocityRadPerSec();
+    // inputs.velocityRadPerSec = sim.getVelocityRadPerSec();
     inputs.appliedVolts = appliedVolts;
   }
 

@@ -9,6 +9,8 @@ public final class TurretConstants {
   public static final double kP = 2.0;
   public static final double kI = 0.0;
   public static final double kD = 0.05;
+  public static final int CANCODER_ID = 1;
+  public static final double CANCODER_OFFSET = 0.0;
 
   public static final Translation2d HUB_LOCATION = MatchStateCalculator.getHub();
 }
