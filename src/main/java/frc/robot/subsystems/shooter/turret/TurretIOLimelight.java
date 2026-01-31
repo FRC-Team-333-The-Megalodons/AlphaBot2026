@@ -18,7 +18,7 @@ public class TurretIOLimelight implements TurretIO {
     if (botpose.length >= 6) {
       double yawDegrees = botpose[5];
       inputs.positionRad = Units.degreesToRadians(yawDegrees);
-      inputs.limelightImuYaw = inputs.positionRad; 
+      inputs.limelightImuYaw = inputs.positionRad;
     }
 
     inputs.limelightHasTarget = table.getEntry("tv").getDouble(0) == 1;
@@ -26,6 +26,5 @@ public class TurretIOLimelight implements TurretIO {
   }
 
   @Override
-  public void setVoltage(double volts) {
-  }
+  public void setVoltage(double volts) {}
 }

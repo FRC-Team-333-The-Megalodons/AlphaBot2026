@@ -188,7 +188,7 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
     controller
-        .R2()
+        .R3()
         .whileTrue(
             DriveCommands.faceHubAlternative(
                 drive,

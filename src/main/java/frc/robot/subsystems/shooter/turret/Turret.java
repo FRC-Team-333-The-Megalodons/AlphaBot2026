@@ -7,7 +7,7 @@ import org.littletonrobotics.junction.Logger;
 public class Turret extends SubsystemBase {
   private final TurretIO io;
   private final TurretIOInputsAutoLogged inputs = new TurretIOInputsAutoLogged();
-  
+
   private final PIDController pid = new PIDController(1.0, 0.0, 0.0);
 
   private double targetPositionRad = 0.0;
@@ -25,7 +25,7 @@ public class Turret extends SubsystemBase {
     double outputVolts = pid.calculate(inputs.positionRad, targetPositionRad);
 
     io.setVoltage(outputVolts);
-    
+
     Logger.recordOutput("Turret/TargetPositionRad", targetPositionRad);
   }
 
