@@ -21,6 +21,7 @@ public class VisionConstants {
   public static String camera0Name = "camera-0";
   // This initiziliazes the camera on the left-side
   public static String camera1Name = "camera_1";
+  public static String turretCameraName = "turret-cam";
 
   // Robot to camera transforms
   // (Not used by Limelight, configure in web UI instead)
