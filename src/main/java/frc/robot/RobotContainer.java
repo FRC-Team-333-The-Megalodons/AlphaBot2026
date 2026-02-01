@@ -198,6 +198,8 @@ public class RobotContainer {
 
     controller.triangle().whileTrue(PathfindCommands.pathfindToDepot(drive));
     controller.square().whileTrue(PathfindCommands.pathfindToHub(drive));
+    controller.L2().whileTrue(PathfindCommands.pathfindtoScoringPosition(drive));
+
     // Turret Auto-Aim
   }
 

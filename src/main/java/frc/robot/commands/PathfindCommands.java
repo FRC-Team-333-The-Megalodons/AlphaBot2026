@@ -21,7 +21,10 @@ public class PathfindCommands {
   }
 
   public static Command pathfindToDepot(Drive drive) {
-    return pathfindTo(FieldLayout.Depot.DEPOT_CENTER, Rotation2d.k180deg, drive);
+    return pathfindTo(
+        FieldLayout.Depot.DEPOT_SCORING_POSITION.getTranslation(),
+        FieldLayout.Depot.DEPOT_SCORING_POSITION.getRotation(),
+        drive);
   }
 
   public static Command pathfindToHub(Drive drive) {
@@ -33,6 +36,13 @@ public class PathfindCommands {
     return pathfindTo(
         targetTranslation,
         MatchStateCalculator.isBlueAlliance() ? Rotation2d.kZero : Rotation2d.k180deg,
+        drive);
+  }
+
+  public static Command pathfindtoScoringPosition(Drive drive) {
+    return pathfindTo(
+        FieldLayout.ScoringPosition.SCORING_POSITION_A.getTranslation(),
+        FieldLayout.ScoringPosition.SCORING_POSITION_A.getRotation(),
         drive);
   }
 }

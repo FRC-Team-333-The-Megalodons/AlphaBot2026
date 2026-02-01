@@ -3,6 +3,7 @@ package frc.robot.util;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 
@@ -11,9 +12,9 @@ public class FieldLayout {
       AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
   static double FIELD_WIDTH = tagLayout.getFieldWidth();
   static double FIELD_LENGTH = tagLayout.getFieldLength();
+  public static boolean isBlue = MatchStateCalculator.isBlueAlliance();
 
   public static class Hub {
-    public static boolean isBlue = MatchStateCalculator.isBlueAlliance();
     public static final Pose2d NEAR_FACE =
         isBlue
             ? tagLayout.getTagPose(26).get().toPose2d()
@@ -41,7 +42,17 @@ public class FieldLayout {
     // Reference Points
     public static final Translation2d DEPOT_CENTER =
         new Translation2d(DEPTH, (FIELD_WIDTH / 2) + DISTANCE_FROM_CENTER_Y);
+    public static final Translation2d RED_DEPOT = new Translation2d(15.5, 1.9);
+    public static final Translation2d BLUE_DEPOT = new Translation2d(15.5, 1.9);
+
+    public static final Pose2d DEPOT_SCORING_POSITION =
+        new Pose2d(isBlue ? BLUE_DEPOT : RED_DEPOT, isBlue ? Rotation2d.k180deg : Rotation2d.kZero);
   }
 
   public static class Outpost {}
+
+  public static class ScoringPosition {
+    public static final Pose2d SCORING_POSITION_A =
+        new Pose2d(new Translation2d(16.1, 3.6), Rotation2d.fromDegrees(165));
+  }
 }
