@@ -1,8 +1,6 @@
 package frc.robot.interfaces;
 
-/**
- * Any subsystem or IO interface which can be loaded, should implement or extend this interface.
- */
+/** Any subsystem or IO interface which can be loaded, should implement or extend this interface. */
 public interface Loadable {
 
   /**

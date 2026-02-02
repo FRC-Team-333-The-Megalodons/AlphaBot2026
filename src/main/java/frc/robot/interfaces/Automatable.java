@@ -1,8 +1,8 @@
 package frc.robot.interfaces;
 
 /**
- * Any subsystem or IO interface which requires Feedback Control,
- *  should implement or extend this interface & it's methods.
+ * Any subsystem or IO interface which requires Feedback Control, should implement or extend this
+ * interface & it's methods.
  */
 public interface Automatable {
 

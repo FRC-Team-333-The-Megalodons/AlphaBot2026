@@ -29,6 +29,9 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.turret.Turret;
+import frc.robot.subsystems.turret.TurretIO;
+import frc.robot.subsystems.turret.TurretIOKraken;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
@@ -45,6 +48,8 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final Vision vision;
+  private final Turret turret;
+
   // private final Turret turret;
 
   // Controller
@@ -55,6 +60,7 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+
     switch (Constants.currentMode) {
       case REAL:
         // Real robot, instantiate hardware IO implementations
@@ -119,6 +125,11 @@ public class RobotContainer {
                 new ModuleIO() {});
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
         break;
+    }
+    if (Constants.currentMode == Constants.Mode.REAL) {
+      turret = new Turret(new TurretIOKraken(), drive::getPose);
+    } else {
+      turret = new Turret(new TurretIO() {}, drive::getPose); // Sim placeholder
     }
 
     // Set up auto routines
@@ -190,6 +201,9 @@ public class RobotContainer {
                 () -> controller.getLeftY(),
                 () -> controller.getLeftX(),
                 () -> -controller.getRightX()));
+    controller.triangle().whileTrue(turret.aimAtHub());
+    controller.square().whileTrue(turret.setVoltage(1));
+
 
     // Turret Auto-Aim
     /*controller.circle().whileTrue(

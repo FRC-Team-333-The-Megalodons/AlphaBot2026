@@ -1,86 +1,143 @@
 package frc.robot.subsystems.turret;
 
-import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Voltage;
+import frc.robot.generated.TunerConstants;
 
 public class TurretIOKraken implements TurretIO {
-  CANBus rioBus = CANBus.roboRIO();
-  private final TalonFX turret = new TalonFX(0, rioBus);
-  private final TalonFX hood = new TalonFX(0, rioBus);
-  private final TalonFX shooter = new TalonFX(0, rioBus);
+  private final TalonFX turretMotor;
+  private final CANcoder encoder17; 
+  private final CANcoder encoder18;
 
-  private final MotionMagicVoltage turretRequest = new MotionMagicVoltage(0);
-  private final MotionMagicVoltage hoodRequest = new MotionMagicVoltage(0);
-  private final VelocityVoltage shooterRequest = new VelocityVoltage(0);
+  // Inputs
+  private final StatusSignal<Angle> turretPosition;
+  private final StatusSignal<AngularVelocity> turretVelocity;
+  private final StatusSignal<Voltage> turretVolts;
+  private final StatusSignal<Current> turretCurrent;
+  private final StatusSignal<Angle> enc17AbsPos;
+  private final StatusSignal<Angle> enc18AbsPos;
+  private final MotionMagicVoltage positionRequest = new MotionMagicVoltage(0);
+  private final VoltageOut voltageRequest = new VoltageOut(0);
 
   public TurretIOKraken() {
-    // turret config
-    TalonFXConfiguration turretConfig = new TalonFXConfiguration();
-    /*for now I will just assume the 120:1 gear ratio but later needs to be changed
-    This is also assuming that we will have the absolute encoder on the output shaft
-    TODO: Make sure to change these based on the actual gear ratio*/
-    turretConfig.Feedback.SensorToMechanismRatio = 120;
-    turretConfig.MotionMagic.MotionMagicCruiseVelocity = 2; // rps
-    turretConfig.MotionMagic.MotionMagicAcceleration = 4; // rps^2
-    turret.getConfigurator().apply(turretConfig);
 
-    // hood config
-    TalonFXConfiguration hoodConfig = new TalonFXConfiguration();
-    hoodConfig.Feedback.SensorToMechanismRatio = 80.0;
-    hoodConfig.MotionMagic.MotionMagicCruiseVelocity = 1.5;
-    hoodConfig.MotionMagic.MotionMagicAcceleration = 3.0;
-    hood.getConfigurator().apply(hoodConfig);
+    turretMotor = new TalonFX(TurretConstants.kTurretMotorId, TunerConstants.kCANBus);
+    encoder17 = new CANcoder(TurretConstants.kEncoder17Id, TunerConstants.kCANBus);
+    encoder18 = new CANcoder(TurretConstants.kEncoder18Id, TunerConstants.kCANBus);
 
-    // shooter config
-    TalonFXConfiguration shooterConfig = new TalonFXConfiguration();
-    shooterConfig.Feedback.SensorToMechanismRatio = 1.0;
-    shooter.getConfigurator().apply(shooterConfig);
+    CANcoderConfiguration encConfig = new CANcoderConfiguration();
+    encConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
+    encoder17.getConfigurator().apply(encConfig);
+    encoder18.getConfigurator().apply(encConfig);
+
+    TalonFXConfiguration motorConfig = new TalonFXConfiguration();
+    motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    motorConfig.Feedback.SensorToMechanismRatio = TurretConstants.kMotorToTurretRatio;
+
+    motorConfig.Slot0.kP = TurretConstants.kP;
+    motorConfig.Slot0.kI = TurretConstants.kI;
+    motorConfig.Slot0.kD = TurretConstants.kD;
+    motorConfig.Slot0.kS = TurretConstants.kS;
+    motorConfig.Slot0.kV = TurretConstants.kV;
+    motorConfig.Slot0.kA = TurretConstants.kA;
+
+    motorConfig.MotionMagic.MotionMagicCruiseVelocity = TurretConstants.kCruiseVelocity;
+    motorConfig.MotionMagic.MotionMagicAcceleration = TurretConstants.kAcceleration;
+    motorConfig.MotionMagic.MotionMagicJerk = TurretConstants.kJerk;
+
+    motorConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
+        Units.degreesToRotations(TurretConstants.kMaxAngle);
+    motorConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
+    motorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold =
+        Units.degreesToRotations(TurretConstants.kMinAngle);
+    motorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
+
+    turretMotor.getConfigurator().apply(motorConfig);
+
+    turretPosition = turretMotor.getPosition();
+    turretVelocity = turretMotor.getVelocity();
+    turretVolts = turretMotor.getMotorVoltage();
+    turretCurrent = turretMotor.getStatorCurrent();
+    enc17AbsPos = encoder17.getAbsolutePosition();
+    enc18AbsPos = encoder18.getAbsolutePosition();
+
+    BaseStatusSignal.setUpdateFrequencyForAll(
+        50.0, turretPosition, turretVelocity, turretVolts, turretCurrent, enc17AbsPos, enc18AbsPos);
+
+    //Seed Absolute Position once the Robot Boots
+    seedTurretPosition();
   }
 
   @Override
   public void updateInputs(TurretIOInputs inputs) {
-    // Turret Inputs
-    inputs.turretPositionRad = Units.rotationsToRadians(turret.getPosition().getValueAsDouble());
-    inputs.turretVelocityRadPerSec =
-        Units.rotationsToRadians(turret.getVelocity().getValueAsDouble());
-    inputs.turretAppliedVolts = turret.getMotorVoltage().getValueAsDouble();
-    inputs.turretCurrentAmps = new double[] {turret.getStatorCurrent().getValueAsDouble()};
+    BaseStatusSignal.refreshAll(
+        turretPosition, turretVelocity, turretVolts, turretCurrent, enc17AbsPos, enc18AbsPos);
 
-    // Hood Inputs
-    inputs.hoodPositionRad = Units.rotationsToRadians(hood.getPosition().getValueAsDouble());
-    inputs.hoodAppliedVolts = hood.getMotorVoltage().getValueAsDouble();
+    inputs.connected = BaseStatusSignal.isAllGood(turretPosition, enc17AbsPos);
+    inputs.turretPositionRad = Units.rotationsToRadians(turretPosition.getValueAsDouble());
+    inputs.turretVelocityRadPerSec = Units.rotationsToRadians(turretVelocity.getValueAsDouble());
+    inputs.turretAppliedVolts = turretVolts.getValueAsDouble();
+    inputs.turretCurrentAmps = turretCurrent.getValueAsDouble();
 
-    // Shooter Inputs
-    // getVelocity() returns Rotations per Second -> multiply by 60 for RPM
-    inputs.shooterVelocityRpm = shooter.getVelocity().getValueAsDouble() * 60.0;
-    inputs.shooterAppliedVolts = shooter.getMotorVoltage().getValueAsDouble();
+    inputs.encoder17Rotations = enc17AbsPos.getValueAsDouble();
+    inputs.encoder18Rotations = enc18AbsPos.getValueAsDouble();
+    inputs.calculatedAbsPositionRot =
+        calculateAbsolutePosition(inputs.encoder17Rotations, inputs.encoder18Rotations);
   }
 
   @Override
   public void setTurretPosition(Rotation2d position) {
-    turret.setControl(turretRequest.withPosition(position.getRotations()));
+    turretMotor.setControl(positionRequest.withPosition(position.getRotations()));
   }
 
   @Override
-  public void setHoodPosition(Rotation2d position) {
-    hood.setControl(hoodRequest.withPosition(position.getRotations()));
-  }
-
-  @Override
-  public void setShooterVelocity(double rpm) {
-    // withVelocity expects Rotations per Second
-    shooter.setControl(shooterRequest.withVelocity(rpm / 60.0));
+  public void setTurretVoltage(double volts) {
+    turretMotor.setControl(voltageRequest.withOutput(volts));
   }
 
   @Override
   public void stop() {
-    turret.stopMotor();
-    hood.stopMotor();
-    shooter.stopMotor();
+    turretMotor.setControl(voltageRequest.withOutput(0));
+  }
+
+  /**
+   * Calculates the absolute turret position using the CRT
+   */
+  private double calculateAbsolutePosition(double p17, double p18) {
+    double n1 = 17.0;
+    double n2 = 18.0;
+    double N = 105.0;
+
+    double delta = (n2 * p18) - (n1 * p17);
+    long k_diff = Math.round(delta);//->need to be an integer
+
+    double turretRot = (-k_diff + p17) * (n1 / N);
+
+    // Wraps to -/+ half period (around 1.45 rotations)
+    double period = (n1 * n2) / N; // ->2.914 == 1041 deegrees
+    while (turretRot > period / 2.0) turretRot -= period;
+    while (turretRot < -period / 2.0) turretRot += period;
+
+    return turretRot - TurretConstants.kTurretZeroOffset;
+  }
+
+  private void seedTurretPosition() {
+    BaseStatusSignal.refreshAll(enc17AbsPos, enc18AbsPos);
+    double absPos =
+        calculateAbsolutePosition(enc17AbsPos.getValueAsDouble(), enc18AbsPos.getValueAsDouble());
+    turretMotor.setPosition(absPos);
   }
 }

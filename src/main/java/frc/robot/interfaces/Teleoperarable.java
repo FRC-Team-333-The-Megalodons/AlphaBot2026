@@ -1,8 +1,8 @@
 package frc.robot.interfaces;
 
 /**
- * Any subsystem or IO interface which requires Manual Control for testing,
- *  should implement or extend this interface & it's methods.
+ * Any subsystem or IO interface which requires Manual Control for testing, should implement or
+ * extend this interface & it's methods.
  */
 public interface Teleoperarable {
 
