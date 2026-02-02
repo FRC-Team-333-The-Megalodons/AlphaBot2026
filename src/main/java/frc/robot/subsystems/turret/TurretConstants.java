@@ -1,8 +1,8 @@
 package frc.robot.subsystems.turret;
 
-public class ShooterConstants {
+public class TurretConstants {
 
-  public class TurretConstants {
+
     public static final int kID = 0;
     public static final double kP = 0;
     public static final double kI = 0;
@@ -13,13 +13,4 @@ public class ShooterConstants {
     // Max Turret Speeds
     public static final double kMaxVelocity = 0; // Degrees per second
     public static final double kMaxAcceleration = 0; // Degrees per second^2
-  }
-
-  public class FlyWheelConstants {
-    public static final int kID = 0;
-  }
-
-  public class HoodConstants {
-    public static final int kID = 0;
-  }
 }
