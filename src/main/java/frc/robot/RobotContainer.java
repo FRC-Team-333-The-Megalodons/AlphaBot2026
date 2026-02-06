@@ -30,9 +30,25 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIO;
+import frc.robot.subsystems.intake.IntakeIOKraken;
+import frc.robot.subsystems.intake.IntakeIOKrakenSim;
+import frc.robot.subsystems.shooter.flywheel.Flywheel;
+import frc.robot.subsystems.shooter.flywheel.FlywheelIO;
+import frc.robot.subsystems.shooter.flywheel.FlywheelIOKraken;
+import frc.robot.subsystems.shooter.flywheel.FlywheelIOKrakenSim;
 import frc.robot.subsystems.shooter.turret.Turret;
 import frc.robot.subsystems.shooter.turret.TurretIO;
 import frc.robot.subsystems.shooter.turret.TurretIOKraken;
+import frc.robot.subsystems.spindexer.Spindexer;
+import frc.robot.subsystems.spindexer.SpindexerIO;
+import frc.robot.subsystems.spindexer.SpindexerIOKraken;
+import frc.robot.subsystems.spindexer.SpindexerIOKrakenSim;
+import frc.robot.subsystems.transfer.Transfer;
+import frc.robot.subsystems.transfer.TransferIO;
+import frc.robot.subsystems.transfer.TransferIOKraken;
+import frc.robot.subsystems.transfer.TransferIOKrakenSim;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
@@ -48,6 +64,10 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
+  private final Intake intake;
+  private final Spindexer spindexer;
+  private final Transfer transfer;
+  private final Flywheel flywheel;
   private final Vision vision;
   private final Turret turret;
 
@@ -75,6 +95,12 @@ public class RobotContainer {
             new Vision(
                 drive::addVisionMeasurement, new VisionIOPhotonVision(camera0Name, robotToCamera0));
         turret = new Turret(new TurretIOKraken());
+        intake = new Intake(new IntakeIOKraken());
+        spindexer = new Spindexer(new SpindexerIOKraken());
+        transfer = new Transfer(new TransferIOKraken());
+        flywheel = new Flywheel(new FlywheelIOKraken());
+
+        // Note:
 
         // The ModuleIOTalonFXS implementation provides an example implementation for
         // TalonFXS controller connected to a CANdi with a PWM encoder. The
@@ -109,6 +135,10 @@ public class RobotContainer {
                 drive::addVisionMeasurement,
                 new VisionIOPhotonVisionSim(camera1Name, robotToCamera0, drive::getPose));
         turret = new Turret(new TurretIO() {});
+        intake = new Intake(new IntakeIOKrakenSim());
+        spindexer = new Spindexer(new SpindexerIOKrakenSim());
+        transfer = new Transfer(new TransferIOKrakenSim());
+        flywheel = new Flywheel(new FlywheelIOKrakenSim());
         break;
 
       default:
@@ -122,6 +152,10 @@ public class RobotContainer {
                 new ModuleIO() {});
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {});
         turret = new Turret(new TurretIO() {});
+        intake = new Intake(new IntakeIO() {});
+        spindexer = new Spindexer(new SpindexerIO() {});
+        transfer = new Transfer(new TransferIO() {});
+        flywheel = new Flywheel(new FlywheelIO() {});
         break;
     }
 
@@ -164,7 +198,6 @@ public class RobotContainer {
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
 
-
     // Lock to 0° when A button is held
     controller
         .circle()
@@ -200,8 +233,20 @@ public class RobotContainer {
     controller.triangle().whileTrue(PathfindCommands.pathfindToDepot(drive));
     controller.square().whileTrue(PathfindCommands.pathfindToHub(drive));
     controller.L2().whileTrue(PathfindCommands.pathfindtoScoringPosition(drive));
+    controller.L1().whileTrue(intake.runIntakeCommand());
 
-    // Turret Auto-Aim
+    controller
+        .R1()
+        .whileTrue(
+            flywheel
+                .spinUpCommand(5000.0)
+                .alongWith(
+                    Commands.waitUntil(flywheel::isAtSpeed)
+                        .andThen(
+                            Commands.parallel(
+                                intake.runIntakeCommand(),
+                                spindexer.activeSpindexerCommand(),
+                                transfer.feedShooterCommand()))));
   }
 
   /**

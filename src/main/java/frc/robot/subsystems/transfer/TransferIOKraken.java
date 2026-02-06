@@ -6,7 +6,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 
 public class TransferIOKraken implements TransferIO {
   CANBus rio = CANBus.roboRIO();
-  private final TalonFX motor = new TalonFX(TransferConstants.MOTOR_ID,rio);
+  private final TalonFX motor = new TalonFX(TransferConstants.MOTOR_ID, rio);
 
   @Override
   public void updateInputs(TransferIOInputs inputs) {

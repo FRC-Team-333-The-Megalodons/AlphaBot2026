@@ -5,9 +5,10 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+
 public class SpindexerIOKraken implements SpindexerIO {
   CANBus rio = CANBus.roboRIO();
-  private final TalonFX motor = new TalonFX(SpindexerConstants.MOTOR_ID,rio);
+  private final TalonFX motor = new TalonFX(SpindexerConstants.MOTOR_ID, rio);
 
   public SpindexerIOKraken() {
     var config = new TalonFXConfiguration();

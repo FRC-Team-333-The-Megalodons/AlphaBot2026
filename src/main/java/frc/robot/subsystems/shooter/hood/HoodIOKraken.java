@@ -8,7 +8,7 @@ import edu.wpi.first.math.util.Units;
 
 public class HoodIOKraken implements HoodIO {
   CANBus rio = CANBus.roboRIO();
-  private final TalonFX motor = new TalonFX(HoodConstants.MOTOR_ID,rio);
+  private final TalonFX motor = new TalonFX(HoodConstants.MOTOR_ID, rio);
 
   public HoodIOKraken() {
     var config = new TalonFXConfiguration();

@@ -8,7 +8,7 @@ import edu.wpi.first.math.util.Units;
 
 public class PivotIOKraken implements PivotIO {
   CANBus rio = CANBus.roboRIO();
-  private final TalonFX motor = new TalonFX(PivotConstants.MOTOR_ID,rio);
+  private final TalonFX motor = new TalonFX(PivotConstants.MOTOR_ID, rio);
 
   public PivotIOKraken() {
     var config = new TalonFXConfiguration();

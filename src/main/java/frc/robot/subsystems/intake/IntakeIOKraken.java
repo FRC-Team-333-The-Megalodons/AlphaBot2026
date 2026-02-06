@@ -6,7 +6,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 
 public class IntakeIOKraken implements IntakeIO {
   CANBus rio = CANBus.roboRIO();
-  private final TalonFX motor = new TalonFX(IntakeConstants.MOTOR_ID,rio);
+  private final TalonFX motor = new TalonFX(IntakeConstants.MOTOR_ID, rio);
 
   @Override
   public void updateInputs(IntakeIOInputs inputs) {

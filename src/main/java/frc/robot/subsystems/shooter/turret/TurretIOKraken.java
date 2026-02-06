@@ -10,8 +10,8 @@ import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import edu.wpi.first.math.util.Units;
 
 public class TurretIOKraken implements TurretIO {
- CANBus rio = CANBus.roboRIO();
-  private final TalonFX motor = new TalonFX(TurretConstants.MOTOR_ID,rio);
+  CANBus rio = CANBus.roboRIO();
+  private final TalonFX motor = new TalonFX(TurretConstants.MOTOR_ID, rio);
   private final CANcoder cancoder = new CANcoder(TurretConstants.CANCODER_ID);
 
   public TurretIOKraken() {
