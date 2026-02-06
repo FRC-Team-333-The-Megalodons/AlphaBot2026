@@ -1,12 +1,14 @@
 package frc.robot.subsystems.shooter.hood;
 
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.util.Units;
 
 public class HoodIOKraken implements HoodIO {
-  private final TalonFX motor = new TalonFX(HoodConstants.MOTOR_ID);
+  CANBus rio = CANBus.roboRIO();
+  private final TalonFX motor = new TalonFX(HoodConstants.MOTOR_ID,rio);
 
   public HoodIOKraken() {
     var config = new TalonFXConfiguration();

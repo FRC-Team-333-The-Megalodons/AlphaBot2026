@@ -1,5 +1,6 @@
 package frc.robot.subsystems.shooter.turret;
 
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
@@ -9,7 +10,8 @@ import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import edu.wpi.first.math.util.Units;
 
 public class TurretIOKraken implements TurretIO {
-  private final TalonFX motor = new TalonFX(TurretConstants.MOTOR_ID);
+ CANBus rio = CANBus.roboRIO();
+  private final TalonFX motor = new TalonFX(TurretConstants.MOTOR_ID,rio);
   private final CANcoder cancoder = new CANcoder(TurretConstants.CANCODER_ID);
 
   public TurretIOKraken() {

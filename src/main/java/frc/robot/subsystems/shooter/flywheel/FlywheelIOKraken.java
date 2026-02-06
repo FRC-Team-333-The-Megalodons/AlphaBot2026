@@ -1,12 +1,14 @@
 package frc.robot.subsystems.shooter.flywheel;
 
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.util.Units;
 
 public class FlywheelIOKraken implements FlywheelIO {
-  private final TalonFX motor = new TalonFX(FlywheelConstants.MOTOR_ID);
+  CANBus rio = CANBus.roboRIO();
+  private final TalonFX motor = new TalonFX(FlywheelConstants.MOTOR_ID, rio);
 
   public FlywheelIOKraken() {
     var config = new TalonFXConfiguration();

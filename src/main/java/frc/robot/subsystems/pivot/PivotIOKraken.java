@@ -1,12 +1,14 @@
 package frc.robot.subsystems.pivot;
 
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.util.Units;
 
 public class PivotIOKraken implements PivotIO {
-  private final TalonFX motor = new TalonFX(PivotConstants.MOTOR_ID);
+  CANBus rio = CANBus.roboRIO();
+  private final TalonFX motor = new TalonFX(PivotConstants.MOTOR_ID,rio);
 
   public PivotIOKraken() {
     var config = new TalonFXConfiguration();
