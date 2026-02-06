@@ -26,10 +26,10 @@ public class Turret extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Turret", inputs);
   }
-  public Command setVoltage(double volts) {
-    return Commands.runEnd(() -> io.setTurretVoltage(volts),() -> io.stop(), this);
-  }
 
+  public Command setVoltage(double volts) {
+    return Commands.runEnd(() -> io.setTurretVoltage(volts), () -> io.stop(), this);
+  }
 
   public Command aimAtHub() {
     return Commands.run(

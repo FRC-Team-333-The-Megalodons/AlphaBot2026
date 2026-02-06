@@ -19,7 +19,7 @@ import frc.robot.generated.TunerConstants;
 
 public class TurretIOKraken implements TurretIO {
   private final TalonFX turretMotor;
-  private final CANcoder encoder17; 
+  private final CANcoder encoder17;
   private final CANcoder encoder18;
 
   // Inputs
@@ -77,7 +77,7 @@ public class TurretIOKraken implements TurretIO {
     BaseStatusSignal.setUpdateFrequencyForAll(
         50.0, turretPosition, turretVelocity, turretVolts, turretCurrent, enc17AbsPos, enc18AbsPos);
 
-    //Seed Absolute Position once the Robot Boots
+    // Seed Absolute Position once the Robot Boots
     seedTurretPosition();
   }
 
@@ -113,16 +113,14 @@ public class TurretIOKraken implements TurretIO {
     turretMotor.setControl(voltageRequest.withOutput(0));
   }
 
-  /**
-   * Calculates the absolute turret position using the CRT
-   */
+  /** Calculates the absolute turret position using the CRT */
   private double calculateAbsolutePosition(double p17, double p18) {
     double n1 = 17.0;
     double n2 = 18.0;
     double N = 105.0;
 
     double delta = (n2 * p18) - (n1 * p17);
-    long k_diff = Math.round(delta);//->need to be an integer
+    long k_diff = Math.round(delta); // ->need to be an integer
 
     double turretRot = (-k_diff + p17) * (n1 / N);
 

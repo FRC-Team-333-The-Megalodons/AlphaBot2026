@@ -6,88 +6,91 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
-import frc.robot.Constants;
 
 public class TurretIOSim implements TurretIO {
-    private final SingleJointedArmSim sim = new SingleJointedArmSim(
-        DCMotor.getKrakenX44(1), 
-        TurretConstants.kMotorToTurretRatio, 
-        0.5, 
-        0.3, 
-        Units.degreesToRadians(TurretConstants.kMinAngle), 
-        Units.degreesToRadians(TurretConstants.kMaxAngle), 
-        false, 
-        Units.degreesToRadians(0)
-    );
-    private final PIDController simController = new PIDController(TurretConstants.kP, TurretConstants.kI, TurretConstants.kD);
-    
-    private double appliedVolts = 0.0;
-    private boolean closedLoopMode = false;
-    private double targetPositionRad = 0.0;
+  private final SingleJointedArmSim sim =
+      new SingleJointedArmSim(
+          DCMotor.getKrakenX44(1),
+          TurretConstants.kMotorToTurretRatio,
+          0.5,
+          0.3,
+          Units.degreesToRadians(TurretConstants.kMinAngle),
+          Units.degreesToRadians(TurretConstants.kMaxAngle),
+          false,
+          Units.degreesToRadians(0));
+  private final PIDController simController =
+      new PIDController(TurretConstants.kP, TurretConstants.kI, TurretConstants.kD);
 
-    public TurretIOSim() {
+  private double appliedVolts = 0.0;
+  private boolean closedLoopMode = false;
+  private double targetPositionRad = 0.0;
+
+  public TurretIOSim() {}
+
+  @Override
+  public void updateInputs(TurretIOInputs inputs) {
+    if (closedLoopMode) {
+      appliedVolts = simController.calculate(sim.getAngleRads(), targetPositionRad);
+      appliedVolts +=
+          Math.signum(targetPositionRad - sim.getAngleRads()) * TurretConstants.kS; // Simple FF
+      appliedVolts = MathUtil.clamp(appliedVolts, -12.0, 12.0);
     }
 
-    @Override
-    public void updateInputs(TurretIOInputs inputs) {
-        if (closedLoopMode) {
-            appliedVolts = simController.calculate(sim.getAngleRads(), targetPositionRad);
-            appliedVolts += Math.signum(targetPositionRad - sim.getAngleRads()) * TurretConstants.kS; // Simple FF
-            appliedVolts = MathUtil.clamp(appliedVolts, -12.0, 12.0);
-        }
+    sim.setInput(appliedVolts);
+    sim.update(0.02);
 
-        sim.setInput(appliedVolts);
-        sim.update(0.02); 
+    inputs.connected = true;
+    inputs.turretPositionRad = sim.getAngleRads();
+    inputs.turretVelocityRadPerSec = sim.getVelocityRadPerSec();
+    inputs.turretAppliedVolts = appliedVolts;
+    inputs.turretCurrentAmps = sim.getCurrentDrawAmps();
 
-        inputs.connected = true;
-        inputs.turretPositionRad = sim.getAngleRads();
-        inputs.turretVelocityRadPerSec = sim.getVelocityRadPerSec();
-        inputs.turretAppliedVolts = appliedVolts;
-        inputs.turretCurrentAmps = sim.getCurrentDrawAmps();
+    double turretRotations = Units.radiansToRotations(inputs.turretPositionRad);
 
-        double turretRotations = Units.radiansToRotations(inputs.turretPositionRad);
-        
-        double enc17Raw = turretRotations * (TurretConstants.kTurretGearTeeth / TurretConstants.kEncoder1Teeth);
-        inputs.encoder17Rotations = MathUtil.inputModulus(enc17Raw, 0.0, 1.0); // Wrap to 0-1
+    double enc17Raw =
+        turretRotations * (TurretConstants.kTurretGearTeeth / TurretConstants.kEncoder1Teeth);
+    inputs.encoder17Rotations = MathUtil.inputModulus(enc17Raw, 0.0, 1.0); // Wrap to 0-1
 
-        double enc18Raw = turretRotations * (TurretConstants.kTurretGearTeeth / TurretConstants.kEncoder2Teeth);
-        inputs.encoder18Rotations = MathUtil.inputModulus(enc18Raw, 0.0, 1.0); // Wrap to 0-1
+    double enc18Raw =
+        turretRotations * (TurretConstants.kTurretGearTeeth / TurretConstants.kEncoder2Teeth);
+    inputs.encoder18Rotations = MathUtil.inputModulus(enc18Raw, 0.0, 1.0); // Wrap to 0-1
 
-       
-        inputs.calculatedAbsPositionRot = calculateAbsolutePosition(inputs.encoder17Rotations, inputs.encoder18Rotations);
-    }
+    inputs.calculatedAbsPositionRot =
+        calculateAbsolutePosition(inputs.encoder17Rotations, inputs.encoder18Rotations);
+  }
 
-    @Override
-    public void setTurretPosition(Rotation2d position) {
-        closedLoopMode = true;
-        targetPositionRad = position.getRadians();
-    }
+  @Override
+  public void setTurretPosition(Rotation2d position) {
+    closedLoopMode = true;
+    targetPositionRad = position.getRadians();
+  }
 
-    @Override
-    public void setTurretVoltage(double volts) {
-        closedLoopMode = false;
-        appliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
-    }
+  @Override
+  public void setTurretVoltage(double volts) {
+    closedLoopMode = false;
+    appliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
+  }
 
-    @Override
-    public void stop() {
-        closedLoopMode = false;
-        appliedVolts = 0.0;
-    }
-    private double calculateAbsolutePosition(double p17, double p18) {
-        double n1 = 17.0;
-        double n2 = 18.0;
-        double N = 105.0;
-    
-        double delta = (n2 * p18) - (n1 * p17);
-        long k_diff = Math.round(delta); 
-    
-        double turretRot = (-k_diff + p17) * (n1 / N);
-        
-        double period = (n1 * n2) / N; // ~2.914
-        while (turretRot > period / 2.0) turretRot -= period;
-        while (turretRot < -period / 2.0) turretRot += period;
-    
-        return turretRot;
-    }
+  @Override
+  public void stop() {
+    closedLoopMode = false;
+    appliedVolts = 0.0;
+  }
+
+  private double calculateAbsolutePosition(double p17, double p18) {
+    double n1 = 17.0;
+    double n2 = 18.0;
+    double N = 105.0;
+
+    double delta = (n2 * p18) - (n1 * p17);
+    long k_diff = Math.round(delta);
+
+    double turretRot = (-k_diff + p17) * (n1 / N);
+
+    double period = (n1 * n2) / N; // ~2.914
+    while (turretRot > period / 2.0) turretRot -= period;
+    while (turretRot < -period / 2.0) turretRot += period;
+
+    return turretRot;
+  }
 }

@@ -15,7 +15,6 @@ public interface TurretIO {
     public double encoder17Rotations = 0.0;
     public double encoder18Rotations = 0.0;
     public double calculatedAbsPositionRot = 0.0;
-
   }
 
   public default void updateInputs(TurretIOInputs inputs) {}

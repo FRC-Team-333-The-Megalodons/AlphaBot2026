@@ -32,6 +32,7 @@ import frc.robot.subsystems.drive.ModuleIOTalonFX;
 import frc.robot.subsystems.turret.Turret;
 import frc.robot.subsystems.turret.TurretIO;
 import frc.robot.subsystems.turret.TurretIOKraken;
+import frc.robot.subsystems.turret.TurretIOSim;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
@@ -78,6 +79,8 @@ public class RobotContainer {
                 drive::addVisionMeasurement,
                 new VisionIOPhotonVision(camera0Name, robotToCamera0),
                 new VisionIOPhotonVision(camera1Name, robotToCamera1));
+        turret =
+          new Turret(new TurretIOKraken(), drive::getPose);
 
         // The ModuleIOTalonFXS implementation provides an example implementation for
         // TalonFXS controller connected to a CANdi with a PWM encoder. The
@@ -112,6 +115,8 @@ public class RobotContainer {
                 drive::addVisionMeasurement,
                 new VisionIOPhotonVisionSim(camera1Name, robotToCamera0, drive::getPose),
                 new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose));
+        turret =
+          new Turret(new TurretIOSim(), drive::getPose);
         break;
 
       default:
@@ -124,12 +129,8 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {});
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
+        turret = new Turret(new TurretIO() {}, drive::getPose);
         break;
-    }
-    if (Constants.currentMode == Constants.Mode.REAL) {
-      turret = new Turret(new TurretIOKraken(), drive::getPose);
-    } else {
-      turret = new Turret(new TurretIO() {}, drive::getPose); // Sim placeholder
     }
 
     // Set up auto routines
@@ -203,7 +204,6 @@ public class RobotContainer {
                 () -> -controller.getRightX()));
     controller.triangle().whileTrue(turret.aimAtHub());
     controller.square().whileTrue(turret.setVoltage(1));
-
 
     // Turret Auto-Aim
     /*controller.circle().whileTrue(
