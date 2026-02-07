@@ -43,6 +43,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
 import frc.robot.util.LocalADStarAK;
+import frc.robot.util.MatchStateCalculator;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -221,6 +222,9 @@ public class Drive extends SubsystemBase {
 
     // Update gyro alert
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
+    double distance = getDistanceToHub();
+    edu.wpi.first.wpilibj.smartdashboard.SmartDashboard.putNumber("Distance to Hub (m)", distance);
+    Logger.recordOutput("Drive/DistanceToHub", distance);
   }
 
   /**
@@ -370,5 +374,10 @@ public class Drive extends SubsystemBase {
       new Translation2d(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
       new Translation2d(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)
     };
+  }
+
+  public double getDistanceToHub() {
+
+    return getPose().getTranslation().getDistance(MatchStateCalculator.getHub());
   }
 }

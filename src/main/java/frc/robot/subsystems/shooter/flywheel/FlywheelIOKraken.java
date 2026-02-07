@@ -8,6 +8,7 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.ctre.phoenix6.controls.MotionMagicVelocityDutyCycle;
 import edu.wpi.first.math.util.Units;
 
 public class FlywheelIOKraken implements FlywheelIO {

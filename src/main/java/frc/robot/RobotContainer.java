@@ -25,6 +25,7 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.commands.PathfindCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
+
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
@@ -35,6 +36,7 @@ import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOKraken;
 import frc.robot.subsystems.intake.IntakeIOKrakenSim;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
+import frc.robot.subsystems.shooter.flywheel.FlywheelConstants;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIO;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIOKraken;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIOKrakenSim;
@@ -238,15 +240,21 @@ public class RobotContainer {
     controller
         .L2()
         .whileTrue(
-            flywheel
-                .spinUpCommand(-2000.0)
-                .alongWith(
-                    Commands.waitUntil(flywheel::isAtSpeed)
-                        .andThen(
-                            Commands.parallel(
-                                intake.runIntakeCommand(),
-                                spindexer.activeSpindexerCommand(),
-                                transfer.feedShooterCommand()))));
+            Commands.deferredProxy(
+                () -> {
+                  double distance = drive.getDistanceToHub();
+                  double targetRPM = FlywheelConstants.getTargetRPM(distance);
+
+                  return flywheel
+                      .spinUpCommand(targetRPM)
+                      .alongWith(
+                          Commands.waitUntil(flywheel::isAtSpeed)
+                              .andThen(
+                                  Commands.parallel(
+                                      intake.runIntakeCommand(),
+                                      spindexer.activeSpindexerCommand(),
+                                      transfer.feedShooterCommand())));
+                }));
   }
 
   /**
