@@ -23,7 +23,7 @@ public class Spindexer extends SubsystemBase {
   }
 
   public void run() {
-    io.setVelocity(SpindexerConstants.TARGET_RPS);
+    io.setVoltage(SpindexerConstants.MOTOR_VOLTS);
   }
 
   public void stop() {

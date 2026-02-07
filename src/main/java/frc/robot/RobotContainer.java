@@ -230,16 +230,16 @@ public class RobotContainer {
                 () -> -controller.getLeftX(),
                 () -> -controller.getRightX()));
 
-    controller.triangle().whileTrue(PathfindCommands.pathfindToDepot(drive));
-    controller.square().whileTrue(PathfindCommands.pathfindToHub(drive));
-    controller.L2().whileTrue(PathfindCommands.pathfindtoScoringPosition(drive));
+    // controller.triangle().whileTrue(PathfindCommands.pathfindToDepot(drive));
+    // controller.square().whileTrue(PathfindCommands.pathfindToHub(drive));
+    // controller.L2().whileTrue(PathfindCommands.pathfindtoScoringPosition(drive));
     controller.L1().whileTrue(intake.runIntakeCommand());
 
     controller
-        .R1()
+        .L2()
         .whileTrue(
             flywheel
-                .spinUpCommand(5000.0)
+                .spinUpCommand(-2000.0)
                 .alongWith(
                     Commands.waitUntil(flywheel::isAtSpeed)
                         .andThen(

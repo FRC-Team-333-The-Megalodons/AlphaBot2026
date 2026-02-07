@@ -5,6 +5,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import edu.wpi.first.math.util.Units;
 
 public class SpindexerIOKraken implements SpindexerIO {
   CANBus rio = CANBus.roboRIO();
@@ -25,7 +26,7 @@ public class SpindexerIOKraken implements SpindexerIO {
 
   @Override
   public void setVelocity(double rps) {
-    motor.setControl(new VelocityVoltage(rps));
+    motor.setControl(new VelocityVoltage(Units.radiansToRotations(rps)));
   }
 
   @Override

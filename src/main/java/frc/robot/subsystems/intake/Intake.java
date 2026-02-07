@@ -19,11 +19,11 @@ public class Intake extends SubsystemBase {
   }
 
   public Command runIntakeCommand() {
-    return runEnd(() -> this.run(true), this::stop);
+    return runEnd(() -> this.run(false), this::stop);
   }
 
   public Command runOuttakeCommand() {
-    return runEnd(() -> this.run(false), this::stop);
+    return runEnd(() -> this.run(true), this::stop);
   }
 
   public void run(boolean forward) {

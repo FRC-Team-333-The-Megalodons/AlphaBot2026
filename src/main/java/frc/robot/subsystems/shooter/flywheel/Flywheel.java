@@ -21,8 +21,9 @@ public class Flywheel extends SubsystemBase {
 
   public boolean isAtSpeed() {
     double currentRPM = inputs.velocityRadPerSec * (30.0 / Math.PI);
-    return targetRPM > 0
-        && Math.abs(currentRPM - targetRPM) < FlywheelConstants.VELOCITY_TOLERANCE_RPM;
+    return Math.abs(targetRPM) > 0
+        && Math.abs(Math.abs(currentRPM) - Math.abs(targetRPM))
+            < FlywheelConstants.VELOCITY_TOLERANCE_RPM;
   }
 
   public Command spinUpCommand(double rpm) {
