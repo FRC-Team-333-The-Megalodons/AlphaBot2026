@@ -36,12 +36,13 @@ public class AutonomousCommands {
                           Commands.parallel(
                               intake.runIntakeCommand(),
                               spindexer.activeSpindexerCommand(),
-                              transfer.feedShooterCommand())));
+                              transfer.feedShooterCommand())))
+              .withTimeout(2.5);
         });
   }
 
   public static Command pathfindToTower(Drive drive) {
-    Pose2d targetPose = new Pose2d(new Translation2d(14.955, 3.916), Rotation2d.kCCW_90deg);
+    Pose2d targetPose = new Pose2d(new Translation2d(14.88, 4.2), Rotation2d.kCW_90deg);
     PathConstraints constraints =
         new PathConstraints(1.5, 1.5, Units.degreesToRadians(540), Units.degreesToRadians(720));
 
