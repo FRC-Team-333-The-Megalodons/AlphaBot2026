@@ -4,6 +4,12 @@
 
 package frc.robot.commands;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathConstraints;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
@@ -32,5 +38,13 @@ public class AutonomousCommands {
                               spindexer.activeSpindexerCommand(),
                               transfer.feedShooterCommand())));
         });
+  }
+
+  public static Command pathfindToTower(Drive drive) {
+    Pose2d targetPose = new Pose2d(new Translation2d(14.955, 3.916), Rotation2d.kCCW_90deg);
+    PathConstraints constraints =
+        new PathConstraints(1.5, 1.5, Units.degreesToRadians(540), Units.degreesToRadians(720));
+
+    return AutoBuilder.pathfindToPose(targetPose, constraints, 0.0);
   }
 }

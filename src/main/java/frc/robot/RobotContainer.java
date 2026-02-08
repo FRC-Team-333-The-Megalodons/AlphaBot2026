@@ -163,6 +163,7 @@ public class RobotContainer {
     }
     NamedCommands.registerCommand(
         "Shoot", AutonomousCommands.shootCommand(drive, flywheel, intake, spindexer, transfer));
+    NamedCommands.registerCommand("DriveToTower", AutonomousCommands.pathfindToTower(drive));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());

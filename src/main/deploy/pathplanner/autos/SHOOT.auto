@@ -9,11 +9,17 @@
           "data": {
             "name": "Shoot"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "DriveToTower"
+          }
         }
       ]
     }
   },
-  "resetOdom": true,
+  "resetOdom": false,
   "folder": null,
   "choreoAuto": false
 }
