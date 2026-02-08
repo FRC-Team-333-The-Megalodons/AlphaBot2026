@@ -16,6 +16,10 @@ public class Flywheel extends SubsystemBase {
   @Override
   public void periodic() {
     io.updateInputs(inputs);
+    double currentRPM = inputs.velocityRadPerSec * (30.0 / Math.PI);
+    Logger.recordOutput("Shooter/CurrentRPM", currentRPM);
+    Logger.recordOutput("Shooter/TargetRPM", targetRPM);
+
     Logger.processInputs("Shooter", inputs);
   }
 

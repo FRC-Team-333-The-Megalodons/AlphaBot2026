@@ -12,6 +12,7 @@ import static frc.robot.subsystems.vision.VisionConstants.camera1Name;
 import static frc.robot.subsystems.vision.VisionConstants.robotToCamera0;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -21,11 +22,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.commands.AutonomousCommands;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.PathfindCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
-
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
@@ -180,6 +181,8 @@ public class RobotContainer {
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     SmartDashboard.putData("Pathfind to Depot", PathfindCommands.pathfindToDepot(drive));
+    NamedCommands.registerCommand(
+        "Shoot", AutonomousCommands.shootCommand(drive, flywheel, intake, spindexer, transfer));
 
     // Configure the button bindings
     configureButtonBindings();
@@ -215,7 +218,7 @@ public class RobotContainer {
 
     // Reset gyro to 0° when B button is pressed
     controller
-        .R1()
+        .touchpad()
         .onTrue(
             Commands.runOnce(
                     () ->
@@ -234,7 +237,14 @@ public class RobotContainer {
 
     // controller.triangle().whileTrue(PathfindCommands.pathfindToDepot(drive));
     // controller.square().whileTrue(PathfindCommands.pathfindToHub(drive));
-    // controller.L2().whileTrue(PathfindCommands.pathfindtoScoringPosition(drive));
+    controller.L3().whileTrue(PathfindCommands.pathfindtoScoringPosition(drive));
+    controller
+        .R2()
+        .whileTrue(
+            Commands.parallel(
+                intake.runIntakeCommand(),
+                spindexer.activeSpindexerCommand(),
+                transfer.feedShooterCommand()));
     controller.L1().whileTrue(intake.runIntakeCommand());
 
     controller

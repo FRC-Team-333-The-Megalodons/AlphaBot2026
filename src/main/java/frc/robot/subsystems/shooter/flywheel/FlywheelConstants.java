@@ -4,23 +4,23 @@ public class FlywheelConstants {
   public static final int MOTOR_ID = 6;
   public static final int MOTOR_2_ID = 9;
   public static final double GEAR_RATIO = 1.0;
+
+  public static final double kS = 0.1;
   public static final double kV = 0.12;
-  public static final double kP = 0.1;
-  public static final double VELOCITY_TOLERANCE_RPM = 100.0;
+  public static final double kP = 0.15;
+
+  public static final double MAX_ACCEL = 200.0;
+  public static final double MAX_JERK = 1000.0;
+
+  public static final double VELOCITY_TOLERANCE_RPM = 50.0;
 
   public static double getTargetRPM(double distanceMeters) {
-    if (distanceMeters < 2.0) {
-      return -2000.0;
-    } else if (distanceMeters < 2.5) {
-      return -2250.0;
-    } else if (distanceMeters < 3.0) {
-      return -2500.0;
-    } else if (distanceMeters < 3.5) {
-      return -2650.0;
-    } else if (distanceMeters < 4.0) {
-      return -2700.0;
-    } else {
-      return -3500.0;
-    }
+    if (distanceMeters < 2.0) return -1800.0;
+    if (distanceMeters < 2.65) return -1950.0;
+    if (distanceMeters < 3.0) return -2100.0;
+    if (distanceMeters < 3.78) return -2300.0;
+    if (distanceMeters < 4.5) return -2600.0;
+    if (distanceMeters < 5.5) return -2700.0;
+    return -1500;
   }
 }
