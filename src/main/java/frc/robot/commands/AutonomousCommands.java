@@ -6,7 +6,6 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
@@ -18,19 +17,20 @@ import frc.robot.subsystems.transfer.Transfer;
 public class AutonomousCommands {
   public static Command shootCommand(
       Drive drive, Flywheel flywheel, Intake intake, Spindexer spindexer, Transfer transfer) {
-    double distance = drive.getDistanceToHub();
-    double targetRPM = FlywheelConstants.getTargetRPM(distance);
-    return Commands.run(
-        () ->
-            flywheel
-                .spinUpCommand(targetRPM)
-                .alongWith(
-                    Commands.waitUntil(flywheel::isAtSpeed)
-                        .andThen(
-                            Commands.parallel(
-                                intake.runIntakeCommand(),
-                                spindexer.activeSpindexerCommand(),
-                                transfer.feedShooterCommand()))),
-        new Subsystem[] {intake, drive, flywheel, spindexer, transfer});
-   }
+    return Commands.deferredProxy(
+        () -> {
+          double distance = drive.getDistanceToHub();
+          double targetRPM = FlywheelConstants.getTargetRPM(distance);
+
+          return flywheel
+              .spinUpCommand(targetRPM)
+              .alongWith(
+                  Commands.waitUntil(flywheel::isAtSpeed)
+                      .andThen(
+                          Commands.parallel(
+                              intake.runIntakeCommand(),
+                              spindexer.activeSpindexerCommand(),
+                              transfer.feedShooterCommand())));
+        });
+  }
 }

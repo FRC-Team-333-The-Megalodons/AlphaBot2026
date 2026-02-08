@@ -161,6 +161,8 @@ public class RobotContainer {
         flywheel = new Flywheel(new FlywheelIO() {});
         break;
     }
+    NamedCommands.registerCommand(
+        "Shoot", AutonomousCommands.shootCommand(drive, flywheel, intake, spindexer, transfer));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -181,8 +183,6 @@ public class RobotContainer {
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     SmartDashboard.putData("Pathfind to Depot", PathfindCommands.pathfindToDepot(drive));
-    NamedCommands.registerCommand(
-        "Shoot", AutonomousCommands.shootCommand(drive, flywheel, intake, spindexer, transfer));
 
     // Configure the button bindings
     configureButtonBindings();
