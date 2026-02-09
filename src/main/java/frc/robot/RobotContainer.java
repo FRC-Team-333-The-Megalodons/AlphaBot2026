@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.AutonomousCommands;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.PathfindCommands;
+import frc.robot.commands.TuneShooterRPM;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
@@ -254,7 +255,7 @@ public class RobotContainer {
             Commands.deferredProxy(
                 () -> {
                   double distance = drive.getDistanceToHub();
-                  double targetRPM = FlywheelConstants.getTargetRPM(distance);
+                  double targetRPM = flywheel.getRPMForDistance(distance);
 
                   return flywheel
                       .spinUpCommand(targetRPM)
@@ -266,6 +267,7 @@ public class RobotContainer {
                                       spindexer.activeSpindexerCommand(),
                                       transfer.feedShooterCommand())));
                 }));
+        controller.PS().whileTrue(new TuneShooterRPM(flywheel));
   }
 
   /**

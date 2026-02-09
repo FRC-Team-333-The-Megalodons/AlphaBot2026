@@ -1,5 +1,6 @@
 package frc.robot.subsystems.shooter.flywheel;
 
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
@@ -9,8 +10,23 @@ public class Flywheel extends SubsystemBase {
   private final FlywheelIOInputsAutoLogged inputs = new FlywheelIOInputsAutoLogged();
   private double targetRPM = 0;
 
+  // 1. Define the Interpolating Map
+  private final InterpolatingDoubleTreeMap distanceToRPM = new InterpolatingDoubleTreeMap();
+
   public Flywheel(FlywheelIO io) {
     this.io = io;
+
+    distanceToRPM.put(2.0, -1800.0);
+    distanceToRPM.put(2.65, -1950.0);
+    distanceToRPM.put(3.0, -2100.0);
+    distanceToRPM.put(3.78, -2300.0);
+    distanceToRPM.put(4.5, -2600.0);
+    distanceToRPM.put(5.5, -2700.0);
+    distanceToRPM.put(7.0, -3000.0); 
+  }
+
+  public double getRPMForDistance(double distanceMeters) {
+    return distanceToRPM.get(distanceMeters);
   }
 
   @Override
@@ -32,6 +48,10 @@ public class Flywheel extends SubsystemBase {
 
   public Command spinUpCommand(double rpm) {
     return runEnd(() -> this.setRPM(rpm), this::stop);
+  }
+
+  public void runVelocity(double rpm) {
+    this.setRPM(rpm);
   }
 
   public void setRPM(double rpm) {
