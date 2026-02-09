@@ -22,7 +22,7 @@ public class Flywheel extends SubsystemBase {
     distanceToRPM.put(3.78, -2300.0);
     distanceToRPM.put(4.5, -2600.0);
     distanceToRPM.put(5.5, -2700.0);
-    distanceToRPM.put(7.0, -3000.0); 
+    distanceToRPM.put(7.0, -3000.0);
   }
 
   public double getRPMForDistance(double distanceMeters) {

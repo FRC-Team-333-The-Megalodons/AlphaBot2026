@@ -38,7 +38,6 @@ import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOKraken;
 import frc.robot.subsystems.intake.IntakeIOKrakenSim;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
-import frc.robot.subsystems.shooter.flywheel.FlywheelConstants;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIO;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIOKraken;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIOKrakenSim;
@@ -267,7 +266,7 @@ public class RobotContainer {
                                       spindexer.activeSpindexerCommand(),
                                       transfer.feedShooterCommand())));
                 }));
-        controller.PS().whileTrue(new TuneShooterRPM(flywheel));
+    controller.PS().whileTrue(new TuneShooterRPM(flywheel));
   }
 
   /**

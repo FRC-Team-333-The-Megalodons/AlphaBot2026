@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
-import frc.robot.subsystems.shooter.flywheel.FlywheelConstants;
 import frc.robot.subsystems.spindexer.Spindexer;
 import frc.robot.subsystems.transfer.Transfer;
 
@@ -26,7 +25,7 @@ public class AutonomousCommands {
     return Commands.deferredProxy(
         () -> {
           double distance = drive.getDistanceToHub();
-          double targetRPM = FlywheelConstants.getTargetRPM(distance);
+          double targetRPM = flywheel.getRPMForDistance(distance);
 
           return flywheel
               .spinUpCommand(targetRPM)
@@ -36,8 +35,7 @@ public class AutonomousCommands {
                           Commands.parallel(
                               intake.runIntakeCommand(),
                               spindexer.activeSpindexerCommand(),
-                              transfer.feedShooterCommand())))
-              .withTimeout(2.5);
+                              transfer.feedShooterCommand())));
         });
   }
 
