@@ -7,9 +7,7 @@ import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-
 import org.littletonrobotics.junction.Logger;
-
 
 public class Flywheel extends SubsystemBase {
   private final FlywheelIO io;
@@ -33,19 +31,14 @@ public class Flywheel extends SubsystemBase {
 
     sysIdRoutine =
         new SysIdRoutine(
-            new SysIdRoutine.Config(
-                null,
-                Volts.of(7), 
-                null,
-                null 
-            ),
+            new SysIdRoutine.Config(null, Volts.of(7), null, null),
             new SysIdRoutine.Mechanism(
-                (edu.wpi.first.units.measure.Voltage volts) -> io.setVoltage(volts.in(Volts)), 
+                (edu.wpi.first.units.measure.Voltage volts) -> io.setVoltage(volts.in(Volts)),
                 (log) -> {
                   log.motor("flywheel-sysid")
                       .voltage(Volts.of(inputs.appliedVolts))
                       .angularVelocity(RadiansPerSecond.of(inputs.velocityRadPerSec));
-                }, 
+                },
                 this));
   }
 
@@ -79,12 +72,11 @@ public class Flywheel extends SubsystemBase {
   }
 
   public void runMotionMagic(double rpm) {
-    this.setRPM(rpm); 
+    this.setRPM(rpm);
   }
 
   public Command runMotionMagicTest(double rpm) {
-    return runEnd(() -> this.runMotionMagic(rpm), this::stop)
-        .withName("MotionMagicTest");
+    return runEnd(() -> this.runMotionMagic(rpm), this::stop).withName("MotionMagicTest");
   }
 
   public void setRPM(double rpm) {
