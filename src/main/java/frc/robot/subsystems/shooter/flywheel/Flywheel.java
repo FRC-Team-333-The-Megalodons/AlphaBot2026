@@ -20,14 +20,22 @@ public class Flywheel extends SubsystemBase {
 
   public Flywheel(FlywheelIO io) {
     this.io = io;
+    distanceToRPM.put(1.0, -1800.0);
+    distanceToRPM.put(1.3, -1850.0);
+    distanceToRPM.put(1.5, -1870.0);
+    distanceToRPM.put(1.7, -1900.0);
+    distanceToRPM.put(1.9, -1960.0);
+    distanceToRPM.put(2.1, -2050.0);
+    distanceToRPM.put(2.4, -2100.0);
+    distanceToRPM.put(2.6, -2130.0);
+    distanceToRPM.put(2.8, -2170.0);
+    distanceToRPM.put(3.0, -2200.0);
+    distanceToRPM.put(3.2, -2225.0);
 
-    distanceToRPM.put(2.0, -1800.0);
-    distanceToRPM.put(2.65, -1950.0);
-    distanceToRPM.put(3.0, -2100.0);
-    distanceToRPM.put(3.78, -2300.0);
-    distanceToRPM.put(4.5, -2600.0);
-    distanceToRPM.put(5.5, -2700.0);
-    distanceToRPM.put(7.0, -3000.0);
+    distanceToRPM.put(3.4, -2250.0);
+
+    distanceToRPM.put(3.6, -2280.0);
+    distanceToRPM.put(3.8, -2340.0);
 
     sysIdRoutine =
         new SysIdRoutine(
