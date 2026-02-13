@@ -56,6 +56,7 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
+import frc.robot.util.FieldLayout;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -278,6 +279,9 @@ public class RobotContainer {
                                       transfer.feedShooterCommand())));
                 }));
     controller.PS().whileTrue(new TuneShooterRPM(flywheel));
+    controller
+        .povDown()
+        .whileTrue(PathfindCommands.precisionPathfindTo(FieldLayout.Tower.CLIMBING_POSE, drive));
   }
 
   /**

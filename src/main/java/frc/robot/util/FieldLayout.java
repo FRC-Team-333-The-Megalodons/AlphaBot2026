@@ -14,6 +14,13 @@ public class FieldLayout {
   static double FIELD_LENGTH = tagLayout.getFieldLength();
   public static boolean isBlue = MatchStateCalculator.isBlueAlliance();
 
+  public static class Tower {
+    public static final Pose2d CLIMBING_POSE =
+        isBlue
+            ? new Pose2d(1.416, 4.083, Rotation2d.kCCW_90deg)
+            : new Pose2d(15.113, 4.008, Rotation2d.kCW_90deg);
+  }
+
   public static class Hub {
     public static final Pose2d NEAR_FACE =
         isBlue

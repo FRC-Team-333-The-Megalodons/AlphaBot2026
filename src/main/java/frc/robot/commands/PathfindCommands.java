@@ -12,19 +12,33 @@ import frc.robot.util.FieldLayout;
 import frc.robot.util.MatchStateCalculator;
 
 public class PathfindCommands {
-  public static Command pathfindTo(Translation2d translation, Rotation2d rotation, Drive drive) {
+  public static Command pathfindTo(
+      Translation2d translation, Rotation2d rotation, Drive drive, double endVelocity) {
     Pose2d targetPose = new Pose2d(translation, rotation);
     PathConstraints constraints =
         new PathConstraints(2.0, 2.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
 
-    return AutoBuilder.pathfindToPose(targetPose, constraints, 0.0);
+    return AutoBuilder.pathfindToPose(targetPose, constraints, endVelocity);
+  }
+
+  public static Command precisionPathfindTo(Pose2d targetPose2d, Drive drive) {
+    Translation2d pathFinderCordinates =
+        FieldLayout.isBlue
+            ? new Translation2d(
+                targetPose2d.getTranslation().getX() + 0.2, targetPose2d.getTranslation().getY())
+            : new Translation2d(
+                targetPose2d.getTranslation().getX() - 0.2, targetPose2d.getTranslation().getY());
+    Command pathfindTo = pathfindTo(pathFinderCordinates, targetPose2d.getRotation(), drive, 2.0);
+    Command autoPilot = new DriveToPose(drive, targetPose2d);
+    return pathfindTo.andThen(autoPilot);
   }
 
   public static Command pathfindToDepot(Drive drive) {
     return pathfindTo(
         FieldLayout.Depot.DEPOT_SCORING_POSITION.getTranslation(),
         FieldLayout.Depot.DEPOT_SCORING_POSITION.getRotation(),
-        drive);
+        drive,
+        0.0);
   }
 
   public static Command pathfindToHub(Drive drive) {
@@ -36,13 +50,15 @@ public class PathfindCommands {
     return pathfindTo(
         targetTranslation,
         MatchStateCalculator.isBlueAlliance() ? Rotation2d.kZero : Rotation2d.k180deg,
-        drive);
+        drive,
+        0.0);
   }
 
   public static Command pathfindtoScoringPosition(Drive drive) {
     return pathfindTo(
         FieldLayout.ScoringPosition.SCORING_POSITION_A.getTranslation(),
         FieldLayout.ScoringPosition.SCORING_POSITION_A.getRotation(),
-        drive);
+        drive,
+        0.0);
   }
 }
