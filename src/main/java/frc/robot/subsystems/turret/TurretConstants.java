@@ -12,11 +12,11 @@ public class TurretConstants {
   public static final double kEncoder1Teeth = 17.0;
   public static final double kEncoder2Teeth = 18.0;
 
-  public static final double kMotorToTurretRatio = kTurretGearTeeth / 10.0;
+  public static final double kMotorToTurretRatio = 19.6875;
 
   // Limits(Might Change)
-  public static final double kMinAngle = -300.0;
-  public static final double kMaxAngle = 300.0;
+  public static final double kMinAngle = -180.0;
+  public static final double kMaxAngle = 180.0;
 
   public static final double kP = 4.0;
   public static final double kI = 0.0;
