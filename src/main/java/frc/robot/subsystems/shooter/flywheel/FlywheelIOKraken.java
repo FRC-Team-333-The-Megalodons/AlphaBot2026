@@ -34,7 +34,7 @@ public class FlywheelIOKraken implements FlywheelIO {
     motor2.getConfigurator().apply(config);
 
     // Motor 2 follows Motor 1
-    motor2.setControl(new Follower(motor.getDeviceID(), MotorAlignmentValue.Aligned));
+    motor2.setControl(new Follower(motor.getDeviceID(), MotorAlignmentValue.Opposed));
   }
 
   @Override

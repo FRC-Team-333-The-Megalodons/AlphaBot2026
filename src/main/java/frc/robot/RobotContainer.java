@@ -251,6 +251,7 @@ public class RobotContainer {
     // controller.triangle().whileTrue(PathfindCommands.pathfindToDepot(drive));
     // controller.square().whileTrue(PathfindCommands.pathfindToHub(drive));
     controller.L3().whileTrue(PathfindCommands.pathfindtoScoringPosition(drive));
+    controller.R1().whileTrue(flywheel.spinUpCommand(-1800));
     controller
         .R2()
         .whileTrue(
@@ -274,7 +275,7 @@ public class RobotContainer {
                           Commands.waitUntil(flywheel::isAtSpeed)
                               .andThen(
                                   Commands.parallel(
-                                      intake.runIntakeCommand(),
+                                      //   intake.runIntakeCommand(),
                                       spindexer.activeSpindexerCommand(),
                                       transfer.feedShooterCommand())));
                 }));

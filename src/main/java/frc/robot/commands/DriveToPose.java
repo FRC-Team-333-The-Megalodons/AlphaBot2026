@@ -44,8 +44,7 @@ public class DriveToPose extends Command {
   public void execute() {
     Pose2d currentPose = drive.getPose();
 
-    ChassisSpeeds currentSpeeds =
-        drive.getChassisSpeeds(); 
+    ChassisSpeeds currentSpeeds = drive.getChassisSpeeds();
 
     APResult result = kAutopilot.calculate(currentPose, currentSpeeds, target);
 
