@@ -79,8 +79,7 @@ public class RobotContainer {
                 drive::addVisionMeasurement,
                 new VisionIOPhotonVision(camera0Name, robotToCamera0),
                 new VisionIOPhotonVision(camera1Name, robotToCamera1));
-        turret =
-          new Turret(new TurretIOKraken(), drive::getPose);
+        turret = new Turret(new TurretIOKraken(), drive::getPose);
 
         // The ModuleIOTalonFXS implementation provides an example implementation for
         // TalonFXS controller connected to a CANdi with a PWM encoder. The
@@ -115,8 +114,7 @@ public class RobotContainer {
                 drive::addVisionMeasurement,
                 new VisionIOPhotonVisionSim(camera1Name, robotToCamera0, drive::getPose),
                 new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose));
-        turret =
-          new Turret(new TurretIOSim(), drive::getPose);
+        turret = new Turret(new TurretIOSim(), drive::getPose);
         break;
 
       default:
@@ -209,6 +207,7 @@ public class RobotContainer {
     /*controller.circle().whileTrue(
     turret.aimAtHub());
     */
+    controller.circle().whileTrue(turret.setTo90Deg());
   }
 
   /**

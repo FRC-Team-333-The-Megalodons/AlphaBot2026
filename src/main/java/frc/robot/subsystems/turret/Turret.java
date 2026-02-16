@@ -31,6 +31,18 @@ public class Turret extends SubsystemBase {
     return Commands.runEnd(() -> io.setTurretVoltage(volts), () -> io.stop(), this);
   }
 
+  public boolean isAtPositive90() {
+    return inputs.turretPositionRad > 1.4 && inputs.turretPositionRad < 1.6 ? true : false;
+  }
+
+  public boolean isAtNegative90() {
+    return inputs.turretPositionRad < -1.4 && inputs.turretPositionRad > -1.6 ? true : false;
+  }
+
+  public Command setTo90Deg() {
+    return setVoltage(3).until(() -> isAtPositive90());
+  }
+
   public Command aimAtHub() {
     return Commands.run(
         () -> {
