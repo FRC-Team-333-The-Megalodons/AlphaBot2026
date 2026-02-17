@@ -45,9 +45,6 @@ import frc.robot.subsystems.shooter.flywheel.Flywheel;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIO;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIOKraken;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIOKrakenSim;
-import frc.robot.subsystems.shooter.turret.Turret;
-import frc.robot.subsystems.shooter.turret.TurretIO;
-import frc.robot.subsystems.shooter.turret.TurretIOKraken;
 import frc.robot.subsystems.spindexer.Spindexer;
 import frc.robot.subsystems.spindexer.SpindexerIO;
 import frc.robot.subsystems.spindexer.SpindexerIOKraken;
@@ -77,7 +74,6 @@ public class RobotContainer {
   private final Transfer transfer;
   private final Flywheel flywheel;
   private final Vision vision;
-  private final Turret turret;
   private final Pivot pivot;
 
   // Controller
@@ -103,7 +99,6 @@ public class RobotContainer {
         vision =
             new Vision(
                 drive::addVisionMeasurement, new VisionIOPhotonVision(camera0Name, robotToCamera0));
-        turret = new Turret(new TurretIOKraken());
         intake = new Intake(new IntakeIOKraken());
         spindexer = new Spindexer(new SpindexerIOKraken());
         transfer = new Transfer(new TransferIOKraken());
@@ -144,7 +139,6 @@ public class RobotContainer {
             new Vision(
                 drive::addVisionMeasurement,
                 new VisionIOPhotonVisionSim(camera1Name, robotToCamera0, drive::getPose));
-        turret = new Turret(new TurretIO() {});
         intake = new Intake(new IntakeIOKrakenSim());
         spindexer = new Spindexer(new SpindexerIOKrakenSim());
         transfer = new Transfer(new TransferIOKrakenSim());
@@ -162,7 +156,6 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {});
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {});
-        turret = new Turret(new TurretIO() {});
         intake = new Intake(new IntakeIO() {});
         spindexer = new Spindexer(new SpindexerIO() {});
         transfer = new Transfer(new TransferIO() {});
@@ -235,7 +228,7 @@ public class RobotContainer {
                 () -> Rotation2d.kZero));
 
     // Switch to X pattern when X button is pressed
-    controller.cross().onTrue(Commands.runOnce(drive::stopWithX, drive));
+    // controller.cross().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
     // Reset gyro to 0° when B button is pressed
     controller
@@ -269,8 +262,8 @@ public class RobotContainer {
                 transfer.feedShooterCommand()));
     controller.L1().whileTrue(intake.runIntakeCommand());
 
-    controller.triangle().whileTrue(pivot.runPercent(-0.1));
-    controller.cross().whileTrue(pivot.runPercent(0.1));
+    controller.triangle().whileTrue(pivot.runPercent(-1));
+    controller.cross().whileTrue(pivot.runPercent(1));
 
     controller
         .L2()
