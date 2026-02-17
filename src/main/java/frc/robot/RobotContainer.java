@@ -45,6 +45,10 @@ import frc.robot.subsystems.shooter.flywheel.Flywheel;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIO;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIOKraken;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIOKrakenSim;
+import frc.robot.subsystems.shooter.turret.Turret;
+import frc.robot.subsystems.shooter.turret.TurretIO;
+import frc.robot.subsystems.shooter.turret.TurretIOKraken;
+import frc.robot.subsystems.shooter.turret.TurretIOKrakenSim;
 import frc.robot.subsystems.spindexer.Spindexer;
 import frc.robot.subsystems.spindexer.SpindexerIO;
 import frc.robot.subsystems.spindexer.SpindexerIOKraken;
@@ -75,6 +79,7 @@ public class RobotContainer {
   private final Flywheel flywheel;
   private final Vision vision;
   private final Pivot pivot;
+  private final Turret turret;
 
   // Controller
   private final CommandPS5Controller controller = new CommandPS5Controller(0);
@@ -104,6 +109,7 @@ public class RobotContainer {
         transfer = new Transfer(new TransferIOKraken());
         flywheel = new Flywheel(new FlywheelIOKraken());
         pivot = new Pivot(new PivotIOKraken());
+        turret = new Turret(new TurretIOKraken(), drive::getPose);
 
         // Note:
 
@@ -144,6 +150,7 @@ public class RobotContainer {
         transfer = new Transfer(new TransferIOKrakenSim());
         flywheel = new Flywheel(new FlywheelIOKrakenSim());
         pivot = new Pivot(new PivotIOKrakenSim());
+        turret = new Turret(new TurretIOKrakenSim(), drive::getPose);
         break;
 
       default:
@@ -161,6 +168,7 @@ public class RobotContainer {
         transfer = new Transfer(new TransferIO() {});
         flywheel = new Flywheel(new FlywheelIO() {});
         pivot = new Pivot(new PivotIO() {});
+        turret = new Turret(new TurretIO() {}, drive::getPose);
         break;
     }
     NamedCommands.registerCommand(
@@ -251,6 +259,7 @@ public class RobotContainer {
 
     // controller.triangle().whileTrue(PathfindCommands.pathfindToDepot(drive));
     // controller.square().whileTrue(PathfindCommands.pathfindToHub(drive));
+    controller.triangle().whileTrue(turret.aimAtHub());
     controller.L3().whileTrue(PathfindCommands.pathfindtoScoringPosition(drive));
     controller.R1().whileTrue(flywheel.spinUpCommand(-2500));
     controller
@@ -262,7 +271,7 @@ public class RobotContainer {
                 transfer.feedShooterCommand()));
     controller.L1().whileTrue(intake.runIntakeCommand());
 
-    controller.triangle().whileTrue(pivot.runPercent(-1));
+    // controller.triangle().whileTrue(pivot.runPercent(-1));
     controller.cross().whileTrue(pivot.runPercent(1));
 
     controller

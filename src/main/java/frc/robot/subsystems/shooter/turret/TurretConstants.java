@@ -1,16 +1,31 @@
 package frc.robot.subsystems.shooter.turret;
 
-import edu.wpi.first.math.geometry.Translation2d;
-import frc.robot.util.MatchStateCalculator;
+public class TurretConstants {
 
-public final class TurretConstants {
-  public static final int MOTOR_ID = 14;
-  public static final double GEAR_RATIO = 80.0;
-  public static final double kP = 2.0;
+  public static final double kTurretZeroOffset = 1.452;
+
+  public static final int kTurretMotorId = 7;
+  public static final int kEncoder17Id = 44;
+  public static final int kEncoder18Id = 43;
+
+  public static final double kTurretGearTeeth = 105.0;
+  public static final double kEncoder1Teeth = 17.0;
+  public static final double kEncoder2Teeth = 18.0;
+
+  public static final double kMotorToTurretRatio = 19.6875;
+
+  // Limits(Might Change)
+  public static final double kMinAngle = -180.0;
+  public static final double kMaxAngle = 180.0;
+
+  public static final double kP = 4.3;
   public static final double kI = 0.0;
-  public static final double kD = 0.05;
-  public static final int CANCODER_ID = 1;
-  public static final double CANCODER_OFFSET = 0.0;
+  public static final double kD = 0.1;
+  public static final double kS = 0.25;
+  public static final double kV = 0.12;
+  public static final double kA = 0.01;
 
-  public static final Translation2d HUB_LOCATION = MatchStateCalculator.getHub();
+  public static final double kCruiseVelocity = 4.0;
+  public static final double kAcceleration = 8.0;
+  public static final double kJerk = 80.0;
 }
