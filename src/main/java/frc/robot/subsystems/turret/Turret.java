@@ -42,6 +42,37 @@ public class Turret extends SubsystemBase {
   public Command setTo90Deg() {
     return setVoltage(3).until(() -> isAtPositive90());
   }
+  public Command aimAtFieldZero() {
+    return Commands.run(
+        () -> {
+          Pose2d robotPose = robotPoseSupplier.get();
+
+          Rotation2d targetFieldAngle = Rotation2d.fromDegrees(0);
+
+          Rotation2d targetRobotAngle = targetFieldAngle.minus(robotPose.getRotation());
+
+          double currentDeg = Math.toDegrees(inputs.turretPositionRad);
+          double targetDeg = targetRobotAngle.getDegrees();
+
+          double diff = targetDeg - currentDeg;
+
+          diff = MathUtil.inputModulus(diff, -180, 180);
+          double optimalTargetDeg = currentDeg + diff;
+
+          if (optimalTargetDeg > TurretConstants.kMaxAngle) {
+            optimalTargetDeg -= 360.0;
+          } else if (optimalTargetDeg < TurretConstants.kMinAngle) {
+            optimalTargetDeg += 360.0;
+          }
+
+          optimalTargetDeg =
+              MathUtil.clamp(
+                  optimalTargetDeg, TurretConstants.kMinAngle, TurretConstants.kMaxAngle);
+
+          io.setTurretPosition(Rotation2d.fromDegrees(optimalTargetDeg));
+        },
+        this);
+  }
 
   public Command aimAtHub() {
     return Commands.run(
