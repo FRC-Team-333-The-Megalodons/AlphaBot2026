@@ -25,4 +25,8 @@ public class Pivot extends SubsystemBase {
   public void setGoal(double rad) {
     io.setPosition(rad);
   }
+
+  public Command runPercent(double percent) {
+    return runEnd(() -> io.setVoltage(percent * 12.0), () -> io.setVoltage(0.0));
+  }
 }

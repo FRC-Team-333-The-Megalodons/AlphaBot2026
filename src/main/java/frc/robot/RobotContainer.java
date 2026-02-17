@@ -37,6 +37,10 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOKraken;
 import frc.robot.subsystems.intake.IntakeIOKrakenSim;
+import frc.robot.subsystems.pivot.Pivot;
+import frc.robot.subsystems.pivot.PivotIO;
+import frc.robot.subsystems.pivot.PivotIOKraken;
+import frc.robot.subsystems.pivot.PivotIOKrakenSim;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIO;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIOKraken;
@@ -74,6 +78,7 @@ public class RobotContainer {
   private final Flywheel flywheel;
   private final Vision vision;
   private final Turret turret;
+  private final Pivot pivot;
 
   // Controller
   private final CommandPS5Controller controller = new CommandPS5Controller(0);
@@ -103,6 +108,7 @@ public class RobotContainer {
         spindexer = new Spindexer(new SpindexerIOKraken());
         transfer = new Transfer(new TransferIOKraken());
         flywheel = new Flywheel(new FlywheelIOKraken());
+        pivot = new Pivot(new PivotIOKraken());
 
         // Note:
 
@@ -143,6 +149,7 @@ public class RobotContainer {
         spindexer = new Spindexer(new SpindexerIOKrakenSim());
         transfer = new Transfer(new TransferIOKrakenSim());
         flywheel = new Flywheel(new FlywheelIOKrakenSim());
+        pivot = new Pivot(new PivotIOKrakenSim());
         break;
 
       default:
@@ -160,6 +167,7 @@ public class RobotContainer {
         spindexer = new Spindexer(new SpindexerIO() {});
         transfer = new Transfer(new TransferIO() {});
         flywheel = new Flywheel(new FlywheelIO() {});
+        pivot = new Pivot(new PivotIO() {});
         break;
     }
     NamedCommands.registerCommand(
@@ -260,6 +268,9 @@ public class RobotContainer {
                 spindexer.activeSpindexerCommand(),
                 transfer.feedShooterCommand()));
     controller.L1().whileTrue(intake.runIntakeCommand());
+
+    controller.triangle().whileTrue(pivot.runPercent(-0.1));
+    controller.cross().whileTrue(pivot.runPercent(0.1));
 
     controller
         .L2()
