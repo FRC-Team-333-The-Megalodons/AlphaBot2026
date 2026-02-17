@@ -122,16 +122,18 @@ public class TurretIOKraken implements TurretIO {
     double N = 105.0;
 
     double delta = (n2 * p18) - (n1 * p17);
-    long k_diff = Math.round(delta); // ->need to be an integer
+    long k_diff = Math.round(delta);
 
-    double turretRot = (-k_diff + p17) * (n1 / N);
+    double rawTurretRot = (-k_diff + p17) * (n1 / N);
 
-    // Wraps to -/+ half period (around 1.45 rotations)
-    double period = (n1 * n2) / N; // ->2.914 == 1041 deegrees
-    while (turretRot > period / 2.0) turretRot -= period;
-    while (turretRot < -period / 2.0) turretRot += period;
+    double offsetPosition = rawTurretRot - TurretConstants.kTurretZeroOffset;
 
-    return turretRot - TurretConstants.kTurretZeroOffset;
+    double period = (n1 * n2) / N; // ~2.914
+
+    while (offsetPosition > period / 2.0) offsetPosition -= period;
+    while (offsetPosition < -period / 2.0) offsetPosition += period;
+
+    return offsetPosition;
   }
 
   private void seedTurretPosition() {

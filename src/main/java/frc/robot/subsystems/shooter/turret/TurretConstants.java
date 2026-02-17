@@ -18,7 +18,7 @@ public class TurretConstants {
   public static final double kMinAngle = -180.0;
   public static final double kMaxAngle = 180.0;
 
-  public static final double kP = 4.3;
+  public static final double kP = 8;
   public static final double kI = 0.0;
   public static final double kD = 0.1;
   public static final double kS = 0.25;
