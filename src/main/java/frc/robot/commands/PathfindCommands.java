@@ -1,0 +1,64 @@
+package frc.robot.commands;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathConstraints;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.drive.Drive;
+import frc.robot.util.FieldLayout;
+import frc.robot.util.MatchStateCalculator;
+
+public class PathfindCommands {
+  public static Command pathfindTo(
+      Translation2d translation, Rotation2d rotation, Drive drive, double endVelocity) {
+    Pose2d targetPose = new Pose2d(translation, rotation);
+    PathConstraints constraints =
+        new PathConstraints(2.0, 2.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
+
+    return AutoBuilder.pathfindToPose(targetPose, constraints, endVelocity);
+  }
+
+  public static Command precisionPathfindTo(Pose2d targetPose2d, Drive drive) {
+    Translation2d pathFinderCordinates =
+        FieldLayout.isBlue
+            ? new Translation2d(
+                targetPose2d.getTranslation().getX() + 0.2, targetPose2d.getTranslation().getY())
+            : new Translation2d(
+                targetPose2d.getTranslation().getX() - 0.2, targetPose2d.getTranslation().getY());
+    Command pathfindTo = pathfindTo(pathFinderCordinates, targetPose2d.getRotation(), drive, 2.0);
+    Command autoPilot = new DriveToPose(drive, targetPose2d);
+    return pathfindTo.andThen(autoPilot);
+  }
+
+  public static Command pathfindToDepot(Drive drive) {
+    return pathfindTo(
+        FieldLayout.Depot.DEPOT_SCORING_POSITION.getTranslation(),
+        FieldLayout.Depot.DEPOT_SCORING_POSITION.getRotation(),
+        drive,
+        0.0);
+  }
+
+  public static Command pathfindToHub(Drive drive) {
+    double x =
+        MatchStateCalculator.isBlueAlliance()
+            ? FieldLayout.Hub.NEAR_FACE.getX() - 0.7
+            : FieldLayout.Hub.NEAR_FACE.getX() + 0.7;
+    Translation2d targetTranslation = new Translation2d(x, FieldLayout.Hub.NEAR_FACE.getY());
+    return pathfindTo(
+        targetTranslation,
+        MatchStateCalculator.isBlueAlliance() ? Rotation2d.kZero : Rotation2d.k180deg,
+        drive,
+        0.0);
+  }
+
+  public static Command pathfindtoScoringPosition(Drive drive) {
+    return pathfindTo(
+        FieldLayout.ScoringPosition.SCORING_POSITION_A.getTranslation(),
+        FieldLayout.ScoringPosition.SCORING_POSITION_A.getRotation(),
+        drive,
+        0.0);
+  }
+}

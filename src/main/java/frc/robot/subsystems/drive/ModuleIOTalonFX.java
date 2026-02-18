@@ -226,11 +226,12 @@ public class ModuleIOTalonFX implements ModuleIO {
 
   @Override
   public void setDriveOpenLoop(double output) {
-    driveTalon.setControl(
-        switch (constants.DriveMotorClosedLoopOutput) {
-          case Voltage -> voltageRequest.withOutput(output);
-          case TorqueCurrentFOC -> torqueCurrentRequest.withOutput(output);
-        });
+    // driveTalon.setControl(
+    //     switch (constants.DriveMotorClosedLoopOutput) {
+    //       case Voltage -> voltageRequest.withOutput(output);
+    //       case TorqueCurrentFOC -> torqueCurrentRequest.withOutput(output);
+    //     });
+    driveTalon.setControl(voltageRequest.withOutput(output));
   }
 
   @Override

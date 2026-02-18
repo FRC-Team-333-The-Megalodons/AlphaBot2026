@@ -93,7 +93,7 @@ public class ModuleIOTalonFXS implements ModuleIO {
           case TalonFXS_VORTEX_JST -> MotorArrangementValue.VORTEX_JST;
           default -> MotorArrangementValue.Disabled;
         };
-    driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     driveConfig.Slot0 = constants.DriveMotorGains;
     driveConfig.ExternalFeedback.SensorToMechanismRatio = constants.DriveMotorGearRatio;
     driveConfig.CurrentLimits.StatorCurrentLimit = constants.SlipCurrent;

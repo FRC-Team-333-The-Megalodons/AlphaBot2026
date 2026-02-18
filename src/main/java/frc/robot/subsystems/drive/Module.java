@@ -20,6 +20,7 @@ import org.littletonrobotics.junction.Logger;
 
 public class Module {
   private final ModuleIO io;
+  private final Drive drive;
   private final ModuleIOInputsAutoLogged inputs = new ModuleIOInputsAutoLogged();
   private final int index;
   private final SwerveModuleConstants<
@@ -35,10 +36,12 @@ public class Module {
       ModuleIO io,
       int index,
       SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
-          constants) {
+          constants,
+      Drive drive) {
     this.io = io;
     this.index = index;
     this.constants = constants;
+    this.drive = drive;
     driveDisconnectedAlert =
         new Alert(
             "Disconnected drive motor on module " + Integer.toString(index) + ".",
@@ -77,8 +80,12 @@ public class Module {
     state.optimize(getAngle());
     state.cosineScale(inputs.turnPosition);
 
+    double driveVoltage =
+        (state.speedMetersPerSecond / drive.getMaxLinearSpeedMetersPerSec()) * 12.0;
     // Apply setpoints
-    io.setDriveVelocity(state.speedMetersPerSecond / constants.WheelRadius);
+    // io.setDriveVelocity(state.speedMetersPerSecond / constants.WheelRadius); -> for getting to
+    // the setpoint
+    io.setDriveOpenLoop(driveVoltage); // -> runs on raw voltage just like the CTRE code
     io.setTurnPosition(state.angle);
   }
 

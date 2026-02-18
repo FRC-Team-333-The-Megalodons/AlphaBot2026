@@ -23,7 +23,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.util.FieldLayout;
+import frc.robot.util.MatchStateCalculator;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
@@ -33,8 +33,8 @@ import java.util.function.Supplier;
 
 public class DriveCommands {
   private static final double DEADBAND = 0.1;
-  private static final double ANGLE_KP = 0.5;
-  private static final double ANGLE_KD = 10;
+  private static final double ANGLE_KP = 7;
+  private static final double ANGLE_KD = 0;
   private static final double ANGLE_MAX_VELOCITY = 8.0;
   private static final double ANGLE_MAX_ACCELERATION = 20.0;
   private static final double FF_START_DELAY = 2.0; // Secs
@@ -50,7 +50,7 @@ public class DriveCommands {
     Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
 
     // Square magnitude for more precise control
-    linearMagnitude = linearMagnitude * linearMagnitude;
+    // linearMagnitude = linearMagnitude * linearMagnitude;
 
     // Return new linear velocity
     return new Pose2d(Translation2d.kZero, linearDirection)
@@ -76,7 +76,7 @@ public class DriveCommands {
           double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
 
           // Square rotation value for more precise control
-          omega = Math.copySign(omega * omega, omega);
+          // omega = Math.copySign(omega * omega, omega);-> uncomment if the swerve lose presicion
 
           // Convert to field relative speeds & send command
           ChassisSpeeds speeds =
@@ -116,8 +116,8 @@ public class DriveCommands {
               double omega;
               Pose2d currentPose = drive.getPose();
 
-              if (FieldLayout.isInAllianceZone(currentPose)) {
-                Translation2d hubLocation = FieldLayout.getStaticHub();
+              if (MatchStateCalculator.isInAllianceZone(currentPose)) {
+                Translation2d hubLocation = MatchStateCalculator.getHub();
                 Rotation2d targetRotation =
                     hubLocation.minus(currentPose.getTranslation()).getAngle();
                 omega =
@@ -140,6 +140,23 @@ public class DriveCommands {
             drive)
         .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
   }
+  /** alliance-flexible command that dynamically switches between auto-aiming and manual driving. */
+  public static Command faceHubAlternative(
+      Drive drive,
+      DoubleSupplier xSupplier,
+      DoubleSupplier ySupplier,
+      DoubleSupplier omegaSupplier) {
+
+    return Commands.either(
+        joystickDriveAtAngle(
+            drive,
+            xSupplier,
+            ySupplier,
+            () -> MatchStateCalculator.getHub().minus(drive.getPose().getTranslation()).getAngle()),
+        joystickDrive(drive, xSupplier, ySupplier, omegaSupplier),
+        () -> MatchStateCalculator.isInAllianceZone(drive.getPose()));
+  }
+
   /**
    * Field relative drive command using joystick for linear control and PID for angular control.
    * Possible use cases include snapping to an angle, aiming at a vision target, or controlling

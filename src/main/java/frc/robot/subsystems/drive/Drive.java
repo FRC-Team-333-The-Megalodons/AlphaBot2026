@@ -43,6 +43,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
 import frc.robot.util.LocalADStarAK;
+import frc.robot.util.MatchStateCalculator;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -63,8 +64,8 @@ public class Drive extends SubsystemBase {
               Math.hypot(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)));
 
   // PathPlanner config constants
-  private static final double ROBOT_MASS_KG = 74.088;
-  private static final double ROBOT_MOI = 6.883;
+  private static final double ROBOT_MASS_KG = 52.707433;
+  private static final double ROBOT_MOI = 4.1372418427;
   private static final double WHEEL_COF = 1.2;
   private static final RobotConfig PP_CONFIG =
       new RobotConfig(
@@ -108,10 +109,10 @@ public class Drive extends SubsystemBase {
       ModuleIO brModuleIO) {
 
     this.gyroIO = gyroIO;
-    modules[0] = new Module(flModuleIO, 0, TunerConstants.FrontLeft);
-    modules[1] = new Module(frModuleIO, 1, TunerConstants.FrontRight);
-    modules[2] = new Module(blModuleIO, 2, TunerConstants.BackLeft);
-    modules[3] = new Module(brModuleIO, 3, TunerConstants.BackRight);
+    modules[0] = new Module(flModuleIO, 0, TunerConstants.FrontLeft, this);
+    modules[1] = new Module(frModuleIO, 1, TunerConstants.FrontRight, this);
+    modules[2] = new Module(blModuleIO, 2, TunerConstants.BackLeft, this);
+    modules[3] = new Module(brModuleIO, 3, TunerConstants.BackRight, this);
 
     // posePublisher =
     //
@@ -130,7 +131,7 @@ public class Drive extends SubsystemBase {
         this::getChassisSpeeds,
         this::runVelocity,
         new PPHolonomicDriveController(
-            new PIDConstants(6.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
+            new PIDConstants(4.0, 0.0, 0.0), new PIDConstants(4.0, 0.0, 0.0)),
         PP_CONFIG,
         () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
         this);
@@ -221,6 +222,9 @@ public class Drive extends SubsystemBase {
 
     // Update gyro alert
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
+    double distance = getDistanceToHub();
+    edu.wpi.first.wpilibj.smartdashboard.SmartDashboard.putNumber("Distance to Hub (m)", distance);
+    Logger.recordOutput("Drive/DistanceToHub", distance);
   }
 
   /**
@@ -305,7 +309,7 @@ public class Drive extends SubsystemBase {
 
   /** Returns the measured chassis speeds of the robot. */
   @AutoLogOutput(key = "SwerveChassisSpeeds/Measured")
-  private ChassisSpeeds getChassisSpeeds() {
+  public ChassisSpeeds getChassisSpeeds() {
     return kinematics.toChassisSpeeds(getModuleStates());
   }
 
@@ -370,5 +374,10 @@ public class Drive extends SubsystemBase {
       new Translation2d(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
       new Translation2d(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)
     };
+  }
+
+  public double getDistanceToHub() {
+
+    return getPose().getTranslation().getDistance(MatchStateCalculator.getHub());
   }
 }
