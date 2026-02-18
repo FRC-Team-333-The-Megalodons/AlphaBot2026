@@ -10,18 +10,22 @@ package frc.robot;
 import static frc.robot.subsystems.vision.VisionConstants.camera0Name;
 import static frc.robot.subsystems.vision.VisionConstants.camera1Name;
 import static frc.robot.subsystems.vision.VisionConstants.robotToCamera0;
-import static frc.robot.subsystems.vision.VisionConstants.robotToCamera1;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.commands.AutonomousCommands;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.PathfindCommands;
+import frc.robot.commands.TuneShooterRPM;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
@@ -29,10 +33,35 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIO;
+import frc.robot.subsystems.intake.IntakeIOKraken;
+import frc.robot.subsystems.intake.IntakeIOKrakenSim;
+import frc.robot.subsystems.pivot.Pivot;
+import frc.robot.subsystems.pivot.PivotIO;
+import frc.robot.subsystems.pivot.PivotIOKraken;
+import frc.robot.subsystems.pivot.PivotIOKrakenSim;
+import frc.robot.subsystems.shooter.flywheel.Flywheel;
+import frc.robot.subsystems.shooter.flywheel.FlywheelIO;
+import frc.robot.subsystems.shooter.flywheel.FlywheelIOKraken;
+import frc.robot.subsystems.shooter.flywheel.FlywheelIOKrakenSim;
+import frc.robot.subsystems.shooter.turret.Turret;
+import frc.robot.subsystems.shooter.turret.TurretIO;
+import frc.robot.subsystems.shooter.turret.TurretIOKraken;
+import frc.robot.subsystems.shooter.turret.TurretIOKrakenSim;
+import frc.robot.subsystems.spindexer.Spindexer;
+import frc.robot.subsystems.spindexer.SpindexerIO;
+import frc.robot.subsystems.spindexer.SpindexerIOKraken;
+import frc.robot.subsystems.spindexer.SpindexerIOKrakenSim;
+import frc.robot.subsystems.transfer.Transfer;
+import frc.robot.subsystems.transfer.TransferIO;
+import frc.robot.subsystems.transfer.TransferIOKraken;
+import frc.robot.subsystems.transfer.TransferIOKrakenSim;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
+import frc.robot.util.FieldLayout;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -44,8 +73,13 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
+  private final Intake intake;
+  private final Spindexer spindexer;
+  private final Transfer transfer;
+  private final Flywheel flywheel;
   private final Vision vision;
-  // private final Turret turret;
+  private final Pivot pivot;
+  private final Turret turret;
 
   // Controller
   private final CommandPS5Controller controller = new CommandPS5Controller(0);
@@ -69,9 +103,15 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.BackRight));
         vision =
             new Vision(
-                drive::addVisionMeasurement,
-                new VisionIOPhotonVision(camera0Name, robotToCamera0),
-                new VisionIOPhotonVision(camera1Name, robotToCamera1));
+                drive::addVisionMeasurement, new VisionIOPhotonVision(camera0Name, robotToCamera0));
+        intake = new Intake(new IntakeIOKraken());
+        spindexer = new Spindexer(new SpindexerIOKraken());
+        transfer = new Transfer(new TransferIOKraken());
+        flywheel = new Flywheel(new FlywheelIOKraken());
+        pivot = new Pivot(new PivotIOKraken());
+        turret = new Turret(new TurretIOKraken(), drive::getPose);
+
+        // Note:
 
         // The ModuleIOTalonFXS implementation provides an example implementation for
         // TalonFXS controller connected to a CANdi with a PWM encoder. The
@@ -104,8 +144,13 @@ public class RobotContainer {
         vision =
             new Vision(
                 drive::addVisionMeasurement,
-                new VisionIOPhotonVisionSim(camera1Name, robotToCamera0, drive::getPose),
-                new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose));
+                new VisionIOPhotonVisionSim(camera1Name, robotToCamera0, drive::getPose));
+        intake = new Intake(new IntakeIOKrakenSim());
+        spindexer = new Spindexer(new SpindexerIOKrakenSim());
+        transfer = new Transfer(new TransferIOKrakenSim());
+        flywheel = new Flywheel(new FlywheelIOKrakenSim());
+        pivot = new Pivot(new PivotIOKrakenSim());
+        turret = new Turret(new TurretIOKrakenSim(), drive::getPose);
         break;
 
       default:
@@ -117,9 +162,18 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
-        vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
+        vision = new Vision(drive::addVisionMeasurement, new VisionIO() {});
+        intake = new Intake(new IntakeIO() {});
+        spindexer = new Spindexer(new SpindexerIO() {});
+        transfer = new Transfer(new TransferIO() {});
+        flywheel = new Flywheel(new FlywheelIO() {});
+        pivot = new Pivot(new PivotIO() {});
+        turret = new Turret(new TurretIO() {}, drive::getPose);
         break;
     }
+    NamedCommands.registerCommand(
+        "Shoot", AutonomousCommands.shootCommand(drive, flywheel, intake, spindexer, transfer));
+    NamedCommands.registerCommand("DriveToTower", AutonomousCommands.pathfindToTower(drive));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -139,6 +193,29 @@ public class RobotContainer {
         "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+    // Flywheel SysId routine
+    autoChooser.addOption(
+        "Flywheel SysId (Quasistatic Forward)",
+        flywheel.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Flywheel SysId (Quasistatic Reverse)",
+        flywheel.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Flywheel SysId (Dynamic Forward)", flywheel.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Flywheel SysId (Dynamic Reverse)", flywheel.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+        //Turret SysId routines
+    autoChooser.addOption(
+        "Turret SysId (Quasistatic Forward)",
+        turret.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Turret SysId (Quasistatic Reverse)",
+        turret.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Turret SysId (Dynamic Forward)", turret.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Turret SysId (Dynamic Reverse)", turret.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+    SmartDashboard.putData("Pathfind to Depot", PathfindCommands.pathfindToDepot(drive));
 
     // Configure the button bindings
     configureButtonBindings();
@@ -170,11 +247,11 @@ public class RobotContainer {
                 () -> Rotation2d.kZero));
 
     // Switch to X pattern when X button is pressed
-    controller.cross().onTrue(Commands.runOnce(drive::stopWithX, drive));
+    // controller.cross().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
     // Reset gyro to 0° when B button is pressed
     controller
-        .R1()
+        .touchpad()
         .onTrue(
             Commands.runOnce(
                     () ->
@@ -183,18 +260,53 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
     controller
-        .R2()
+        .R3()
         .whileTrue(
-            DriveCommands.faceHub(
+            DriveCommands.faceHubAlternative(
                 drive,
-                () -> controller.getLeftY(),
-                () -> controller.getLeftX(),
+                () -> -controller.getLeftY(),
+                () -> -controller.getLeftX(),
                 () -> -controller.getRightX()));
 
-    // Turret Auto-Aim
-    /*controller.circle().whileTrue(
-    turret.aimAtHub());
-    */
+    // controller.triangle().whileTrue(PathfindCommands.pathfindToDepot(drive));
+    // controller.square().whileTrue(PathfindCommands.pathfindToHub(drive));
+    controller.triangle().whileTrue(turret.aimAtHub());
+    controller.L3().whileTrue(PathfindCommands.pathfindtoScoringPosition(drive));
+    controller.R1().whileTrue(flywheel.spinUpCommand(-2500));
+    controller
+        .R2()
+        .whileTrue(
+            Commands.parallel(
+                intake.runIntakeCommand(),
+                spindexer.activeSpindexerCommand(),
+                transfer.feedShooterCommand()));
+    controller.L1().whileTrue(intake.runIntakeCommand());
+
+    // controller.triangle().whileTrue(pivot.runPercent(-1));
+    controller.cross().whileTrue(pivot.runPercent(1));
+
+    controller
+        .L2()
+        .whileTrue(
+            Commands.deferredProxy(
+                () -> {
+                  double distance = drive.getDistanceToHub();
+                  double targetRPM = flywheel.getRPMForDistance(distance);
+
+                  return flywheel
+                      .spinUpCommand(targetRPM)
+                      .alongWith(
+                          Commands.waitUntil(flywheel::isAtSpeed)
+                              .andThen(
+                                  Commands.parallel(
+                                      //   intake.runIntakeCommand(),
+                                      spindexer.activeSpindexerCommand(),
+                                      transfer.feedShooterCommand())));
+                }));
+    controller.PS().whileTrue(new TuneShooterRPM(flywheel));
+    controller
+        .povDown()
+        .whileTrue(PathfindCommands.precisionPathfindTo(FieldLayout.Tower.CLIMBING_POSE, drive));
   }
 
   /**
