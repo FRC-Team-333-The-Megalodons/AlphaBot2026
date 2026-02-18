@@ -23,5 +23,7 @@ public interface TurretIO {
 
   public default void setTurretVoltage(double volts) {}
 
+  public default void seedTurretPosition() {}
+
   public default void stop() {}
 }

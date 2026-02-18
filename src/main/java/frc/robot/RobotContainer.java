@@ -63,7 +63,6 @@ import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.util.FieldLayout;
 import frc.robot.util.MatchStateCalculator;
-
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -206,7 +205,7 @@ public class RobotContainer {
         "Flywheel SysId (Dynamic Forward)", flywheel.sysIdDynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
         "Flywheel SysId (Dynamic Reverse)", flywheel.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-        //Turret SysId routines
+    // Turret SysId routines
     autoChooser.addOption(
         "Turret SysId (Quasistatic Forward)",
         turret.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
@@ -218,6 +217,18 @@ public class RobotContainer {
     autoChooser.addOption(
         "Turret SysId (Dynamic Reverse)", turret.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     SmartDashboard.putData("Pathfind to Depot", PathfindCommands.pathfindToDepot(drive));
+    SmartDashboard.putData("Turret/00 Go to 45", turret.runToAngle(Rotation2d.fromDegrees(45)));
+    SmartDashboard.putData("Turret/01 Go to 90", turret.runToAngle(Rotation2d.fromDegrees(90)));
+    SmartDashboard.putData("Turret/02 Go to 135", turret.runToAngle(Rotation2d.fromDegrees(135)));
+    SmartDashboard.putData("Turret/03 Go to 180", turret.runToAngle(Rotation2d.fromDegrees(180)));
+
+    SmartDashboard.putData("Turret/04 Go to -45", turret.runToAngle(Rotation2d.fromDegrees(-45)));
+    SmartDashboard.putData("Turret/05 Go to -90", turret.runToAngle(Rotation2d.fromDegrees(-90)));
+    SmartDashboard.putData("Turret/06 Go to -135", turret.runToAngle(Rotation2d.fromDegrees(-135)));
+    SmartDashboard.putData("Turret/07 Go to -180", turret.runToAngle(Rotation2d.fromDegrees(-180)));
+
+    SmartDashboard.putData("Turret/08 Go to 0", turret.runToAngle(Rotation2d.fromDegrees(0)));
+    SmartDashboard.putData("Turret/Reseed Abs Position", turret.reseedPosition());
 
     // Configure the button bindings
     configureButtonBindings();
@@ -272,7 +283,7 @@ public class RobotContainer {
 
     // controller.triangle().whileTrue(PathfindCommands.pathfindToDepot(drive));
     // controller.square().whileTrue(PathfindCommands.pathfindToHub(drive));
-    controller.triangle().whileTrue(turret.aimAtPoint(()->MatchStateCalculator.getHub()));
+    controller.triangle().whileTrue(turret.aimAtPoint(() -> MatchStateCalculator.getHub()));
     controller.L3().whileTrue(PathfindCommands.pathfindtoScoringPosition(drive));
     controller.R1().whileTrue(flywheel.spinUpCommand(-2500));
     controller
