@@ -89,14 +89,14 @@ public class Turret extends SubsystemBase {
         this);
   }
 
-  public Command aimAtHub() {
+  public  Command aimAtPoint(Supplier<Translation2d> pointSupplier) {
     return Commands.run(
         () -> {
           Pose2d robotPose = robotPoseSupplier.get();
-          Translation2d hubLoc = MatchStateCalculator.getStaticHub();
+          Translation2d target = pointSupplier.get();
 
-          double dx = hubLoc.getX() - robotPose.getX();
-          double dy = hubLoc.getY() - robotPose.getY();
+          double dx = target.getX() - robotPose.getX();
+          double dy = target.getY() - robotPose.getY();
           Rotation2d targetFieldAngle = new Rotation2d(Math.atan2(dy, dx));
 
           Rotation2d targetRobotAngle = targetFieldAngle.minus(robotPose.getRotation());
@@ -105,7 +105,7 @@ public class Turret extends SubsystemBase {
           double targetDeg = targetRobotAngle.getDegrees();
 
           double diff = targetDeg - currentDeg;
-
+          
           diff = MathUtil.inputModulus(diff, -180, 180);
           double optimalTargetDeg = currentDeg + diff;
 

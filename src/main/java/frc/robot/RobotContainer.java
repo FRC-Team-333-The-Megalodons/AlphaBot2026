@@ -62,6 +62,8 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.util.FieldLayout;
+import frc.robot.util.MatchStateCalculator;
+
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -270,7 +272,7 @@ public class RobotContainer {
 
     // controller.triangle().whileTrue(PathfindCommands.pathfindToDepot(drive));
     // controller.square().whileTrue(PathfindCommands.pathfindToHub(drive));
-    controller.triangle().whileTrue(turret.aimAtHub());
+    controller.triangle().whileTrue(turret.aimAtPoint(()->MatchStateCalculator.getHub()));
     controller.L3().whileTrue(PathfindCommands.pathfindtoScoringPosition(drive));
     controller.R1().whileTrue(flywheel.spinUpCommand(-2500));
     controller
