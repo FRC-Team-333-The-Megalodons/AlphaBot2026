@@ -10,15 +10,29 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.util.MatchStateCalculator;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import static edu.wpi.first.units.Units.Volts;
 
 public class Turret extends SubsystemBase {
   private final TurretIO io;
   private final TurretIOInputsAutoLogged inputs = new TurretIOInputsAutoLogged();
   private final Supplier<Pose2d> robotPoseSupplier;
+  private final SysIdRoutine sysIdRoutine;
 
   public Turret(TurretIO io, Supplier<Pose2d> robotPoseSupplier) {
     this.io = io;
     this.robotPoseSupplier = robotPoseSupplier;
+    sysIdRoutine =
+      new SysIdRoutine(
+          new SysIdRoutine.Config(
+              null,
+              null,
+              null,
+              (state) -> Logger.recordOutput("Turret/SysIdState", state.toString())),
+          new SysIdRoutine.Mechanism(
+              (voltage) -> io.setTurretVoltage(voltage.in(Volts)), 
+              null,
+              this));
   }
 
   @Override
@@ -108,5 +122,12 @@ public class Turret extends SubsystemBase {
           io.setTurretPosition(Rotation2d.fromDegrees(optimalTargetDeg));
         },
         this);
+  }
+  public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return sysIdRoutine.quasistatic(direction);
+  }
+
+  public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+    return sysIdRoutine.dynamic(direction);
   }
 }
