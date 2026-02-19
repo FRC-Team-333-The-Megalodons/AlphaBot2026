@@ -12,6 +12,7 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
@@ -43,6 +44,7 @@ public class TurretIOKraken implements TurretIO {
 
     CANcoderConfiguration encConfig = new CANcoderConfiguration();
     encConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
+    encConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
     encoder17.getConfigurator().apply(encConfig);
     encoder18.getConfigurator().apply(encConfig);
 
@@ -92,6 +94,7 @@ public class TurretIOKraken implements TurretIO {
 
     inputs.connected = BaseStatusSignal.isAllGood(turretPosition, enc17AbsPos);
     inputs.turretPositionRad = Units.rotationsToRadians(turretPosition.getValueAsDouble());
+    inputs.turretPositionDeg = Units.radiansToDegrees(inputs.turretPositionRad);
     inputs.turretVelocityRadPerSec = Units.rotationsToRadians(turretVelocity.getValueAsDouble());
     inputs.turretAppliedVolts = turretVolts.getValueAsDouble();
     inputs.turretCurrentAmps = turretCurrent.getValueAsDouble();
@@ -139,8 +142,6 @@ public class TurretIOKraken implements TurretIO {
   }
 
   public void seedTurretPosition() {
-    System.out.println("[Turret] Attempting to seed absolute position...");
-
     for (int i = 0; i < 5; i++) {
 
       StatusCode status1 = enc17AbsPos.waitForUpdate(0.1).getStatus();
@@ -155,20 +156,13 @@ public class TurretIOKraken implements TurretIO {
         StatusCode motorStatus = turretMotor.setPosition(absPos);
 
         if (motorStatus == StatusCode.OK) {
-          System.out.println("[Turret] Successfully seeded to: " + absPos + " rotations.");
           return;
-        } else {
-          System.out.println("[Turret] Calc good, but Motor setPosition failed. Retrying...");
         }
-      } else {
-        System.out.println(
-            "[Turret] Waiting for valid Encoder data... (Attempt " + (i + 1) + "/5)");
       }
 
       Timer.delay(0.02);
     }
 
-    System.out.println(
-        "[Turret] CRITICAL ERROR: Could not seed absolute position on boot! Turret may be misaligned.");
+    System.out.println("[Turret] ERROR: Could not seed absolute position!");
   }
 }

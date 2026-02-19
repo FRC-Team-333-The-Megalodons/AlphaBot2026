@@ -8,6 +8,7 @@ public interface TurretIO {
   public static class TurretIOInputs {
     public boolean connected = false;
     public double turretPositionRad = 0.0;
+    public double turretPositionDeg = 0.0;
     public double turretVelocityRadPerSec = 0.0;
     public double turretAppliedVolts = 0.0;
     public double turretCurrentAmps = 0.0;

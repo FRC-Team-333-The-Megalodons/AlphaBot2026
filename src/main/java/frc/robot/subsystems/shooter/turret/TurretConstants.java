@@ -2,7 +2,7 @@ package frc.robot.subsystems.shooter.turret;
 
 public class TurretConstants {
 
-  public static final double kTurretZeroOffset = 0.160;
+  public static final double kTurretZeroOffset = 0.254;
 
   public static final int kTurretMotorId = 7;
   public static final int kEncoder17Id = 44;

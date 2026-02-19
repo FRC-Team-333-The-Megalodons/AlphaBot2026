@@ -108,7 +108,7 @@ public class RobotContainer {
         intake = new Intake(new IntakeIOKraken());
         spindexer = new Spindexer(new SpindexerIOKraken());
         transfer = new Transfer(new TransferIOKraken());
-        flywheel = new Flywheel(new FlywheelIOKraken());
+        flywheel = new Flywheel(new FlywheelIOKraken(), drive::getDistanceToHub);
         pivot = new Pivot(new PivotIOKraken());
         turret = new Turret(new TurretIOKraken(), drive::getPose);
 
@@ -149,7 +149,7 @@ public class RobotContainer {
         intake = new Intake(new IntakeIOKrakenSim());
         spindexer = new Spindexer(new SpindexerIOKrakenSim());
         transfer = new Transfer(new TransferIOKrakenSim());
-        flywheel = new Flywheel(new FlywheelIOKrakenSim());
+        flywheel = new Flywheel(new FlywheelIOKrakenSim(), drive::getDistanceToHub);
         pivot = new Pivot(new PivotIOKrakenSim());
         turret = new Turret(new TurretIOKrakenSim(), drive::getPose);
         break;
@@ -167,7 +167,7 @@ public class RobotContainer {
         intake = new Intake(new IntakeIO() {});
         spindexer = new Spindexer(new SpindexerIO() {});
         transfer = new Transfer(new TransferIO() {});
-        flywheel = new Flywheel(new FlywheelIO() {});
+        flywheel = new Flywheel(new FlywheelIO() {}, drive::getDistanceToHub);
         pivot = new Pivot(new PivotIO() {});
         turret = new Turret(new TurretIO() {}, drive::getPose);
         break;
@@ -298,24 +298,40 @@ public class RobotContainer {
     // controller.triangle().whileTrue(pivot.runPercent(-1));
     controller.cross().whileTrue(pivot.runPercent(1));
 
+    // controller
+    //     .L2()
+    //     .whileTrue(
+    //         Commands.deferredProxy(
+    //             () -> {
+    //               double distance = drive.getDistanceToHub();
+    //               double targetRPM = flywheel.getRPMForDistance(distance);
+
+    //               return flywheel
+    //                   .spinUpCommand(targetRPM)
+    //                   .alongWith(
+    //                       Commands.waitUntil(flywheel::isAtSpeed)
+    //                           .andThen(
+    //                               Commands.parallel(
+    //                                   //   intake.runIntakeCommand(),
+    //                                   spindexer.activeSpindexerCommand(),
+    //                                   transfer.feedShooterCommand())));
+    //             }));
     controller
         .L2()
         .whileTrue(
-            Commands.deferredProxy(
-                () -> {
-                  double distance = drive.getDistanceToHub();
-                  double targetRPM = flywheel.getRPMForDistance(distance);
+            Commands.parallel(
+                flywheel.dynamicSpinUp(true),
+                turret.aimAtPoint(() -> MatchStateCalculator.getHub()), // .until(null)
+                Commands.sequence(
+                    Commands.waitUntil(flywheel::isAtSpeed),
+                    Commands.parallel(
+                        spindexer.activeSpindexerCommand(),
+                        transfer.feedShooterCommand()
+                    )
+                )
+            )
+        );
 
-                  return flywheel
-                      .spinUpCommand(targetRPM)
-                      .alongWith(
-                          Commands.waitUntil(flywheel::isAtSpeed)
-                              .andThen(
-                                  Commands.parallel(
-                                      //   intake.runIntakeCommand(),
-                                      spindexer.activeSpindexerCommand(),
-                                      transfer.feedShooterCommand())));
-                }));
     controller.PS().whileTrue(new TuneShooterRPM(flywheel));
     controller
         .povDown()
