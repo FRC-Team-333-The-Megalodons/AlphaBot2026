@@ -316,39 +316,29 @@ public class RobotContainer {
     //                                   spindexer.activeSpindexerCommand(),
     //                                   transfer.feedShooterCommand())));
     //             }));
-controller
+    controller
         .L2()
         .whileTrue(
             Commands.either(
-
                 Commands.parallel(
                     flywheel.dynamicSpinUp(false),
-                    turret.aimAtPoint(() -> MatchStateCalculator.getHub()), 
+                    turret.aimAtPoint(() -> MatchStateCalculator.getHub()),
                     Commands.sequence(
                         Commands.waitUntil(flywheel::isAtSpeed),
-                        Commands.parallel( 
+                        Commands.parallel(
                             spindexer.activeSpindexerCommand(),
                             transfer.feedShooterCommand(),
-                            intake.runIntakeCommand()
-                        )
-                    )
-                ),
-
+                            intake.runIntakeCommand()))),
                 Commands.parallel(
-                    flywheel.spinUpCommand(-4000), 
-                    turret.aimAtFieldZero(), 
+                    flywheel.spinUpCommand(-4000),
+                    turret.aimAtFieldZero(),
                     Commands.sequence(
-                        Commands.waitUntil(flywheel::isAtSpeed), 
-                        Commands.parallel( 
+                        Commands.waitUntil(flywheel::isAtSpeed),
+                        Commands.parallel(
                             spindexer.activeSpindexerCommand(),
                             transfer.feedShooterCommand(),
-                            intake.runIntakeCommand()
-                        )
-                    )
-                ),
-                () -> MatchStateCalculator.isInAllianceZone(drive.getPose())
-            )
-        );
+                            intake.runIntakeCommand()))),
+                () -> MatchStateCalculator.isInAllianceZone(drive.getPose())));
 
     controller.PS().whileTrue(new TuneShooterRPM(flywheel));
     controller

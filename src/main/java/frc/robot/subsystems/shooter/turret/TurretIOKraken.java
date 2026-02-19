@@ -19,7 +19,6 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.wpilibj.Timer;
 
 public class TurretIOKraken implements TurretIO {
   private final TalonFX turretMotor;
@@ -83,27 +82,26 @@ public class TurretIOKraken implements TurretIO {
 
     BaseStatusSignal.setUpdateFrequencyForAll(
         50.0, turretPosition, turretVelocity, turretVolts, turretCurrent, enc17AbsPos, enc18AbsPos);
-
   }
 
   @Override
   public void updateInputs(TurretIOInputs inputs) {
-        // Seed Absolute Position once the Robot Boots
+    // Seed Absolute Position once the Robot Boots
     BaseStatusSignal.refreshAll(
         turretPosition, turretVelocity, turretVolts, turretCurrent, enc17AbsPos, enc18AbsPos);
-        
-        if (!hasSeeded || turretMotor.hasResetOccurred()) {
-        if (BaseStatusSignal.isAllGood(enc17AbsPos, enc18AbsPos)) {
-            double absPos = calculateAbsolutePosition(
-                enc17AbsPos.getValueAsDouble(), enc18AbsPos.getValueAsDouble()
-            );
 
-            StatusCode motorStatus = turretMotor.setPosition(absPos);
-            if (motorStatus == StatusCode.OK) {
-                hasSeeded = true;
-                System.out.println("[Turret] Successfully seeded absolute position: " + absPos);
-            }
+    if (!hasSeeded || turretMotor.hasResetOccurred()) {
+      if (BaseStatusSignal.isAllGood(enc17AbsPos, enc18AbsPos)) {
+        double absPos =
+            calculateAbsolutePosition(
+                enc17AbsPos.getValueAsDouble(), enc18AbsPos.getValueAsDouble());
+
+        StatusCode motorStatus = turretMotor.setPosition(absPos);
+        if (motorStatus == StatusCode.OK) {
+          hasSeeded = true;
+          System.out.println("[Turret] Successfully seeded absolute position: " + absPos);
         }
+      }
     }
 
     inputs.connected = BaseStatusSignal.isAllGood(turretPosition, enc17AbsPos);

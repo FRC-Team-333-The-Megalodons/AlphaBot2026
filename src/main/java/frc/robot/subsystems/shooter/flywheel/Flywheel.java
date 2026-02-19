@@ -3,16 +3,12 @@ package frc.robot.subsystems.shooter.flywheel;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
-
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.drive.Drive;
-
+import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
 public class Flywheel extends SubsystemBase {
@@ -27,6 +23,7 @@ public class Flywheel extends SubsystemBase {
 
   public Flywheel(FlywheelIO io, DoubleSupplier distanceSupplier) {
     this.io = io;
+    this.distanceSupplier = distanceSupplier;
     distanceToRPM.put(1.57, -2100.0);
     distanceToRPM.put(1.7, -2180.0);
     distanceToRPM.put(1.9, -2220.0);
@@ -77,7 +74,8 @@ public class Flywheel extends SubsystemBase {
         && Math.abs(Math.abs(currentRPM) - Math.abs(targetRPM))
             < FlywheelConstants.VELOCITY_TOLERANCE_RPM;
   }
-  public double calculateRPM(Drive drive){
+
+  public double calculateRPM(Drive drive) {
     return targetRPM = this.getRPMForDistance();
   }
 
