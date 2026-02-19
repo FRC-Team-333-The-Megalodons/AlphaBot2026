@@ -14,4 +14,6 @@ public interface FlywheelIO {
   public default void setVelocity(double radPerSec) {}
 
   public default void setVoltage(double volts) {}
+
+  public default void updateTargetDistance() {}
 }

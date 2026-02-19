@@ -62,6 +62,7 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.util.FieldLayout;
+import frc.robot.util.MatchStateCalculator;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -107,7 +108,7 @@ public class RobotContainer {
         intake = new Intake(new IntakeIOKraken());
         spindexer = new Spindexer(new SpindexerIOKraken());
         transfer = new Transfer(new TransferIOKraken());
-        flywheel = new Flywheel(new FlywheelIOKraken());
+        flywheel = new Flywheel(new FlywheelIOKraken(), drive::getDistanceToHub);
         pivot = new Pivot(new PivotIOKraken());
         turret = new Turret(new TurretIOKraken(), drive::getPose);
 
@@ -148,7 +149,7 @@ public class RobotContainer {
         intake = new Intake(new IntakeIOKrakenSim());
         spindexer = new Spindexer(new SpindexerIOKrakenSim());
         transfer = new Transfer(new TransferIOKrakenSim());
-        flywheel = new Flywheel(new FlywheelIOKrakenSim());
+        flywheel = new Flywheel(new FlywheelIOKrakenSim(), drive::getDistanceToHub);
         pivot = new Pivot(new PivotIOKrakenSim());
         turret = new Turret(new TurretIOKrakenSim(), drive::getPose);
         break;
@@ -166,7 +167,7 @@ public class RobotContainer {
         intake = new Intake(new IntakeIO() {});
         spindexer = new Spindexer(new SpindexerIO() {});
         transfer = new Transfer(new TransferIO() {});
-        flywheel = new Flywheel(new FlywheelIO() {});
+        flywheel = new Flywheel(new FlywheelIO() {}, drive::getDistanceToHub);
         pivot = new Pivot(new PivotIO() {});
         turret = new Turret(new TurretIO() {}, drive::getPose);
         break;
@@ -204,7 +205,7 @@ public class RobotContainer {
         "Flywheel SysId (Dynamic Forward)", flywheel.sysIdDynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
         "Flywheel SysId (Dynamic Reverse)", flywheel.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-        //Turret SysId routines
+    // Turret SysId routines
     autoChooser.addOption(
         "Turret SysId (Quasistatic Forward)",
         turret.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
@@ -216,6 +217,18 @@ public class RobotContainer {
     autoChooser.addOption(
         "Turret SysId (Dynamic Reverse)", turret.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     SmartDashboard.putData("Pathfind to Depot", PathfindCommands.pathfindToDepot(drive));
+    SmartDashboard.putData("Turret/00 Go to 45", turret.runToAngle(Rotation2d.fromDegrees(45)));
+    SmartDashboard.putData("Turret/01 Go to 90", turret.runToAngle(Rotation2d.fromDegrees(90)));
+    SmartDashboard.putData("Turret/02 Go to 135", turret.runToAngle(Rotation2d.fromDegrees(135)));
+    SmartDashboard.putData("Turret/03 Go to 180", turret.runToAngle(Rotation2d.fromDegrees(180)));
+
+    SmartDashboard.putData("Turret/04 Go to -45", turret.runToAngle(Rotation2d.fromDegrees(-45)));
+    SmartDashboard.putData("Turret/05 Go to -90", turret.runToAngle(Rotation2d.fromDegrees(-90)));
+    SmartDashboard.putData("Turret/06 Go to -135", turret.runToAngle(Rotation2d.fromDegrees(-135)));
+    SmartDashboard.putData("Turret/07 Go to -180", turret.runToAngle(Rotation2d.fromDegrees(-180)));
+
+    SmartDashboard.putData("Turret/08 Go to 0", turret.runToAngle(Rotation2d.fromDegrees(0)));
+    SmartDashboard.putData("Turret/Reseed Abs Position", turret.reseedPosition());
 
     // Configure the button bindings
     configureButtonBindings();
@@ -270,7 +283,7 @@ public class RobotContainer {
 
     // controller.triangle().whileTrue(PathfindCommands.pathfindToDepot(drive));
     // controller.square().whileTrue(PathfindCommands.pathfindToHub(drive));
-    controller.triangle().whileTrue(turret.aimAtHub());
+    controller.triangle().whileTrue(turret.aimAtPoint(() -> MatchStateCalculator.getHub()));
     controller.L3().whileTrue(PathfindCommands.pathfindtoScoringPosition(drive));
     controller.R1().whileTrue(flywheel.spinUpCommand(-2500));
     controller
@@ -285,24 +298,40 @@ public class RobotContainer {
     // controller.triangle().whileTrue(pivot.runPercent(-1));
     controller.cross().whileTrue(pivot.runPercent(1));
 
+    // controller
+    //     .L2()
+    //     .whileTrue(
+    //         Commands.deferredProxy(
+    //             () -> {
+    //               double distance = drive.getDistanceToHub();
+    //               double targetRPM = flywheel.getRPMForDistance(distance);
+
+    //               return flywheel
+    //                   .spinUpCommand(targetRPM)
+    //                   .alongWith(
+    //                       Commands.waitUntil(flywheel::isAtSpeed)
+    //                           .andThen(
+    //                               Commands.parallel(
+    //                                   //   intake.runIntakeCommand(),
+    //                                   spindexer.activeSpindexerCommand(),
+    //                                   transfer.feedShooterCommand())));
+    //             }));
     controller
         .L2()
         .whileTrue(
-            Commands.deferredProxy(
-                () -> {
-                  double distance = drive.getDistanceToHub();
-                  double targetRPM = flywheel.getRPMForDistance(distance);
+            Commands.parallel(
+                flywheel.dynamicSpinUp(true),
+                turret.aimAtPoint(() -> MatchStateCalculator.getHub()), // .until(null)
+                Commands.sequence(
+                    Commands.waitUntil(flywheel::isAtSpeed),
+                    Commands.parallel(
+                        spindexer.activeSpindexerCommand(),
+                        transfer.feedShooterCommand()
+                    )
+                )
+            )
+        );
 
-                  return flywheel
-                      .spinUpCommand(targetRPM)
-                      .alongWith(
-                          Commands.waitUntil(flywheel::isAtSpeed)
-                              .andThen(
-                                  Commands.parallel(
-                                      //   intake.runIntakeCommand(),
-                                      spindexer.activeSpindexerCommand(),
-                                      transfer.feedShooterCommand())));
-                }));
     controller.PS().whileTrue(new TuneShooterRPM(flywheel));
     controller
         .povDown()

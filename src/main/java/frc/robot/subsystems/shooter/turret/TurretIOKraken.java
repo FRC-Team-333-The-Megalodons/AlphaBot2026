@@ -2,6 +2,7 @@ package frc.robot.subsystems.shooter.turret;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -11,12 +12,14 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.Timer;
 
 public class TurretIOKraken implements TurretIO {
   private final TalonFX turretMotor;
@@ -41,6 +44,7 @@ public class TurretIOKraken implements TurretIO {
 
     CANcoderConfiguration encConfig = new CANcoderConfiguration();
     encConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
+    encConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
     encoder17.getConfigurator().apply(encConfig);
     encoder18.getConfigurator().apply(encConfig);
 
@@ -90,6 +94,7 @@ public class TurretIOKraken implements TurretIO {
 
     inputs.connected = BaseStatusSignal.isAllGood(turretPosition, enc17AbsPos);
     inputs.turretPositionRad = Units.rotationsToRadians(turretPosition.getValueAsDouble());
+    inputs.turretPositionDeg = Units.radiansToDegrees(inputs.turretPositionRad);
     inputs.turretVelocityRadPerSec = Units.rotationsToRadians(turretVelocity.getValueAsDouble());
     inputs.turretAppliedVolts = turretVolts.getValueAsDouble();
     inputs.turretCurrentAmps = turretCurrent.getValueAsDouble();
@@ -136,10 +141,28 @@ public class TurretIOKraken implements TurretIO {
     return offsetPosition;
   }
 
-  private void seedTurretPosition() {
-    BaseStatusSignal.refreshAll(enc17AbsPos, enc18AbsPos);
-    double absPos =
-        calculateAbsolutePosition(enc17AbsPos.getValueAsDouble(), enc18AbsPos.getValueAsDouble());
-    turretMotor.setPosition(absPos);
+  public void seedTurretPosition() {
+    for (int i = 0; i < 5; i++) {
+
+      StatusCode status1 = enc17AbsPos.waitForUpdate(0.1).getStatus();
+      StatusCode status2 = enc18AbsPos.waitForUpdate(0.1).getStatus();
+
+      if (status1 == StatusCode.OK && status2 == StatusCode.OK) {
+
+        double absPos =
+            calculateAbsolutePosition(
+                enc17AbsPos.getValueAsDouble(), enc18AbsPos.getValueAsDouble());
+
+        StatusCode motorStatus = turretMotor.setPosition(absPos);
+
+        if (motorStatus == StatusCode.OK) {
+          return;
+        }
+      }
+
+      Timer.delay(0.02);
+    }
+
+    System.out.println("[Turret] ERROR: Could not seed absolute position!");
   }
 }

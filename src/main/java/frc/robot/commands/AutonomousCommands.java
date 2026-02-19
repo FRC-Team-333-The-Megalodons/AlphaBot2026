@@ -24,8 +24,7 @@ public class AutonomousCommands {
       Drive drive, Flywheel flywheel, Intake intake, Spindexer spindexer, Transfer transfer) {
     return Commands.deferredProxy(
         () -> {
-          double distance = drive.getDistanceToHub();
-          double targetRPM = flywheel.getRPMForDistance(distance);
+          double targetRPM = flywheel.getRPMForDistance();
 
           return flywheel
               .spinUpCommand(targetRPM)

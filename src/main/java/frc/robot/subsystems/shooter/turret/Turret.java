@@ -1,5 +1,7 @@
 package frc.robot.subsystems.shooter.turret;
 
+import static edu.wpi.first.units.Units.Volts;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -7,11 +9,9 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.util.MatchStateCalculator;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import static edu.wpi.first.units.Units.Volts;
 
 public class Turret extends SubsystemBase {
   private final TurretIO io;
@@ -23,16 +23,14 @@ public class Turret extends SubsystemBase {
     this.io = io;
     this.robotPoseSupplier = robotPoseSupplier;
     sysIdRoutine =
-      new SysIdRoutine(
-          new SysIdRoutine.Config(
-              null,
-              null,
-              null,
-              (state) -> Logger.recordOutput("Turret/SysIdState", state.toString())),
-          new SysIdRoutine.Mechanism(
-              (voltage) -> io.setTurretVoltage(voltage.in(Volts)), 
-              null,
-              this));
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                null,
+                null,
+                null,
+                (state) -> Logger.recordOutput("Turret/SysIdState", state.toString())),
+            new SysIdRoutine.Mechanism(
+                (voltage) -> io.setTurretVoltage(voltage.in(Volts)), null, this));
   }
 
   @Override
@@ -55,6 +53,12 @@ public class Turret extends SubsystemBase {
 
   public Command setTo90Deg() {
     return setVoltage(1).until(() -> isAtPositive90());
+  }
+
+  public Command reseedPosition() {
+    return Commands.runOnce(
+        () -> io.seedTurretPosition()); // You'll need to make seedTurretPosition public in the IO
+    // interface
   }
 
   public Command aimAtFieldZero() {
@@ -89,14 +93,39 @@ public class Turret extends SubsystemBase {
         this);
   }
 
-  public Command aimAtHub() {
+  public Command runToAngle(Rotation2d targetAngle) {
+    return Commands.run(
+        () -> {
+          double currentDeg = Math.toDegrees(inputs.turretPositionRad);
+          double targetDeg = targetAngle.getDegrees();
+
+          double diff = targetDeg - currentDeg;
+          diff = MathUtil.inputModulus(diff, -180, 180);
+          double optimalTargetDeg = currentDeg + diff;
+
+          if (optimalTargetDeg > TurretConstants.kMaxAngle) {
+            optimalTargetDeg -= 360.0;
+          } else if (optimalTargetDeg < TurretConstants.kMinAngle) {
+            optimalTargetDeg += 360.0;
+          }
+
+          optimalTargetDeg =
+              MathUtil.clamp(
+                  optimalTargetDeg, TurretConstants.kMinAngle, TurretConstants.kMaxAngle);
+
+          io.setTurretPosition(Rotation2d.fromDegrees(optimalTargetDeg));
+        },
+        this);
+  }
+
+  public Command aimAtPoint(Supplier<Translation2d> pointSupplier) {
     return Commands.run(
         () -> {
           Pose2d robotPose = robotPoseSupplier.get();
-          Translation2d hubLoc = MatchStateCalculator.getStaticHub();
+          Translation2d target = pointSupplier.get();
 
-          double dx = hubLoc.getX() - robotPose.getX();
-          double dy = hubLoc.getY() - robotPose.getY();
+          double dx = target.getX() - robotPose.getX();
+          double dy = target.getY() - robotPose.getY();
           Rotation2d targetFieldAngle = new Rotation2d(Math.atan2(dy, dx));
 
           Rotation2d targetRobotAngle = targetFieldAngle.minus(robotPose.getRotation());
@@ -123,6 +152,7 @@ public class Turret extends SubsystemBase {
         },
         this);
   }
+
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
     return sysIdRoutine.quasistatic(direction);
   }
