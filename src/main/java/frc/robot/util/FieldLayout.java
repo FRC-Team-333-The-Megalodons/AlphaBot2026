@@ -56,7 +56,16 @@ public class FieldLayout {
         new Pose2d(isBlue ? BLUE_DEPOT : RED_DEPOT, isBlue ? Rotation2d.k180deg : Rotation2d.kZero);
   }
 
-  public static class Outpost {}
+  public static class Outpost {
+        // Dimensions
+    public static final double width = Units.inchesToMeters(31.8);
+    public static final double openingDistanceFromFloor = Units.inchesToMeters(28.1);
+    public static final double height = Units.inchesToMeters(7.0);
+    //Reference Point
+    public static final Translation2d centerPoint = isBlue ?
+            new Translation2d(0,tagLayout.getTagPose(29).get().getY()) : new Translation2d(16.5,tagLayout.getTagPose(13).get().getY());
+
+  }
 
   public static class ScoringPosition {
     public static final Pose2d SCORING_POSITION_A =
