@@ -64,6 +64,10 @@ public class FieldLayout {
     //Reference Point
     public static final Translation2d centerPoint = isBlue ?
             new Translation2d(0,tagLayout.getTagPose(29).get().getY()) : new Translation2d(16.5,tagLayout.getTagPose(13).get().getY());
+    public static final Pose2d OUTPOST_POSE = new Pose2d(
+            centerPoint, 
+            isBlue ? Rotation2d.fromDegrees(0) : Rotation2d.fromDegrees(180)
+    );
 
   }
 

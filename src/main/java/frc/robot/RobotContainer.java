@@ -174,8 +174,25 @@ public class RobotContainer {
     }
     NamedCommands.registerCommand(
         "Shoot", AutonomousCommands.shootCommand(drive, flywheel, intake, spindexer, transfer));
+
     NamedCommands.registerCommand("DriveToTower", AutonomousCommands.pathfindToTower(drive));
 
+    NamedCommands.registerCommand("OutpostAndShoot", 
+        Commands.deadline(
+            PathfindCommands.precisionPathfindTo(FieldLayout.Outpost.OUTPOST_POSE, drive),
+            AutonomousCommands.movingShootCommand(drive, flywheel, turret, intake, spindexer, transfer)
+        )
+    );
+    NamedCommands.registerCommand("WaitTowerAndShoot", 
+        Commands.deadline(
+            Commands.sequence(
+                Commands.waitSeconds(1.5),                                                  
+                PathfindCommands.precisionPathfindTo(FieldLayout.Tower.CLIMBING_POSE, drive), 
+                Commands.waitSeconds(3.0)                                                    
+            ),
+            AutonomousCommands.movingShootCommand(drive, flywheel, turret, intake, spindexer, transfer)
+        )
+    );
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 

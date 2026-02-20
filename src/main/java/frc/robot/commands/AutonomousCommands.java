@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
+import frc.robot.subsystems.shooter.turret.Turret;
 import frc.robot.subsystems.spindexer.Spindexer;
 import frc.robot.subsystems.transfer.Transfer;
 
@@ -44,5 +45,32 @@ public class AutonomousCommands {
         new PathConstraints(1.5, 1.5, Units.degreesToRadians(540), Units.degreesToRadians(720));
 
     return AutoBuilder.pathfindToPose(targetPose, constraints, 0.0);
+
+  }
+
+  
+  public static Command movingShootCommand(
+      Drive drive, Flywheel flywheel, Turret turret, Intake intake, Spindexer spindexer, Transfer transfer) {
+    
+    return Commands.parallel(
+        flywheel.dynamicSpinUp(false),
+        turret.aimAtPoint(() -> {
+            double currentDistance = drive.getPose().getTranslation().getDistance(frc.robot.util.MatchStateCalculator.getHub());
+            double flightTime = flywheel.getTimeOfFlight(currentDistance);
+            return frc.robot.util.MatchStateCalculator.getMovingHub(
+                drive.getPose(),
+                drive.getFieldVelocityX(),
+                drive.getFieldVelocityY(),
+                flightTime);
+        }),
+        Commands.sequence(
+            Commands.waitUntil(flywheel::isAtSpeed),
+            Commands.parallel(
+                spindexer.activeSpindexerCommand(),
+                transfer.feedShooterCommand(),
+                intake.runIntakeCommand()
+            )
+        )
+    );
   }
 }
