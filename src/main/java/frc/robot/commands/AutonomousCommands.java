@@ -18,6 +18,7 @@ import frc.robot.subsystems.shooter.flywheel.Flywheel;
 import frc.robot.subsystems.shooter.turret.Turret;
 import frc.robot.subsystems.spindexer.Spindexer;
 import frc.robot.subsystems.transfer.Transfer;
+import frc.robot.util.MatchStateCalculator;
 
 /** Add your docs here. */
 public class AutonomousCommands {
@@ -45,32 +46,37 @@ public class AutonomousCommands {
         new PathConstraints(1.5, 1.5, Units.degreesToRadians(540), Units.degreesToRadians(720));
 
     return AutoBuilder.pathfindToPose(targetPose, constraints, 0.0);
-
   }
 
-  
   public static Command movingShootCommand(
-      Drive drive, Flywheel flywheel, Turret turret, Intake intake, Spindexer spindexer, Transfer transfer) {
-    
+      Drive drive,
+      Flywheel flywheel,
+      Turret turret,
+      Intake intake,
+      Spindexer spindexer,
+      Transfer transfer) {
+
     return Commands.parallel(
         flywheel.dynamicSpinUp(false),
-        turret.aimAtPoint(() -> {
-            double currentDistance = drive.getPose().getTranslation().getDistance(frc.robot.util.MatchStateCalculator.getHub());
-            double flightTime = flywheel.getTimeOfFlight(currentDistance);
-            return frc.robot.util.MatchStateCalculator.getMovingHub(
-                drive.getPose(),
-                drive.getFieldVelocityX(),
-                drive.getFieldVelocityY(),
-                flightTime);
-        }),
+        turret.aimAtPoint(
+            () -> {
+              double currentDistance =
+                  drive.getPose().getTranslation().getDistance(MatchStateCalculator.getHub());
+              double flightTime = flywheel.getTimeOfFlight(currentDistance);
+              double dynamicScalar = flywheel.getVelocityScalar(currentDistance);
+
+              return MatchStateCalculator.getMovingHub(
+                  drive.getPose(),
+                  drive.getFieldVelocityX(),
+                  drive.getFieldVelocityY(),
+                  flightTime,
+                  dynamicScalar);
+            }),
         Commands.sequence(
             Commands.waitUntil(flywheel::isAtSpeed),
             Commands.parallel(
                 spindexer.activeSpindexerCommand(),
                 transfer.feedShooterCommand(),
-                intake.runIntakeCommand()
-            )
-        )
-    );
+                intake.runIntakeCommand())));
   }
 }

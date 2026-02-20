@@ -40,11 +40,15 @@ public class MatchStateCalculator {
       Pose2d robotPose,
       double robotVxMetersPerSec,
       double robotVyMetersPerSec,
-      double timeOfFlight) {
+      double timeOfFlight,
+      double velocityScalar) {
     Translation2d staticHub = getHub();
 
-    double virtualX = staticHub.getX() - (robotVxMetersPerSec * timeOfFlight);
-    double virtualY = staticHub.getY() - (robotVyMetersPerSec * timeOfFlight);
+    double effectiveVx = robotVxMetersPerSec * velocityScalar;
+    double effectiveVy = robotVyMetersPerSec * velocityScalar;
+
+    double virtualX = staticHub.getX() + (effectiveVx * timeOfFlight);
+    double virtualY = staticHub.getY() + (effectiveVy * timeOfFlight);
 
     return new Translation2d(virtualX, virtualY);
   }

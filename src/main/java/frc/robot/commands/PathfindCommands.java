@@ -20,16 +20,16 @@ public class PathfindCommands {
 
     return AutoBuilder.pathfindToPose(targetPose, constraints, endVelocity);
   }
-public static Command precisionPathfindTo(Pose2d targetPose2d, Drive drive) {
-    Pose2d handoffPose = targetPose2d.transformBy(
-        new edu.wpi.first.math.geometry.Transform2d(
-            new Translation2d(-0.5, 0), 
-            new Rotation2d(0)
-        )
-    );
-    Command pathfindTo = pathfindTo(handoffPose.getTranslation(), handoffPose.getRotation(), drive, 1.5);
+
+  public static Command precisionPathfindTo(Pose2d targetPose2d, Drive drive) {
+    Pose2d handoffPose =
+        targetPose2d.transformBy(
+            new edu.wpi.first.math.geometry.Transform2d(
+                new Translation2d(-0.5, 0), new Rotation2d(0)));
+    Command pathfindTo =
+        pathfindTo(handoffPose.getTranslation(), handoffPose.getRotation(), drive, 1.5);
     Command autoPilot = new DriveToPose(drive, targetPose2d);
-    
+
     return pathfindTo.andThen(autoPilot);
   }
 

@@ -57,18 +57,17 @@ public class FieldLayout {
   }
 
   public static class Outpost {
-        // Dimensions
+    // Dimensions
     public static final double width = Units.inchesToMeters(31.8);
     public static final double openingDistanceFromFloor = Units.inchesToMeters(28.1);
     public static final double height = Units.inchesToMeters(7.0);
-    //Reference Point
-    public static final Translation2d centerPoint = isBlue ?
-            new Translation2d(0,tagLayout.getTagPose(29).get().getY()) : new Translation2d(16.5,tagLayout.getTagPose(13).get().getY());
-    public static final Pose2d OUTPOST_POSE = new Pose2d(
-            centerPoint, 
-            isBlue ? Rotation2d.fromDegrees(0) : Rotation2d.fromDegrees(180)
-    );
-
+    // Reference Point
+    public static final Translation2d centerPoint =
+        isBlue
+            ? new Translation2d(0, tagLayout.getTagPose(29).get().getY())
+            : new Translation2d(16.5, tagLayout.getTagPose(13).get().getY());
+    public static final Pose2d OUTPOST_POSE =
+        new Pose2d(centerPoint, isBlue ? Rotation2d.fromDegrees(0) : Rotation2d.fromDegrees(180));
   }
 
   public static class ScoringPosition {

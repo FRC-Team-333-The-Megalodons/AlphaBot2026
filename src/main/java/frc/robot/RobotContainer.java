@@ -177,22 +177,21 @@ public class RobotContainer {
 
     NamedCommands.registerCommand("DriveToTower", AutonomousCommands.pathfindToTower(drive));
 
-    NamedCommands.registerCommand("OutpostAndShoot", 
+    NamedCommands.registerCommand(
+        "OutpostAndShoot",
         Commands.deadline(
             PathfindCommands.precisionPathfindTo(FieldLayout.Outpost.OUTPOST_POSE, drive),
-            AutonomousCommands.movingShootCommand(drive, flywheel, turret, intake, spindexer, transfer)
-        )
-    );
-    NamedCommands.registerCommand("WaitTowerAndShoot", 
+            AutonomousCommands.movingShootCommand(
+                drive, flywheel, turret, intake, spindexer, transfer)));
+    NamedCommands.registerCommand(
+        "WaitTowerAndShoot",
         Commands.deadline(
             Commands.sequence(
-                Commands.waitSeconds(1.5),                                                  
-                PathfindCommands.precisionPathfindTo(FieldLayout.Tower.CLIMBING_POSE, drive), 
-                Commands.waitSeconds(3.0)                                                    
-            ),
-            AutonomousCommands.movingShootCommand(drive, flywheel, turret, intake, spindexer, transfer)
-        )
-    );
+                Commands.waitSeconds(1.5),
+                PathfindCommands.precisionPathfindTo(FieldLayout.Tower.CLIMBING_POSE, drive),
+                Commands.waitSeconds(3.0)),
+            AutonomousCommands.movingShootCommand(
+                drive, flywheel, turret, intake, spindexer, transfer)));
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -290,7 +289,7 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
     controller
-        .L3()
+        .R3()
         .whileTrue(
             DriveCommands.faceHubAlternative(
                 drive,
@@ -298,13 +297,12 @@ public class RobotContainer {
                 () -> -controller.getLeftX(),
                 () -> -controller.getRightX()));
 
-    controller.triangle().whileTrue(PathfindCommands.pathfindToDepot(drive));
+    controller.povUp().whileTrue(PathfindCommands.pathfindToDepot(drive));
     controller.square().whileTrue(PathfindCommands.pathfindToHub(drive));
-    controller.triangle().whileTrue(turret.aimAtPoint(() -> MatchStateCalculator.getHub()));
+    controller.povDown().whileTrue(turret.aimAtPoint(() -> MatchStateCalculator.getHub()));
     controller.L3().whileTrue(PathfindCommands.pathfindtoScoringPosition(drive));
-    controller.R1().whileTrue(flywheel.spinUpCommand(-2500));
     controller
-        .R2()
+        .L2()
         .whileTrue(
             Commands.parallel(
                 intake.runIntakeCommand(),
@@ -316,7 +314,7 @@ public class RobotContainer {
     controller.cross().whileTrue(pivot.runPercent(0.1));
 
     controller
-        .R3()
+        .L2()
         .whileTrue(
             Commands.either(
                 Commands.parallel(
@@ -329,11 +327,14 @@ public class RobotContainer {
                                   .getTranslation()
                                   .getDistance(MatchStateCalculator.getHub());
                           double flightTime = flywheel.getTimeOfFlight(currentDistance);
+                          double dynamicScalar = flywheel.getVelocityScalar(currentDistance);
+
                           return MatchStateCalculator.getMovingHub(
                               drive.getPose(),
                               drive.getFieldVelocityX(),
                               drive.getFieldVelocityY(),
-                              flightTime);
+                              flightTime,
+                              dynamicScalar);
                         }),
                     Commands.sequence(
                         Commands.waitUntil(flywheel::isAtSpeed),
@@ -343,7 +344,7 @@ public class RobotContainer {
                             intake.runIntakeCommand()))),
                 Commands.parallel(
                     flywheel.spinUpCommand(-4000),
-                    turret.aimAtFieldZero(),
+                    turret.aimAtFieldZero(), // Continuously tracks 0 degrees relative to field
                     Commands.sequence(
                         Commands.waitUntil(flywheel::isAtSpeed),
                         Commands.parallel(
@@ -352,7 +353,7 @@ public class RobotContainer {
                             intake.runIntakeCommand()))),
                 () -> MatchStateCalculator.isInAllianceZone(drive.getPose())));
     controller
-        .L2()
+        .R1()
         .whileTrue(
             Commands.either(
                 Commands.parallel(
