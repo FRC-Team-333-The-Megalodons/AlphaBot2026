@@ -19,7 +19,6 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.wpilibj.Timer;
 
 public class TurretIOKraken implements TurretIO {
   private final TalonFX turretMotor;
@@ -35,6 +34,7 @@ public class TurretIOKraken implements TurretIO {
   private final StatusSignal<Angle> enc18AbsPos;
   private final MotionMagicVoltage positionRequest = new MotionMagicVoltage(0);
   private final VoltageOut voltageRequest = new VoltageOut(0);
+  private boolean hasSeeded = false;
 
   public TurretIOKraken() {
     CANBus rio = CANBus.roboRIO();
@@ -82,15 +82,27 @@ public class TurretIOKraken implements TurretIO {
 
     BaseStatusSignal.setUpdateFrequencyForAll(
         50.0, turretPosition, turretVelocity, turretVolts, turretCurrent, enc17AbsPos, enc18AbsPos);
-
-    // Seed Absolute Position once the Robot Boots
-    seedTurretPosition();
   }
 
   @Override
   public void updateInputs(TurretIOInputs inputs) {
+    // Seed Absolute Position once the Robot Boots
     BaseStatusSignal.refreshAll(
         turretPosition, turretVelocity, turretVolts, turretCurrent, enc17AbsPos, enc18AbsPos);
+
+    if (!hasSeeded || turretMotor.hasResetOccurred()) {
+      if (BaseStatusSignal.isAllGood(enc17AbsPos, enc18AbsPos)) {
+        double absPos =
+            calculateAbsolutePosition(
+                enc17AbsPos.getValueAsDouble(), enc18AbsPos.getValueAsDouble());
+
+        StatusCode motorStatus = turretMotor.setPosition(absPos);
+        if (motorStatus == StatusCode.OK) {
+          hasSeeded = true;
+          System.out.println("[Turret] Successfully seeded absolute position: " + absPos);
+        }
+      }
+    }
 
     inputs.connected = BaseStatusSignal.isAllGood(turretPosition, enc17AbsPos);
     inputs.turretPositionRad = Units.rotationsToRadians(turretPosition.getValueAsDouble());
@@ -142,27 +154,6 @@ public class TurretIOKraken implements TurretIO {
   }
 
   public void seedTurretPosition() {
-    for (int i = 0; i < 5; i++) {
-
-      StatusCode status1 = enc17AbsPos.waitForUpdate(0.1).getStatus();
-      StatusCode status2 = enc18AbsPos.waitForUpdate(0.1).getStatus();
-
-      if (status1 == StatusCode.OK && status2 == StatusCode.OK) {
-
-        double absPos =
-            calculateAbsolutePosition(
-                enc17AbsPos.getValueAsDouble(), enc18AbsPos.getValueAsDouble());
-
-        StatusCode motorStatus = turretMotor.setPosition(absPos);
-
-        if (motorStatus == StatusCode.OK) {
-          return;
-        }
-      }
-
-      Timer.delay(0.02);
-    }
-
-    System.out.println("[Turret] ERROR: Could not seed absolute position!");
+    hasSeeded = false;
   }
 }

@@ -273,7 +273,7 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
     controller
-        .R3()
+        .L3()
         .whileTrue(
             DriveCommands.faceHubAlternative(
                 drive,
@@ -281,8 +281,8 @@ public class RobotContainer {
                 () -> -controller.getLeftX(),
                 () -> -controller.getRightX()));
 
-    // controller.triangle().whileTrue(PathfindCommands.pathfindToDepot(drive));
-    // controller.square().whileTrue(PathfindCommands.pathfindToHub(drive));
+    controller.triangle().whileTrue(PathfindCommands.pathfindToDepot(drive));
+    controller.square().whileTrue(PathfindCommands.pathfindToHub(drive));
     controller.triangle().whileTrue(turret.aimAtPoint(() -> MatchStateCalculator.getHub()));
     controller.L3().whileTrue(PathfindCommands.pathfindtoScoringPosition(drive));
     controller.R1().whileTrue(flywheel.spinUpCommand(-2500));
@@ -295,42 +295,68 @@ public class RobotContainer {
                 transfer.feedShooterCommand()));
     controller.L1().whileTrue(intake.runIntakeCommand());
 
-    // controller.triangle().whileTrue(pivot.runPercent(-1));
-    controller.cross().whileTrue(pivot.runPercent(1));
+    controller.triangle().whileTrue(pivot.runPercent(-0.1));
+    controller.cross().whileTrue(pivot.runPercent(0.1));
 
-    // controller
-    //     .L2()
-    //     .whileTrue(
-    //         Commands.deferredProxy(
-    //             () -> {
-    //               double distance = drive.getDistanceToHub();
-    //               double targetRPM = flywheel.getRPMForDistance(distance);
-
-    //               return flywheel
-    //                   .spinUpCommand(targetRPM)
-    //                   .alongWith(
-    //                       Commands.waitUntil(flywheel::isAtSpeed)
-    //                           .andThen(
-    //                               Commands.parallel(
-    //                                   //   intake.runIntakeCommand(),
-    //                                   spindexer.activeSpindexerCommand(),
-    //                                   transfer.feedShooterCommand())));
-    //             }));
+    controller
+        .R3()
+        .whileTrue(
+            Commands.either(
+                Commands.parallel(
+                    flywheel.dynamicSpinUp(false),
+                    turret.aimAtPoint(
+                        () -> {
+                          double currentDistance =
+                              drive
+                                  .getPose()
+                                  .getTranslation()
+                                  .getDistance(MatchStateCalculator.getHub());
+                          double flightTime = flywheel.getTimeOfFlight(currentDistance);
+                          return MatchStateCalculator.getMovingHub(
+                              drive.getPose(),
+                              drive.getFieldVelocityX(),
+                              drive.getFieldVelocityY(),
+                              flightTime);
+                        }),
+                    Commands.sequence(
+                        Commands.waitUntil(flywheel::isAtSpeed),
+                        Commands.parallel(
+                            spindexer.activeSpindexerCommand(),
+                            transfer.feedShooterCommand(),
+                            intake.runIntakeCommand()))),
+                Commands.parallel(
+                    flywheel.spinUpCommand(-4000),
+                    turret.aimAtFieldZero(),
+                    Commands.sequence(
+                        Commands.waitUntil(flywheel::isAtSpeed),
+                        Commands.parallel(
+                            spindexer.activeSpindexerCommand(),
+                            transfer.feedShooterCommand(),
+                            intake.runIntakeCommand()))),
+                () -> MatchStateCalculator.isInAllianceZone(drive.getPose())));
     controller
         .L2()
         .whileTrue(
-            Commands.parallel(
-                flywheel.dynamicSpinUp(true),
-                turret.aimAtPoint(() -> MatchStateCalculator.getHub()), // .until(null)
-                Commands.sequence(
-                    Commands.waitUntil(flywheel::isAtSpeed),
-                    Commands.parallel(
-                        spindexer.activeSpindexerCommand(),
-                        transfer.feedShooterCommand()
-                    )
-                )
-            )
-        );
+            Commands.either(
+                Commands.parallel(
+                    flywheel.dynamicSpinUp(false),
+                    turret.aimAtPoint(() -> MatchStateCalculator.getHub()),
+                    Commands.sequence(
+                        Commands.waitUntil(flywheel::isAtSpeed),
+                        Commands.parallel(
+                            spindexer.activeSpindexerCommand(),
+                            transfer.feedShooterCommand(),
+                            intake.runIntakeCommand()))),
+                Commands.parallel(
+                    flywheel.spinUpCommand(-4000),
+                    turret.aimAtFieldZero(),
+                    Commands.sequence(
+                        Commands.waitUntil(flywheel::isAtSpeed),
+                        Commands.parallel(
+                            spindexer.activeSpindexerCommand(),
+                            transfer.feedShooterCommand(),
+                            intake.runIntakeCommand()))),
+                () -> MatchStateCalculator.isInAllianceZone(drive.getPose())));
 
     controller.PS().whileTrue(new TuneShooterRPM(flywheel));
     controller

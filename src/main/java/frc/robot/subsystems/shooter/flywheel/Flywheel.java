@@ -3,16 +3,12 @@ package frc.robot.subsystems.shooter.flywheel;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
-
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.drive.Drive;
-
+import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
 public class Flywheel extends SubsystemBase {
@@ -22,11 +18,20 @@ public class Flywheel extends SubsystemBase {
   private DoubleSupplier distanceSupplier;
 
   private final InterpolatingDoubleTreeMap distanceToRPM = new InterpolatingDoubleTreeMap();
+  private final InterpolatingDoubleTreeMap distanceToTimeOfFlight =
+      new InterpolatingDoubleTreeMap();
 
   private final SysIdRoutine sysIdRoutine;
 
   public Flywheel(FlywheelIO io, DoubleSupplier distanceSupplier) {
     this.io = io;
+    this.distanceSupplier = distanceSupplier;
+    // Distance to ToF
+    distanceToTimeOfFlight.put(1.57, 0.45);
+    distanceToTimeOfFlight.put(2.00, 0.55);
+    distanceToTimeOfFlight.put(3.00, 0.75);
+    distanceToTimeOfFlight.put(4.00, 0.90);
+    // Distance to RPM
     distanceToRPM.put(1.57, -2100.0);
     distanceToRPM.put(1.7, -2180.0);
     distanceToRPM.put(1.9, -2220.0);
@@ -61,6 +66,10 @@ public class Flywheel extends SubsystemBase {
     return distanceToRPM.get(distanceSupplier.getAsDouble());
   }
 
+  public double getTimeOfFlight(double distanceMeters) {
+    return distanceToTimeOfFlight.get(distanceMeters);
+  }
+
   @Override
   public void periodic() {
     io.updateInputs(inputs);
@@ -77,7 +86,8 @@ public class Flywheel extends SubsystemBase {
         && Math.abs(Math.abs(currentRPM) - Math.abs(targetRPM))
             < FlywheelConstants.VELOCITY_TOLERANCE_RPM;
   }
-  public double calculateRPM(Drive drive){
+
+  public double calculateRPM(Drive drive) {
     return targetRPM = this.getRPMForDistance();
   }
 
