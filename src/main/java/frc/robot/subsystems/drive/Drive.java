@@ -376,6 +376,14 @@ public class Drive extends SubsystemBase {
     };
   }
 
+  public double getFieldVelocityX() {
+    return getChassisSpeeds().vxMetersPerSecond;
+  }
+
+  public double getFieldVelocityY() {
+    return getChassisSpeeds().vyMetersPerSecond;
+  }
+
   public double getDistanceToHub() {
 
     return getPose().getTranslation().getDistance(MatchStateCalculator.getHub());

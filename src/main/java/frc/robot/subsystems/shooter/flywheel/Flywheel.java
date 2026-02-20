@@ -18,12 +18,20 @@ public class Flywheel extends SubsystemBase {
   private DoubleSupplier distanceSupplier;
 
   private final InterpolatingDoubleTreeMap distanceToRPM = new InterpolatingDoubleTreeMap();
+  private final InterpolatingDoubleTreeMap distanceToTimeOfFlight =
+      new InterpolatingDoubleTreeMap();
 
   private final SysIdRoutine sysIdRoutine;
 
   public Flywheel(FlywheelIO io, DoubleSupplier distanceSupplier) {
     this.io = io;
     this.distanceSupplier = distanceSupplier;
+    // Distance to ToF
+    distanceToTimeOfFlight.put(1.57, 0.45);
+    distanceToTimeOfFlight.put(2.00, 0.55);
+    distanceToTimeOfFlight.put(3.00, 0.75);
+    distanceToTimeOfFlight.put(4.00, 0.90);
+    // Distance to RPM
     distanceToRPM.put(1.57, -2100.0);
     distanceToRPM.put(1.7, -2180.0);
     distanceToRPM.put(1.9, -2220.0);
@@ -56,6 +64,10 @@ public class Flywheel extends SubsystemBase {
 
   public double getRPMForDistance() {
     return distanceToRPM.get(distanceSupplier.getAsDouble());
+  }
+
+  public double getTimeOfFlight(double distanceMeters) {
+    return distanceToTimeOfFlight.get(distanceMeters);
   }
 
   @Override

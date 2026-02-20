@@ -31,9 +31,22 @@ public class MatchStateCalculator {
 
     return pos1.plus(pos2).div(2);
   }
-  /** Gets the postion of the alliance designated Hub */
+
   public static Translation2d getHub() {
     return getStaticHub();
+  }
+
+  public static Translation2d getMovingHub(
+      Pose2d robotPose,
+      double robotVxMetersPerSec,
+      double robotVyMetersPerSec,
+      double timeOfFlight) {
+    Translation2d staticHub = getHub();
+
+    double virtualX = staticHub.getX() - (robotVxMetersPerSec * timeOfFlight);
+    double virtualY = staticHub.getY() - (robotVyMetersPerSec * timeOfFlight);
+
+    return new Translation2d(virtualX, virtualY);
   }
 
   public static boolean isInAllianceZone(Pose2d robotPose) {
