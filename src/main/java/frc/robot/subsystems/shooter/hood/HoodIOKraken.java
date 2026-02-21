@@ -19,7 +19,7 @@ public class HoodIOKraken implements HoodIO {
 
   @Override
   public void updateInputs(HoodIOInputs inputs) {
-    inputs.positionRad = Units.rotationsToRadians(motor.getPosition().getValueAsDouble());
+    //inputs.positionRad = Units.rotationsToRadians(motor.getPosition().getValueAsDouble());
     inputs.appliedVolts = motor.getMotorVoltage().getValueAsDouble();
   }
 
