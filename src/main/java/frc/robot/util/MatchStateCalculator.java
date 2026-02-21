@@ -4,6 +4,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
@@ -38,14 +39,13 @@ public class MatchStateCalculator {
 
   public static Translation2d getMovingHub(
       Pose2d robotPose,
-      double robotVxMetersPerSec,
-      double robotVyMetersPerSec,
+      Twist2d robotVelocity,
       double timeOfFlight,
       double velocityScalar) {
     Translation2d staticHub = getHub();
 
-    double effectiveVx = robotVxMetersPerSec * velocityScalar;
-    double effectiveVy = robotVyMetersPerSec * velocityScalar;
+    double effectiveVx = robotVelocity.dx * velocityScalar;
+    double effectiveVy = robotVelocity.dy * velocityScalar;
 
     double virtualX = staticHub.getX() + (effectiveVx * timeOfFlight);
     double virtualY = staticHub.getY() + (effectiveVy * timeOfFlight);

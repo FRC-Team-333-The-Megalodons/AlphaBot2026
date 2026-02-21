@@ -376,16 +376,23 @@ public class Drive extends SubsystemBase {
     };
   }
 
-  public double getFieldVelocityX() {
+  private double getFieldVelocityX() {
     return getChassisSpeeds().vxMetersPerSecond;
   }
 
-  public double getFieldVelocityY() {
+  private double getFieldVelocityY() {
     return getChassisSpeeds().vyMetersPerSecond;
+  }
+  public double getFieldAngularVelocity(){
+    return getChassisSpeeds().omegaRadiansPerSecond;
+  }
+  public Twist2d robotFieldVelocity(){
+    return new Twist2d(getFieldVelocityX(), getFieldVelocityY(), getFieldAngularVelocity());
   }
 
   public double getDistanceToHub() {
 
     return getPose().getTranslation().getDistance(MatchStateCalculator.getHub());
   }
+  
 }

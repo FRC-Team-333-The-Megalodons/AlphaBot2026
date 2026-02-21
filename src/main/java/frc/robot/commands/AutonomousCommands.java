@@ -67,8 +67,7 @@ public class AutonomousCommands {
 
               return MatchStateCalculator.getMovingHub(
                   drive.getPose(),
-                  drive.getFieldVelocityX(),
-                  drive.getFieldVelocityY(),
+                  drive.robotFieldVelocity(),
                   flightTime,
                   dynamicScalar);
             }),
