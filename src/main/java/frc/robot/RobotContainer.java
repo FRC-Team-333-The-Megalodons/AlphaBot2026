@@ -192,6 +192,10 @@ public class RobotContainer {
                 Commands.waitSeconds(3.0)),
             AutonomousCommands.movingShootCommand(
                 drive, flywheel, turret, intake, spindexer, transfer)));
+    NamedCommands.registerCommand(
+        "OutpostToHubSequence",
+        AutonomousCommands.outpostToHubSequence(
+            drive, flywheel, turret, intake, spindexer, transfer));
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -301,13 +305,13 @@ public class RobotContainer {
     controller.square().whileTrue(PathfindCommands.pathfindToHub(drive));
     controller.povDown().whileTrue(turret.aimAtPoint(() -> MatchStateCalculator.getHub()));
     controller.L3().whileTrue(PathfindCommands.pathfindtoScoringPosition(drive));
-    controller
-        .L2()
-        .whileTrue(
-            Commands.parallel(
-                intake.runIntakeCommand(),
-                spindexer.activeSpindexerCommand(),
-                transfer.feedShooterCommand()));
+    // controller
+    //     .L2()
+    //     .whileTrue(
+    //         Commands.parallel(
+    //             intake.runIntakeCommand(),
+    //             spindexer.activeSpindexerCommand(),
+    //             transfer.feedShooterCommand()));
     controller.L1().whileTrue(intake.runIntakeCommand());
 
     controller.triangle().whileTrue(pivot.runPercent(-0.1));
@@ -342,7 +346,7 @@ public class RobotContainer {
                             transfer.feedShooterCommand(),
                             intake.runIntakeCommand()))),
                 Commands.parallel(
-                    flywheel.spinUpCommand(-4000),
+                    flywheel.spinUpCommand(4000),
                     turret.aimAtFieldZero(), // Continuously tracks 0 degrees relative to field
                     Commands.sequence(
                         Commands.waitUntil(flywheel::isAtSpeed),

@@ -7,13 +7,7 @@
         {
           "type": "named",
           "data": {
-            "name": "OutpostAndShoot"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "WaitTowerAndShoot"
+            "name": "OutpostToHubSequence"
           }
         }
       ]

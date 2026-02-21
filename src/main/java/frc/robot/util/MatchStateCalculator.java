@@ -3,6 +3,7 @@ package frc.robot.util;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -38,11 +39,16 @@ public class MatchStateCalculator {
   }
 
   public static Translation2d getMovingHub(
-      Pose2d robotPose,
-      Twist2d robotVelocity,
-      double timeOfFlight,
-      double velocityScalar) {
+      Pose2d robotPose, Twist2d robotVelocity, double timeOfFlight, double velocityScalar) {
     Translation2d staticHub = getHub();
+    Translation2d velocity_translational = new Translation2d(robotVelocity.dx, robotVelocity.dy);
+
+    Translation2d toHub = staticHub.minus(robotPose.getTranslation());
+    double uncompensatedRange = toHub.getNorm();
+    Rotation2d robotToGoal = toHub.getAngle();
+
+    Translation2d target_relative_velocity =
+        velocity_translational.rotateBy(robotToGoal.unaryMinus());
 
     double effectiveVx = robotVelocity.dx * velocityScalar;
     double effectiveVy = robotVelocity.dy * velocityScalar;

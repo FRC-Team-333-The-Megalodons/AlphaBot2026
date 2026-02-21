@@ -184,6 +184,7 @@ public class Drive extends SubsystemBase {
     double[] sampleTimestamps =
         modules[0].getOdometryTimestamps(); // All signals are sampled together
     int sampleCount = sampleTimestamps.length;
+    Logger.recordOutput("SwerveStates/sampleCount", sampleCount);
     for (int i = 0; i < sampleCount; i++) {
       // Read wheel positions and deltas from each module
       SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
@@ -210,7 +211,7 @@ public class Drive extends SubsystemBase {
 
       // Apply update
       poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
-      Pose2d pose = poseEstimator.getEstimatedPosition();
+      // Pose2d pose = poseEstimator.getEstimatedPosition();
 
       // posePublisher.set(
       //     new double[] {
@@ -383,10 +384,12 @@ public class Drive extends SubsystemBase {
   private double getFieldVelocityY() {
     return getChassisSpeeds().vyMetersPerSecond;
   }
-  public double getFieldAngularVelocity(){
+
+  public double getFieldAngularVelocity() {
     return getChassisSpeeds().omegaRadiansPerSecond;
   }
-  public Twist2d robotFieldVelocity(){
+
+  public Twist2d robotFieldVelocity() {
     return new Twist2d(getFieldVelocityX(), getFieldVelocityY(), getFieldAngularVelocity());
   }
 
@@ -394,5 +397,4 @@ public class Drive extends SubsystemBase {
 
     return getPose().getTranslation().getDistance(MatchStateCalculator.getHub());
   }
-  
 }

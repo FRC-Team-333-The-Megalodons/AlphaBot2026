@@ -42,21 +42,21 @@ public class Flywheel extends SubsystemBase {
     distanceToTimeOfFlight.put(3.50, 1.1);
     distanceToTimeOfFlight.put(4.0, 1.1);
     // Distance to RPM
-    distanceToRPM.put(1.57, -2100.0);
-    distanceToRPM.put(1.7, -2180.0);
-    distanceToRPM.put(1.9, -2220.0);
-    distanceToRPM.put(2.1, -2250.0);
-    distanceToRPM.put(2.3, -2280.0);
-    distanceToRPM.put(2.67, -2300.0);
-    distanceToRPM.put(2.82, -2350.0);
-    distanceToRPM.put(3.15, -2390.0);
-    distanceToRPM.put(3.5, -2530.0);
-    distanceToRPM.put(3.7, -2610.0);
-    distanceToRPM.put(4.0, -2660.0);
+    distanceToRPM.put(1.57, 2100.0);
+    distanceToRPM.put(1.7, 2180.0);
+    distanceToRPM.put(1.9, 2220.0);
+    distanceToRPM.put(2.1, 2250.0);
+    distanceToRPM.put(2.3, 2280.0);
+    distanceToRPM.put(2.67, 2300.0);
+    distanceToRPM.put(2.82, 2350.0);
+    distanceToRPM.put(3.15, 2390.0);
+    distanceToRPM.put(3.5, 2530.0);
+    distanceToRPM.put(3.7, 2610.0);
+    distanceToRPM.put(4.0, 2660.0);
 
-    distanceToRPM.put(4.2, -2850.0);
+    distanceToRPM.put(4.2, 2850.0);
 
-    distanceToRPM.put(4.4, -3050.0);
+    distanceToRPM.put(4.4, 3050.0);
     // distanceToRPM.put(4.6, -2340.0);
 
     sysIdRoutine =

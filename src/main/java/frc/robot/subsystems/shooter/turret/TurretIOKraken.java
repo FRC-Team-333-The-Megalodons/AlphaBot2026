@@ -19,6 +19,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
+import org.littletonrobotics.junction.Logger;
 
 public class TurretIOKraken implements TurretIO {
   private final TalonFX turretMotor;
@@ -84,27 +85,40 @@ public class TurretIOKraken implements TurretIO {
         50.0, turretPosition, turretVelocity, turretVolts, turretCurrent, enc17AbsPos, enc18AbsPos);
   }
 
+  public boolean areEncoderValuesSane(double enc17, double enc18) {
+    // In the real world, neither encoder should ever give a true absolute zero value;
+    // If they do, you know it is B/S (i.e. its giving you a placeholder start value)
+    return (enc17 != 0.0 && enc18 != 0.0);
+  }
+
+  public static long lastSeededTime = 0;
+  public static final long turretCrtSeedDelay = 5000; // millseconds
+
   @Override
   public void updateInputs(TurretIOInputs inputs) {
     // Seed Absolute Position once the Robot Boots
     BaseStatusSignal.refreshAll(
         turretPosition, turretVelocity, turretVolts, turretCurrent, enc17AbsPos, enc18AbsPos);
 
-    if (!hasSeeded || turretMotor.hasResetOccurred()) {
-      if (BaseStatusSignal.isAllGood(enc17AbsPos, enc18AbsPos)) {
+    // if (!hasSeeded || turretMotor.hasResetOccurred()) {
+    long now = System.currentTimeMillis();
+    if (now - lastSeededTime > turretCrtSeedDelay) {
+      if (BaseStatusSignal.isAllGood(enc17AbsPos, enc18AbsPos)
+          && areEncoderValuesSane(enc17AbsPos.getValueAsDouble(), enc18AbsPos.getValueAsDouble())) {
         double absPos =
             calculateAbsolutePosition(
                 enc17AbsPos.getValueAsDouble(), enc18AbsPos.getValueAsDouble());
 
-        StatusCode motorStatus = turretMotor.setPosition(absPos);
+        StatusCode motorStatus = turretMotor.setPosition(absPos, 0.01);
         if (motorStatus == StatusCode.OK) {
           hasSeeded = true;
+          lastSeededTime = now;
           System.out.println("[Turret] Successfully seeded absolute position: " + absPos);
         }
       }
     }
 
-    inputs.connected = BaseStatusSignal.isAllGood(turretPosition, enc17AbsPos);
+    // inputs.connected = BaseStatusSignal.isAllGood(turretPosition, enc17AbsPos);
     inputs.turretPositionRad = Units.rotationsToRadians(turretPosition.getValueAsDouble());
     inputs.turretPositionDeg = Units.radiansToDegrees(inputs.turretPositionRad);
     inputs.turretVelocityRadPerSec = Units.rotationsToRadians(turretVelocity.getValueAsDouble());
@@ -134,6 +148,13 @@ public class TurretIOKraken implements TurretIO {
 
   /** Calculates the absolute turret position using the CRT */
   private double calculateAbsolutePosition(double p17, double p18) {
+    long start = System.currentTimeMillis();
+    double result = calculateAbsolutePosition_impl(p17, p18);
+    Logger.recordOutput("CRT_Calc_Time", System.currentTimeMillis() - start);
+    return result;
+  }
+
+  private double calculateAbsolutePosition_impl(double p17, double p18) {
     double n1 = 17.0;
     double n2 = 18.0;
     double N = 105.0;

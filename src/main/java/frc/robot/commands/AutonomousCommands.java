@@ -18,6 +18,7 @@ import frc.robot.subsystems.shooter.flywheel.Flywheel;
 import frc.robot.subsystems.shooter.turret.Turret;
 import frc.robot.subsystems.spindexer.Spindexer;
 import frc.robot.subsystems.transfer.Transfer;
+import frc.robot.util.FieldLayout;
 import frc.robot.util.MatchStateCalculator;
 
 /** Add your docs here. */
@@ -66,10 +67,7 @@ public class AutonomousCommands {
               double dynamicScalar = flywheel.getVelocityScalar(currentDistance);
 
               return MatchStateCalculator.getMovingHub(
-                  drive.getPose(),
-                  drive.robotFieldVelocity(),
-                  flightTime,
-                  dynamicScalar);
+                  drive.getPose(), drive.robotFieldVelocity(), flightTime, dynamicScalar);
             }),
         Commands.sequence(
             Commands.waitUntil(flywheel::isAtSpeed),
@@ -77,5 +75,20 @@ public class AutonomousCommands {
                 spindexer.activeSpindexerCommand(),
                 transfer.feedShooterCommand(),
                 intake.runIntakeCommand())));
+  }
+
+  public static Command outpostToHubSequence(
+      Drive drive,
+      Flywheel flywheel,
+      Turret turret,
+      Intake intake,
+      Spindexer spindexer,
+      Transfer transfer) {
+
+    return Commands.sequence(
+        movingShootCommand(drive, flywheel, turret, intake, spindexer, transfer).withTimeout(2.0),
+        PathfindCommands.precisionPathfindTo(FieldLayout.Outpost.OUTPOST_POSE, drive),
+        movingShootCommand(drive, flywheel, turret, intake, spindexer, transfer).withTimeout(3.5),
+        PathfindCommands.precisionPathfindTo(FieldLayout.Hub.NEAR_FACE, drive));
   }
 }
