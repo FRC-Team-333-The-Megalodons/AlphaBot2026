@@ -106,7 +106,8 @@ public class TurretIOYAMS implements TurretIO {
                 Rotations.of(TurretConstants.kEncoder17ZeroOffset),
                 Rotations.of(TurretConstants.kEncoder18ZeroOffset))
             .withMatchTolerance(Rotations.of(0.06))
-            .withAbsoluteEncoderInversions(false, false);
+            .withAbsoluteEncoderInversions(
+                TurretConstants.kEncoder17Inverted, TurretConstants.kEncoder18Inverted);
 
     easyCrtSolver = new EasyCRT(easyCrtConfig);
   }

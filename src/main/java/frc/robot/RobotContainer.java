@@ -15,6 +15,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -47,7 +48,6 @@ import frc.robot.subsystems.shooter.flywheel.FlywheelIOKraken;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIOKrakenSim;
 import frc.robot.subsystems.shooter.turret.Turret;
 import frc.robot.subsystems.shooter.turret.TurretIO;
-import frc.robot.subsystems.shooter.turret.TurretIOKraken;
 import frc.robot.subsystems.shooter.turret.TurretIOKrakenSim;
 import frc.robot.subsystems.shooter.turret.TurretIOYAMS;
 import frc.robot.subsystems.spindexer.Spindexer;
@@ -109,7 +109,24 @@ public class RobotContainer {
         intake = new Intake(new IntakeIOKraken());
         spindexer = new Spindexer(new SpindexerIOKraken());
         transfer = new Transfer(new TransferIOKraken());
-        flywheel = new Flywheel(new FlywheelIOKraken(), drive::getDistanceToHub);
+        flywheel =
+            new Flywheel(
+                new FlywheelIOKraken(),
+                () -> {
+                  double rawDist =
+                      drive.getPose().getTranslation().getDistance(MatchStateCalculator.getHub());
+                  double flightTime = MatchStateCalculator.getTimeOfFlight(rawDist);
+
+                  Translation2d virtualHub =
+                      MatchStateCalculator.getMovingHub(
+                          drive.getPose(),
+                          drive.robotFieldVelocity().dx,
+                          drive.robotFieldVelocity().dy,
+                          flightTime);
+
+                  // 3. Return distance to virtual hub so Flywheel looks up "Effective Range" RPM
+                  return drive.getPose().getTranslation().getDistance(virtualHub);
+                });
         pivot = new Pivot(new PivotIOKraken());
         turret = new Turret(new TurretIOYAMS(), drive::getPose);
 
@@ -322,23 +339,23 @@ public class RobotContainer {
         .L2()
         .whileTrue(
             Commands.either(
+                // =========================================================
+                // TRUE PATH: In Alliance Zone -> Full Shoot-on-the-Move
+                // =========================================================
                 Commands.parallel(
                     flywheel.dynamicSpinUp(false),
                     turret.aimAtPoint(
                         () -> {
-                          double currentDistance =
+                          double rawDist =
                               drive
                                   .getPose()
                                   .getTranslation()
                                   .getDistance(MatchStateCalculator.getHub());
-                          double flightTime = flywheel.getTimeOfFlight(currentDistance);
-                          double dynamicScalar = flywheel.getVelocityScalar(currentDistance);
-
                           return MatchStateCalculator.getMovingHub(
                               drive.getPose(),
-                              drive.robotFieldVelocity(),
-                              flightTime,
-                              dynamicScalar);
+                              drive.robotFieldVelocity().dx,
+                              drive.robotFieldVelocity().dy,
+                              MatchStateCalculator.getTimeOfFlight(rawDist));
                         }),
                     Commands.sequence(
                         Commands.waitUntil(flywheel::isAtSpeed),
@@ -347,8 +364,8 @@ public class RobotContainer {
                             transfer.feedShooterCommand(),
                             intake.runIntakeCommand()))),
                 Commands.parallel(
-                    flywheel.spinUpCommand(4000),
-                    turret.aimAtFieldZero(), // Continuously tracks 0 degrees relative to field
+                    flywheel.spinUpCommand(-4000),
+                    turret.runToAngle(Rotation2d.fromDegrees(0)),
                     Commands.sequence(
                         Commands.waitUntil(flywheel::isAtSpeed),
                         Commands.parallel(
@@ -356,6 +373,45 @@ public class RobotContainer {
                             transfer.feedShooterCommand(),
                             intake.runIntakeCommand()))),
                 () -> MatchStateCalculator.isInAllianceZone(drive.getPose())));
+
+    // controller
+    //     .L2()
+    //     .whileTrue(
+    //         Commands.either(
+    //             Commands.parallel(
+    //                 flywheel.dynamicSpinUp(false),
+    //                 turret.aimAtPoint(
+    //                     () -> {
+    //                       double currentDistance =
+    //                           drive
+    //                               .getPose()
+    //                               .getTranslation()
+    //                               .getDistance(MatchStateCalculator.getHub());
+    //                       double flightTime = flywheel.getTimeOfFlight(currentDistance);
+    //                       double dynamicScalar = flywheel.getVelocityScalar(currentDistance);
+
+    //                       return MatchStateCalculator.getMovingHub(
+    //                           drive.getPose(),
+    //                           drive.robotFieldVelocity(),
+    //                           flightTime,
+    //                           dynamicScalar);
+    //                     }),
+    //                 Commands.sequence(
+    //                     Commands.waitUntil(flywheel::isAtSpeed),
+    //                     Commands.parallel(
+    //                         spindexer.activeSpindexerCommand(),
+    //                         transfer.feedShooterCommand(),
+    //                         intake.runIntakeCommand()))),
+    //             Commands.parallel(
+    //                 flywheel.spinUpCommand(4000),
+    //                 turret.aimAtFieldZero(), // Continuously tracks 0 degrees relative to field
+    //                 Commands.sequence(
+    //                     Commands.waitUntil(flywheel::isAtSpeed),
+    //                     Commands.parallel(
+    //                         spindexer.activeSpindexerCommand(),
+    //                         transfer.feedShooterCommand(),
+    //                         intake.runIntakeCommand()))),
+    //             () -> MatchStateCalculator.isInAllianceZone(drive.getPose())));
     controller
         .R1()
         .whileTrue(

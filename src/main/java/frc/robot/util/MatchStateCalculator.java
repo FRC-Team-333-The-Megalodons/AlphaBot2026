@@ -5,7 +5,7 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Twist2d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
@@ -14,6 +14,22 @@ public class MatchStateCalculator {
       AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
   public static final int[] RED_FRONT_FACE_IDS = new int[] {10, 4};
   public static final int[] BLUE_FRONT_FACE_IDS = new int[] {25, 20};
+  public static final InterpolatingDoubleTreeMap distanceToTimeOfFlight =
+      new InterpolatingDoubleTreeMap();
+
+  static {
+    // Distance to ToF
+    distanceToTimeOfFlight.put(1.57, 0.8);
+    distanceToTimeOfFlight.put(2.00, 3.7);
+    distanceToTimeOfFlight.put(2.50, 3.77);
+    distanceToTimeOfFlight.put(3.0, 4.03);
+    distanceToTimeOfFlight.put(3.50, 1.1);
+    distanceToTimeOfFlight.put(4.0, 1.1);
+  }
+
+  public static double getTimeOfFlight(double distanceMeters) {
+    return distanceToTimeOfFlight.get(distanceMeters);
+  }
 
   public static boolean isBlueAlliance() {
     return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue;
@@ -38,25 +54,58 @@ public class MatchStateCalculator {
     return getStaticHub();
   }
 
+  // public static Translation2d getMovingHub(
+  //     Pose2d robotPose, Twist2d robotVelocity, double timeOfFlight, double velocityScalar) {
+  //   Translation2d staticHub = getHub();
+  //   Translation2d velocity_translational = new Translation2d(robotVelocity.dx, robotVelocity.dy);
+
+  //   Translation2d toHub = staticHub.minus(robotPose.getTranslation());
+  //   double uncompensatedRange = toHub.getNorm();
+  //   Rotation2d robotToGoal = toHub.getAngle();
+
+  //   Translation2d target_relative_velocity =
+  //       velocity_translational.rotateBy(robotToGoal.unaryMinus());
+
+  //   double effectiveVx = robotVelocity.dx * velocityScalar;
+  //   double effectiveVy = robotVelocity.dy * velocityScalar;
+
+  //   double virtualX = staticHub.getX() + (effectiveVx * timeOfFlight);
+  //   double virtualY = staticHub.getY() + (effectiveVy * timeOfFlight);
+
+  //   return new Translation2d(virtualX, virtualY);
+  // }
   public static Translation2d getMovingHub(
-      Pose2d robotPose, Twist2d robotVelocity, double timeOfFlight, double velocityScalar) {
+      Pose2d robotPose, double robotVx, double robotVy, double timeOfFlight) {
     Translation2d staticHub = getHub();
-    Translation2d velocity_translational = new Translation2d(robotVelocity.dx, robotVelocity.dy);
 
     Translation2d toHub = staticHub.minus(robotPose.getTranslation());
     double uncompensatedRange = toHub.getNorm();
-    Rotation2d robotToGoal = toHub.getAngle();
+    Rotation2d robotToGoalAngle = toHub.getAngle();
 
-    Translation2d target_relative_velocity =
-        velocity_translational.rotateBy(robotToGoal.unaryMinus());
+    Translation2d fieldVelocity = new Translation2d(robotVx, robotVy);
+    Translation2d goalRelativeVelocity = fieldVelocity.rotateBy(robotToGoalAngle.unaryMinus());
 
-    double effectiveVx = robotVelocity.dx * velocityScalar;
-    double effectiveVy = robotVelocity.dy * velocityScalar;
+    double dragConstant = 1.65; // Tuning : higher = turret aims closer to physical hub
+    double velocityScalar =
+        (timeOfFlight <= 0.01)
+            ? 1.0
+            : (1.0 - Math.exp(-dragConstant * timeOfFlight)) / (dragConstant * timeOfFlight);
 
-    double virtualX = staticHub.getX() + (effectiveVx * timeOfFlight);
-    double virtualY = staticHub.getY() + (effectiveVy * timeOfFlight);
+    double scaledRadial = goalRelativeVelocity.getX() * velocityScalar;
+    double scaledTangential = goalRelativeVelocity.getY() * velocityScalar;
 
-    return new Translation2d(virtualX, virtualY);
+    double baseShotSpeed = uncompensatedRange / timeOfFlight;
+    double effectiveShotSpeed = baseShotSpeed - scaledRadial;
+    if (effectiveShotSpeed <= 0.0) effectiveShotSpeed = 0.001;
+
+    double angularOffsetRad = Math.atan2(-scaledTangential, effectiveShotSpeed);
+
+    double effectiveRange = timeOfFlight * Math.hypot(scaledTangential, effectiveShotSpeed);
+
+    Rotation2d finalHeading = robotToGoalAngle.plus(Rotation2d.fromRadians(angularOffsetRad));
+    Translation2d virtualOffset = new Translation2d(effectiveRange, finalHeading);
+
+    return robotPose.getTranslation().plus(virtualOffset);
   }
 
   public static boolean isInAllianceZone(Pose2d robotPose) {

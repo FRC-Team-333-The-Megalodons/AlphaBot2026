@@ -58,23 +58,20 @@ public class AutonomousCommands {
       Transfer transfer) {
 
     return Commands.parallel(
-        flywheel.dynamicSpinUp(false),
+        Commands.run(flywheel::getRPMForDistance, flywheel),
         turret.aimAtPoint(
             () -> {
-              double currentDistance =
+              double rawDist =
                   drive.getPose().getTranslation().getDistance(MatchStateCalculator.getHub());
-              double flightTime = flywheel.getTimeOfFlight(currentDistance);
-              double dynamicScalar = flywheel.getVelocityScalar(currentDistance);
-
               return MatchStateCalculator.getMovingHub(
-                  drive.getPose(), drive.robotFieldVelocity(), flightTime, dynamicScalar);
+                  drive.getPose(),
+                  drive.robotFieldVelocity().dx,
+                  drive.robotFieldVelocity().dy,
+                  MatchStateCalculator.getTimeOfFlight(rawDist));
             }),
         Commands.sequence(
             Commands.waitUntil(flywheel::isAtSpeed),
-            Commands.parallel(
-                spindexer.activeSpindexerCommand(),
-                transfer.feedShooterCommand(),
-                intake.runIntakeCommand())));
+            Commands.parallel(spindexer.activeSpindexerCommand(), transfer.feedShooterCommand())));
   }
 
   public static Command outpostToHubSequence(
