@@ -21,7 +21,11 @@ public class SpindexerIOKraken implements SpindexerIO {
   public void updateInputs(SpindexerIOInputs inputs) {
     // Commenting out un-needed stats for logging to improve 20ms cycle overrun issues.
     // inputs.velocityRps = motor.getVelocity().getValueAsDouble();
-    inputs.appliedVolts = motor.getMotorVoltage().getValueAsDouble(); // Keeping applied volts, because we really need to know when a motor is powered for debugging
+    inputs.appliedVolts =
+        motor
+            .getMotorVoltage()
+            .getValueAsDouble(); // Keeping applied volts, because we really need to know when a
+    // motor is powered for debugging
     // inputs.currentAmps = motor.getStatorCurrent().getValueAsDouble();
   }
 

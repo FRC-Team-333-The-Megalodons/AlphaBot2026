@@ -4,13 +4,16 @@ public class TurretConstants {
 
   public static final double kTurretZeroOffset = 0.262;
 
+  public static final double kEncoder17ZeroOffset = 0.0;
+  public static final double kEncoder18ZeroOffset = 0.0;
+
   public static final int kTurretMotorId = 7;
   public static final int kEncoder17Id = 44;
   public static final int kEncoder18Id = 43;
 
-  public static final double kTurretGearTeeth = 105.0;
-  public static final double kEncoder1Teeth = 17.0;
-  public static final double kEncoder2Teeth = 18.0;
+  public static final int kTurretGearTeeth = 105;
+  public static final int kEncoder1Teeth = 17;
+  public static final int kEncoder2Teeth = 18;
 
   public static final double kMotorToTurretRatio = 19.6875;
 

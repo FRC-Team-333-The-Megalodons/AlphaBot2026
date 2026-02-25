@@ -2,26 +2,20 @@ package frc.robot.subsystems.pivot;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 
 public class PivotIOKrakenSim implements PivotIO {
-  private final SingleJointedArmSim sim =
-      new SingleJointedArmSim(
-          LinearSystemId.createSingleJointedArmSystem(
-              DCMotor.getKrakenX60(1), 0.8, PivotConstants.GEAR_RATIO),
+  private final FlywheelSim sim =
+      new FlywheelSim(
+          LinearSystemId.createFlywheelSystem(DCMotor.getKrakenX60(1), 0.008, 1.0),
           DCMotor.getKrakenX60(1),
-          PivotConstants.GEAR_RATIO,
-          0.4,
-          0.0,
-          Math.PI / 2.0,
-          true,
-          0.0);
+          0.001);
   private double appliedVolts = 0.0;
 
   @Override
   public void updateInputs(PivotIOInputs inputs) {
     sim.update(0.02);
-    inputs.positionRad = sim.getAngleRads();
+    inputs.positionRad = 0;
     inputs.appliedVolts = appliedVolts;
   }
 

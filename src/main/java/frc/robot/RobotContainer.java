@@ -49,6 +49,7 @@ import frc.robot.subsystems.shooter.turret.Turret;
 import frc.robot.subsystems.shooter.turret.TurretIO;
 import frc.robot.subsystems.shooter.turret.TurretIOKraken;
 import frc.robot.subsystems.shooter.turret.TurretIOKrakenSim;
+import frc.robot.subsystems.shooter.turret.TurretIOYAMS;
 import frc.robot.subsystems.spindexer.Spindexer;
 import frc.robot.subsystems.spindexer.SpindexerIO;
 import frc.robot.subsystems.spindexer.SpindexerIOKraken;
@@ -110,7 +111,7 @@ public class RobotContainer {
         transfer = new Transfer(new TransferIOKraken());
         flywheel = new Flywheel(new FlywheelIOKraken(), drive::getDistanceToHub);
         pivot = new Pivot(new PivotIOKraken());
-        turret = new Turret(new TurretIOKraken(), drive::getPose);
+        turret = new Turret(new TurretIOYAMS(), drive::getPose);
 
         // Note:
 
