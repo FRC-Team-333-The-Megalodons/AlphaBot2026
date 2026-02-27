@@ -16,6 +16,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -113,19 +114,25 @@ public class RobotContainer {
             new Flywheel(
                 new FlywheelIOKraken(),
                 () -> {
+                  double lookaheadTime = 0.060;
+                  Pose2d currentPose = drive.getPose();
+                  var vel = drive.robotFieldVelocity();
+                  Pose2d predictedPose =
+                      currentPose.exp(
+                          new Twist2d(
+                              vel.dx * lookaheadTime,
+                              vel.dy * lookaheadTime,
+                              vel.dtheta * lookaheadTime));
+
                   double rawDist =
-                      drive.getPose().getTranslation().getDistance(MatchStateCalculator.getHub());
-                  double flightTime = MatchStateCalculator.getTimeOfFlight(rawDist);
+                      predictedPose.getTranslation().getDistance(MatchStateCalculator.getHub());
+                  double timeOfFlight = MatchStateCalculator.getTimeOfFlight(rawDist);
 
                   Translation2d virtualHub =
                       MatchStateCalculator.getMovingHub(
-                          drive.getPose(),
-                          drive.robotFieldVelocity().dx,
-                          drive.robotFieldVelocity().dy,
-                          flightTime);
+                          predictedPose, vel.dx, vel.dy, timeOfFlight);
 
-                  // 3. Return distance to virtual hub so Flywheel looks up "Effective Range" RPM
-                  return drive.getPose().getTranslation().getDistance(virtualHub);
+                  return predictedPose.getTranslation().getDistance(virtualHub);
                 });
         pivot = new Pivot(new PivotIOKraken());
         turret = new Turret(new TurretIOYAMS(), drive::getPose);
@@ -339,22 +346,32 @@ public class RobotContainer {
         .L2()
         .whileTrue(
             Commands.either(
-                // =========================================================
-                // TRUE PATH: In Alliance Zone -> Full Shoot-on-the-Move
-                // =========================================================
                 Commands.parallel(
                     flywheel.dynamicSpinUp(false),
+
                     turret.aimAtPoint(
                         () -> {
+                          double lookaheadTime = 0.060;
+
+                          Pose2d currentPose = drive.getPose();
+                          var currentVelocity = drive.robotFieldVelocity();
+
+                          Pose2d predictedPose =
+                              currentPose.exp(
+                                  new edu.wpi.first.math.geometry.Twist2d(
+                                      currentVelocity.dx * lookaheadTime,
+                                      currentVelocity.dy * lookaheadTime,
+                                      currentVelocity.dtheta * lookaheadTime));
+
                           double rawDist =
-                              drive
-                                  .getPose()
+                              predictedPose
                                   .getTranslation()
                                   .getDistance(MatchStateCalculator.getHub());
+
                           return MatchStateCalculator.getMovingHub(
-                              drive.getPose(),
-                              drive.robotFieldVelocity().dx,
-                              drive.robotFieldVelocity().dy,
+                              predictedPose,
+                              currentVelocity.dx,
+                              currentVelocity.dy,
                               MatchStateCalculator.getTimeOfFlight(rawDist));
                         }),
                     Commands.sequence(

@@ -9,6 +9,7 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -39,7 +40,8 @@ public class TurretIOYAMS implements TurretIO {
   private final StatusSignal<Angle> enc17AbsPos;
   private final StatusSignal<Angle> enc18AbsPos;
 
-  private final MotionMagicVoltage positionRequest = new MotionMagicVoltage(0);
+  private final MotionMagicVoltage magicRequest = new MotionMagicVoltage(0).withSlot(0);
+  private final PositionVoltage trackingRequest = new PositionVoltage(0).withSlot(0);
   private final VoltageOut voltageRequest = new VoltageOut(0);
 
   private boolean hasSeeded = false;
@@ -135,8 +137,16 @@ public class TurretIOYAMS implements TurretIO {
   }
 
   @Override
-  public void setTurretPosition(Rotation2d position) {
-    turretMotor.setControl(positionRequest.withPosition(position.getRotations()));
+  public void setTurretPosition(Rotation2d position, double velocityFFRadPerSec) {
+    if (Math.abs(velocityFFRadPerSec) < 0.05) {
+      turretMotor.setControl(magicRequest.withPosition(position.getRotations()));
+    }
+    // If we are orbiting on the move, use Position tracking with Dynamic Feedforward
+    else {
+      double velocityRps = velocityFFRadPerSec / (2.0 * Math.PI);
+      turretMotor.setControl(
+          trackingRequest.withPosition(position.getRotations()).withVelocity(velocityRps));
+    }
   }
 
   @Override

@@ -132,7 +132,7 @@ public class TurretIOKraken implements TurretIO {
   }
 
   @Override
-  public void setTurretPosition(Rotation2d position) {
+  public void setTurretPosition(Rotation2d position, double velocityFeedforwardRadPerSec) {
     turretMotor.setControl(positionRequest.withPosition(position.getRotations()));
   }
 

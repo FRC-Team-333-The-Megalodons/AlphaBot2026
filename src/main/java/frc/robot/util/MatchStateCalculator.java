@@ -74,6 +74,9 @@ public class MatchStateCalculator {
 
   //   return new Translation2d(virtualX, virtualY);
   // }
+
+  public static double lastTargetYawVelocityRadPerSec = 0;
+
   public static Translation2d getMovingHub(
       Pose2d robotPose, double robotVx, double robotVy, double timeOfFlight) {
     Translation2d staticHub = getHub();
@@ -85,18 +88,27 @@ public class MatchStateCalculator {
     Translation2d fieldVelocity = new Translation2d(robotVx, robotVy);
     Translation2d goalRelativeVelocity = fieldVelocity.rotateBy(robotToGoalAngle.unaryMinus());
 
-    double dragConstant = 1.65; // Tuning : higher = turret aims closer to physical hub
+ 
+    double radialVelocity = goalRelativeVelocity.getX();
+    double tangentialVelocity = goalRelativeVelocity.getY();
+
+    
+    lastTargetYawVelocityRadPerSec = -(tangentialVelocity / uncompensatedRange);
+
+   
+    double dragConstant = 1.65; 
     double velocityScalar =
         (timeOfFlight <= 0.01)
             ? 1.0
             : (1.0 - Math.exp(-dragConstant * timeOfFlight)) / (dragConstant * timeOfFlight);
 
-    double scaledRadial = goalRelativeVelocity.getX() * velocityScalar;
-    double scaledTangential = goalRelativeVelocity.getY() * velocityScalar;
+    double scaledRadial = radialVelocity * velocityScalar;
+    double scaledTangential = tangentialVelocity * velocityScalar;
+
 
     double baseShotSpeed = uncompensatedRange / timeOfFlight;
     double effectiveShotSpeed = baseShotSpeed - scaledRadial;
-    if (effectiveShotSpeed <= 0.0) effectiveShotSpeed = 0.001;
+    if (effectiveShotSpeed <= 0.0) effectiveShotSpeed = 0.001; 
 
     double angularOffsetRad = Math.atan2(-scaledTangential, effectiveShotSpeed);
 

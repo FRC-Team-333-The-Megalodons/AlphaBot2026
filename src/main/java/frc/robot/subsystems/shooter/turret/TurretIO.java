@@ -20,7 +20,7 @@ public interface TurretIO {
 
   public default void updateInputs(TurretIOInputs inputs) {}
 
-  public default void setTurretPosition(Rotation2d position) {}
+  public default void setTurretPosition(Rotation2d position, double velocityFeedforwardRadPerSec) {}
 
   public default void setTurretVoltage(double volts) {}
 

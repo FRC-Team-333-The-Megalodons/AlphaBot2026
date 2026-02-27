@@ -60,7 +60,7 @@ public class TurretIOKrakenSim implements TurretIO {
   }
 
   @Override
-  public void setTurretPosition(Rotation2d position) {
+  public void setTurretPosition(Rotation2d position, double velocityFeedforwardRadPerSec) {
     closedLoopMode = true;
     targetPositionRad = position.getRadians();
   }
