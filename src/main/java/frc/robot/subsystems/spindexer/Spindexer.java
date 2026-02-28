@@ -18,15 +18,21 @@ public class Spindexer extends SubsystemBase {
     Logger.processInputs("Spindexer", inputs);
   }
 
-  public Command activeSpindexerCommand() {
+  public Command spinAt(double rpm, boolean waitForCompletion) {
+    Runnable func = () -> io.moveTo(rpm);
+    Command com = waitForCompletion ? run(func).until(() -> io.atTarget(rpm)) : runOnce(func);
+    return com.handleInterrupt(this::stop);
+  }
+
+  public Command spin() {
     return runEnd(this::run, this::stop);
   }
 
-  public void run() {
+  private void run() {
     io.setVoltage(SpindexerConstants.MOTOR_VOLTS);
   }
 
-  public void stop() {
-    io.setVoltage(0.0);
+  private void stop() {
+    ;
   }
 }

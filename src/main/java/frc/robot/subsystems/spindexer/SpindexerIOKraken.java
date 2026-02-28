@@ -6,6 +6,7 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.util.Units;
+import frc.robot.subsystems.pivot.PivotConstants;
 
 public class SpindexerIOKraken implements SpindexerIO {
   CANBus rio = CANBus.roboRIO();
@@ -13,8 +14,21 @@ public class SpindexerIOKraken implements SpindexerIO {
 
   public SpindexerIOKraken() {
     var config = new TalonFXConfiguration();
+    motor.getConfigurator().apply(config);
+
     config.Feedback.SensorToMechanismRatio = SpindexerConstants.GEAR_RATIO;
     motor.getConfigurator().apply(config);
+  }
+
+  @Override
+  public boolean atTarget(double rpm) {
+    boolean atVelocity = Math.abs(rpm - motor.getVelocity().getValueAsDouble() * 60.0) < SpindexerConstants.VELOCITY_TOLERANCE;
+    return atVelocity;
+  }
+
+  @Override
+  public void moveTo(double rpm) {
+    motor.setControl(new VelocityVoltage(rpm/60.0));
   }
 
   @Override
@@ -27,11 +41,6 @@ public class SpindexerIOKraken implements SpindexerIO {
             .getValueAsDouble(); // Keeping applied volts, because we really need to know when a
     // motor is powered for debugging
     // inputs.currentAmps = motor.getStatorCurrent().getValueAsDouble();
-  }
-
-  @Override
-  public void setVelocity(double rps) {
-    motor.setControl(new VelocityVoltage(Units.radiansToRotations(rps)));
   }
 
   @Override

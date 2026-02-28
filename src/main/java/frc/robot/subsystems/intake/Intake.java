@@ -18,11 +18,11 @@ public class Intake extends SubsystemBase {
     Logger.processInputs("Intake", inputs);
   }
 
-  public Command runIntakeCommand() {
+  public Command ingest() {
     return runEnd(() -> this.run(false), this::stop);
   }
 
-  public Command runOuttakeCommand() {
+  public Command eject() {
     return runEnd(() -> this.run(true), this::stop);
   }
 

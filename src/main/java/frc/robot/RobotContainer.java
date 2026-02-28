@@ -337,7 +337,7 @@ public class RobotContainer {
     //             intake.runIntakeCommand(),
     //             spindexer.activeSpindexerCommand(),
     //             transfer.feedShooterCommand()));
-    controller.L1().whileTrue(intake.runIntakeCommand());
+    controller.L1().whileTrue(intake.ingest());
 
     controller.triangle().whileTrue(pivot.runPercent(-0.1));
     controller.cross().whileTrue(pivot.runPercent(0.1));
@@ -348,7 +348,6 @@ public class RobotContainer {
             Commands.either(
                 Commands.parallel(
                     flywheel.dynamicSpinUp(false),
-
                     turret.aimAtPoint(
                         () -> {
                           double lookaheadTime = 0.060;
@@ -373,22 +372,25 @@ public class RobotContainer {
                               currentVelocity.dx,
                               currentVelocity.dy,
                               MatchStateCalculator.getTimeOfFlight(rawDist));
-                        }),
+                        }
+                    ),
                     Commands.sequence(
                         Commands.waitUntil(flywheel::isAtSpeed),
                         Commands.parallel(
-                            spindexer.activeSpindexerCommand(),
-                            transfer.feedShooterCommand(),
-                            intake.runIntakeCommand()))),
+                            spindexer.spin(),
+                            transfer.feedShooter(),
+                            intake.ingest()
+                        )
+                    )),
                 Commands.parallel(
                     flywheel.spinUpCommand(-4000),
                     turret.runToAngle(Rotation2d.fromDegrees(0)),
                     Commands.sequence(
                         Commands.waitUntil(flywheel::isAtSpeed),
                         Commands.parallel(
-                            spindexer.activeSpindexerCommand(),
-                            transfer.feedShooterCommand(),
-                            intake.runIntakeCommand()))),
+                            spindexer.spin(),
+                            transfer.feedShooter(),
+                            intake.ingest()))),
                 () -> MatchStateCalculator.isInAllianceZone(drive.getPose())));
 
     // controller
@@ -439,18 +441,18 @@ public class RobotContainer {
                     Commands.sequence(
                         Commands.waitUntil(flywheel::isAtSpeed),
                         Commands.parallel(
-                            spindexer.activeSpindexerCommand(),
-                            transfer.feedShooterCommand(),
-                            intake.runIntakeCommand()))),
+                            spindexer.spin(),
+                            transfer.feedShooter(),
+                            intake.ingest()))),
                 Commands.parallel(
                     flywheel.spinUpCommand(-4000),
                     turret.aimAtFieldZero(),
                     Commands.sequence(
                         Commands.waitUntil(flywheel::isAtSpeed),
                         Commands.parallel(
-                            spindexer.activeSpindexerCommand(),
-                            transfer.feedShooterCommand(),
-                            intake.runIntakeCommand()))),
+                            spindexer.spin(),
+                            transfer.feedShooter(),
+                            intake.ingest()))),
                 () -> MatchStateCalculator.isInAllianceZone(drive.getPose())));
 
     controller.PS().whileTrue(new TuneShooterRPM(flywheel));

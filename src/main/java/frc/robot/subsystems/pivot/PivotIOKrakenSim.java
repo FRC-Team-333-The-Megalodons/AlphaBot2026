@@ -15,7 +15,7 @@ public class PivotIOKrakenSim implements PivotIO {
   @Override
   public void updateInputs(PivotIOInputs inputs) {
     sim.update(0.02);
-    inputs.positionRad = 0;
+    inputs.pivotAngle = 0;
     inputs.appliedVolts = appliedVolts;
   }
 

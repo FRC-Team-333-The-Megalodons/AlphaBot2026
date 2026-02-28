@@ -13,6 +13,8 @@ public class PivotIOKraken implements PivotIO {
 
   public PivotIOKraken() {
     var config = new TalonFXConfiguration();
+    motor.getConfigurator().apply(config);
+
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.Feedback.SensorToMechanismRatio = PivotConstants.GEAR_RATIO;
     config.Slot0.kP = PivotConstants.kP;
@@ -20,19 +22,26 @@ public class PivotIOKraken implements PivotIO {
   }
 
   @Override
-  public void updateInputs(PivotIOInputs inputs) {
-    // Skip unnecessary fields to reduce latency
-    // inputs.positionRad = Units.rotationsToRadians(motor.getPosition().getValueAsDouble());
-    inputs.appliedVolts = motor.getMotorVoltage().getValueAsDouble();
+  public boolean atTarget(double angle) {
+    boolean atPosition = Math.abs(angle - motor.getPosition().getValueAsDouble()) < PivotConstants.POSITION_TOLERANCE;
+    boolean notMoving = Math.abs(motor.getVelocity().getValueAsDouble()) < PivotConstants.VELOCITY_TOLERANCE; 
+
+    return atPosition && notMoving;
   }
 
   @Override
-  public void setPosition(double rad) {
-    motor.setControl(new PositionVoltage(Units.radiansToRotations(rad)));
+  public void moveTo(double angle) {
+    motor.setControl(new PositionVoltage(Units.degreesToRotations(angle)));
   }
 
   @Override
   public void setVoltage(double volts) {
     motor.setVoltage(volts);
+  }
+
+  @Override
+  public void updateInputs(PivotIOInputs inputs) {
+    inputs.appliedVolts = motor.getMotorVoltage().getValueAsDouble();
+    inputs.pivotAngle = Units.radiansToDegrees(motor.getPosition().getValueAsDouble());
   }
 }

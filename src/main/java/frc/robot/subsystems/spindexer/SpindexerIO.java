@@ -2,7 +2,9 @@ package frc.robot.subsystems.spindexer;
 
 import org.littletonrobotics.junction.AutoLog;
 
-public interface SpindexerIO {
+import frc.robot.interfaces.Automatable;
+
+public interface SpindexerIO extends Automatable {
   @AutoLog
   public static class SpindexerIOInputs {
     public double velocityRps = 0.0;
