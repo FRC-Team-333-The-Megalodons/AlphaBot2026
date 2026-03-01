@@ -337,7 +337,7 @@ public class RobotContainer {
     //             intake.runIntakeCommand(),
     //             spindexer.activeSpindexerCommand(),
     //             transfer.feedShooterCommand()));
-    controller.L1().whileTrue(intake.runIntakeCommand());
+    controller.L1().whileTrue(intake.runIntakeDynamiclyCommand(drive));
 
     controller.triangle().whileTrue(pivot.runPercent(-0.1));
     controller.cross().whileTrue(pivot.runPercent(0.1));
