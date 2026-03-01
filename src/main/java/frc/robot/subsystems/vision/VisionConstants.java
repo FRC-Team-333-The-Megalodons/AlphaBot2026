@@ -20,8 +20,7 @@ public class VisionConstants {
   // Camera names, must match names configured on coprocessor
   public static String camera0Name = "camera-0";
   // This initiziliazes the camera on the left-side
-  public static String camera1Name = "camera_1";
-  public static String turretCameraName = "turret-cam";
+  public static String camera1Name = "Right-Ardu-Cam";
 
   // Robot to camera transforms
   // (Not used by Limelight, configure in web UI instead)
@@ -29,9 +28,6 @@ public class VisionConstants {
       new Transform3d(-0.2979674, 0.2540762, 0.4467352, new Rotation3d(0.0, 0.314, 0.0));
   public static Transform3d robotToCamera1 =
       new Transform3d(0.2, 0.0, 0.2, new Rotation3d(0.0, -0.4, 0.0));
-  public static Transform3d turretToCamera =
-      new Transform3d(
-          0.1, 0.0, 0.2, new Rotation3d(0.0, 0.0, 0.0)); // Adjust X/Y/Z/Rotation based on CAD
 
   // Basic filtering thresholds
   public static double maxAmbiguity = 0.15;

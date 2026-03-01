@@ -54,7 +54,7 @@ public class TurretIOYAMS implements TurretIO {
 
     CANcoderConfiguration encConfig = new CANcoderConfiguration();
     encConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
-    encConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
+    encConfig.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
     encoder17.getConfigurator().apply(encConfig);
     encoder18.getConfigurator().apply(encConfig);
 

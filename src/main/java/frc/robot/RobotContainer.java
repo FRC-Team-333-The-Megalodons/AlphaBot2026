@@ -348,7 +348,6 @@ public class RobotContainer {
             Commands.either(
                 Commands.parallel(
                     flywheel.dynamicSpinUp(false),
-
                     turret.aimAtPoint(
                         () -> {
                           double lookaheadTime = 0.060;
@@ -434,8 +433,7 @@ public class RobotContainer {
         .whileTrue(
             Commands.either(
                 Commands.parallel(
-                    flywheel.dynamicSpinUp(false),
-                    turret.aimAtPoint(() -> MatchStateCalculator.getHub()),
+                    flywheel.spinUpCommand(2000),
                     Commands.sequence(
                         Commands.waitUntil(flywheel::isAtSpeed),
                         Commands.parallel(
@@ -443,8 +441,7 @@ public class RobotContainer {
                             transfer.feedShooterCommand(),
                             intake.runIntakeCommand()))),
                 Commands.parallel(
-                    flywheel.spinUpCommand(-4000),
-                    turret.aimAtFieldZero(),
+                    flywheel.spinUpCommand(2000),
                     Commands.sequence(
                         Commands.waitUntil(flywheel::isAtSpeed),
                         Commands.parallel(
