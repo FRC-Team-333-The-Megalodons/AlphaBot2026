@@ -204,6 +204,8 @@ public class Drive extends SubsystemBase {
     int sampleCount = sampleTimestamps.length;
     Logger.recordOutput("SwerveStates/sampleCount", sampleCount);
 
+    RobotMetrics.stat("OdometryTimestampCount", sampleCount);
+
     RobotMetrics.stop("getOdoTimestamps");
 
     RobotMetrics.start("SampleCountLoop");
