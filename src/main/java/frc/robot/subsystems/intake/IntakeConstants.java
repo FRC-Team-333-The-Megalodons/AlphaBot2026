@@ -4,5 +4,5 @@ public class IntakeConstants {
   public static final int MOTOR_ID = 5;
   public static final double INTAKE_SPEED = 0.8;
   public static final double OUTTAKE_SPEED = -0.8;
-  public static final double INTAKE_VOLTS = 6.0;
+  public static final double INTAKE_VOLTS = 7.2;
 }
