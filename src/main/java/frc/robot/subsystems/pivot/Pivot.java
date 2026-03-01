@@ -1,8 +1,8 @@
 package frc.robot.subsystems.pivot;
 
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.util.RobotMetrics;
 import org.littletonrobotics.junction.Logger;
 
 public class Pivot extends SubsystemBase {
@@ -15,16 +15,16 @@ public class Pivot extends SubsystemBase {
 
   @Override
   public void periodic() {
+    RobotMetrics.start("PivotPeriodic");
     io.updateInputs(inputs);
     Logger.processInputs("Pivot", inputs);
+    RobotMetrics.stop("PivotPeriodic");
   }
 
   public Command rotateTo(double angle, boolean waitForCompletion) {
     Runnable func = () -> io.moveTo(angle);
 
-    return waitForCompletion ?
-      run(func).until(() -> io.atTarget(angle)) :
-      runOnce(func);
+    return waitForCompletion ? run(func).until(() -> io.atTarget(angle)) : runOnce(func);
   }
 
   public Command runPercent(double percent) {

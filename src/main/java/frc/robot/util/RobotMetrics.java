@@ -1,0 +1,140 @@
+package frc.robot.util;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import org.littletonrobotics.junction.Logger;
+
+// Nesting is convenient. Because nothing is actually multithreaded,
+//  we can imply that a metric started while another is live is inherently nested.
+
+public class RobotMetrics {
+  protected HashMap<String, Metric> metrics;
+  protected ArrayList<String> callstack;
+
+  static String prefix = "Metrics/";
+  public static final RobotMetrics instance = new RobotMetrics();
+
+  private RobotMetrics() {
+    metrics = new HashMap<>();
+    callstack = new ArrayList<>();
+  }
+
+  public static String getCallStack() {
+    ArrayList<String> callstack = instance.callstack;
+    StringBuilder fullName = new StringBuilder();
+    for (int i = 0; i < callstack.size(); ++i) {
+      if (i > 0) {
+        fullName.append("/");
+      }
+      fullName.append(callstack.get(i));
+    }
+    return fullName.toString();
+  }
+
+  public static String updateCallstack(String name, boolean remove) {
+    ArrayList<String> callstack = instance.callstack;
+    String output;
+
+    if (remove) {
+      // In the case of removal, we need to calc the callstack before.
+      output = getCallStack();
+
+      if (callstack.size() > 0 && callstack.get(callstack.size() - 1) == name) {
+        callstack.remove(callstack.size() - 1);
+      }
+    } else {
+      // In the case of addition, we need to calc the callstack after.
+      if (callstack.size() < 1 || callstack.get(callstack.size() - 1) != name) {
+        callstack.add(name);
+      }
+      output = getCallStack();
+    }
+
+    return output;
+  }
+
+  public static void start(String _name) {
+    HashMap<String, Metric> metrics = instance.metrics;
+
+    String name = updateCallstack(_name, false);
+
+    if (!metrics.containsKey(name)) {
+      metrics.put(name, new Metric(name));
+    }
+    Metric metric = metrics.get(name);
+    metric.start();
+  }
+
+  public static void stop(String _name) {
+    HashMap<String, Metric> metrics = instance.metrics;
+
+    String name = updateCallstack(_name, true);
+
+    if (!metrics.containsKey(name)) {
+      return;
+    }
+    Metric metric = metrics.get(name);
+    metric.stop();
+
+    Logger.recordOutput(name + "_avg", metric.average());
+    Logger.recordOutput(name + "_max", metric.max());
+  }
+}
+
+class Metric {
+  String name;
+  long total, count, max;
+  long last_start;
+
+  public Metric(String _name) {
+    this(_name, false);
+  }
+
+  public Metric(String _name, boolean start) {
+    name = _name;
+    total = 0;
+    count = 0;
+    max = 0;
+    last_start = -1;
+    if (start) {
+      start();
+    }
+  }
+
+  public void start() {
+    if (last_start > 0) {
+      return;
+    }
+
+    last_start = System.currentTimeMillis();
+  }
+
+  public void stop() {
+    if (last_start < 0) {
+      return;
+    }
+
+    long now = System.currentTimeMillis();
+    long elapsed = now - last_start;
+
+    max = Math.max(max, elapsed);
+    total += elapsed;
+    count += 1;
+  }
+
+  public double average() {
+    if (count < 0) {
+      return -1;
+    }
+
+    return (double) total / (double) count;
+  }
+
+  public long max() {
+    return max;
+  }
+
+  public String name() {
+    return name;
+  }
+}

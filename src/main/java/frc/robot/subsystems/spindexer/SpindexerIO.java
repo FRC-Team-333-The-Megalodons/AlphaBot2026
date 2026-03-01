@@ -1,8 +1,7 @@
 package frc.robot.subsystems.spindexer;
 
-import org.littletonrobotics.junction.AutoLog;
-
 import frc.robot.interfaces.Automatable;
+import org.littletonrobotics.junction.AutoLog;
 
 public interface SpindexerIO extends Automatable {
   @AutoLog

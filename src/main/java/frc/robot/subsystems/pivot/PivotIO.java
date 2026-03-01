@@ -1,8 +1,7 @@
 package frc.robot.subsystems.pivot;
 
-import org.littletonrobotics.junction.AutoLog;
-
 import frc.robot.interfaces.Automatable;
+import org.littletonrobotics.junction.AutoLog;
 
 public interface PivotIO extends Automatable {
   @AutoLog

@@ -5,8 +5,6 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
-import edu.wpi.first.math.util.Units;
-import frc.robot.subsystems.pivot.PivotConstants;
 
 public class SpindexerIOKraken implements SpindexerIO {
   CANBus rio = CANBus.roboRIO();
@@ -22,13 +20,15 @@ public class SpindexerIOKraken implements SpindexerIO {
 
   @Override
   public boolean atTarget(double rpm) {
-    boolean atVelocity = Math.abs(rpm - motor.getVelocity().getValueAsDouble() * 60.0) < SpindexerConstants.VELOCITY_TOLERANCE;
+    boolean atVelocity =
+        Math.abs(rpm - motor.getVelocity().getValueAsDouble() * 60.0)
+            < SpindexerConstants.VELOCITY_TOLERANCE;
     return atVelocity;
   }
 
   @Override
   public void moveTo(double rpm) {
-    motor.setControl(new VelocityVoltage(rpm/60.0));
+    motor.setControl(new VelocityVoltage(rpm / 60.0));
   }
 
   @Override

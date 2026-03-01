@@ -44,6 +44,7 @@ import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
 import frc.robot.util.LocalADStarAK;
 import frc.robot.util.MatchStateCalculator;
+import frc.robot.util.RobotMetrics;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -159,36 +160,60 @@ public class Drive extends SubsystemBase {
 
   @Override
   public void periodic() {
+    RobotMetrics.start("DrivePeriodic");
+    periodic_impl();
+    RobotMetrics.stop("DrivePeriodic");
+  }
+
+  public void periodic_impl() {
+
+    RobotMetrics.start("odoLock");
     odometryLock.lock(); // Prevents odometry updates while reading data
+    RobotMetrics.stop("odoLock");
+
+    RobotMetrics.start("updateGyro");
     gyroIO.updateInputs(gyroInputs);
+    RobotMetrics.stop("updateGyro");
+
     Logger.processInputs("Drive/Gyro", gyroInputs);
+
+    RobotMetrics.start("modulePeriodic");
     for (var module : modules) {
       module.periodic();
     }
+    RobotMetrics.stop("modulePeriodic");
+
     odometryLock.unlock();
 
     // Stop moving when disabled
+
+    RobotMetrics.start("checkDisabled");
     if (DriverStation.isDisabled()) {
       for (var module : modules) {
         module.stop();
       }
-    }
-
-    // Log empty setpoint states when disabled
-    if (DriverStation.isDisabled()) {
+      // Log empty setpoint states when disabled
       Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
       Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
     }
+    RobotMetrics.stop("checkDisabled");
 
+    RobotMetrics.start("getOdoTimestamps");
     // Update odometry
     double[] sampleTimestamps =
         modules[0].getOdometryTimestamps(); // All signals are sampled together
     int sampleCount = sampleTimestamps.length;
     Logger.recordOutput("SwerveStates/sampleCount", sampleCount);
+
+    RobotMetrics.stop("getOdoTimestamps");
+
+    RobotMetrics.start("SampleCountLoop");
     for (int i = 0; i < sampleCount; i++) {
       // Read wheel positions and deltas from each module
       SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
       SwerveModulePosition[] moduleDeltas = new SwerveModulePosition[4];
+
+      RobotMetrics.start("InnerModuleLoop");
       for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
         modulePositions[moduleIndex] = modules[moduleIndex].getOdometryPositions()[i];
         moduleDeltas[moduleIndex] =
@@ -198,19 +223,31 @@ public class Drive extends SubsystemBase {
                 modulePositions[moduleIndex].angle);
         lastModulePositions[moduleIndex] = modulePositions[moduleIndex];
       }
+      RobotMetrics.stop("InnerModuleLoop");
 
       // Update gyro angle
       if (gyroInputs.connected) {
+        RobotMetrics.start("GyroOdoYaw");
         // Use the real gyro angle
         rawGyroRotation = gyroInputs.odometryYawPositions[i];
+
+        RobotMetrics.stop("GyroOdoYaw");
       } else {
         // Use the angle delta from the kinematics and module deltas
+
+        RobotMetrics.start("KinematicsTwist");
         Twist2d twist = kinematics.toTwist2d(moduleDeltas);
         rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
+
+        RobotMetrics.stop("KinematicsTwist");
       }
 
       // Apply update
+
+      RobotMetrics.start("updatePoseEstimator");
       poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
+
+      RobotMetrics.stop("updatePoseEstimator");
       // Pose2d pose = poseEstimator.getEstimatedPosition();
 
       // posePublisher.set(
@@ -221,9 +258,17 @@ public class Drive extends SubsystemBase {
       //     });
     }
 
+    RobotMetrics.stop("SampleCountLoop");
+
     // Update gyro alert
+    RobotMetrics.start("gyroDisconnectedAlert");
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
+    RobotMetrics.stop("gyroDisconnectedAlert");
+
+    RobotMetrics.start("getDistanceToHub");
     double distance = getDistanceToHub();
+    RobotMetrics.stop("getDistanceToHub");
+
     edu.wpi.first.wpilibj.smartdashboard.SmartDashboard.putNumber("Distance to Hub (m)", distance);
     Logger.recordOutput("Drive/DistanceToHub", distance);
   }
