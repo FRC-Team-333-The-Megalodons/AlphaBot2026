@@ -226,8 +226,7 @@ public class ModuleIOTalonFX implements ModuleIO {
     // Update turn inputs
     RobotMetrics.start("calcTurnInputs");
     inputs.turnConnected = turnConnectedDebounce.calculate(turnStatus.isOK());
-    inputs.turnEncoderConnected =
-        turnEncoderConnectedDebounce.calculate(true /*turnEncoderStatus.isOK()*/);
+    inputs.turnEncoderConnected = turnEncoderConnectedDebounce.calculate(turnEncoderStatus.isOK());
     inputs.turnAbsolutePosition = Rotation2d.fromRotations(turnAbsolutePosition.getValueAsDouble());
     inputs.turnPosition = Rotation2d.fromRotations(turnPosition.getValueAsDouble());
     inputs.turnVelocityRadPerSec = Units.rotationsToRadians(turnVelocity.getValueAsDouble());
