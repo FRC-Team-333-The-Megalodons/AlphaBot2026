@@ -20,12 +20,20 @@ public class RobotMetrics {
   }
 
   public static String getCallStack() {
+    return getCallStack(null);
+  }
+
+  public static String getCallStack(String suffix) {
     ArrayList<String> callstack = instance.callstack;
     StringBuilder fullName = new StringBuilder();
     fullName.append(prefix);
     for (int i = 0; i < callstack.size(); ++i) {
       fullName.append("/");
       fullName.append(callstack.get(i));
+    }
+    if (suffix != null) {
+      fullName.append("/");
+      fullName.append(suffix);
     }
     return fullName.toString();
   }
@@ -81,7 +89,7 @@ public class RobotMetrics {
 
   public static void stat(String _name, long value) {
     HashMap<String, Metric> metrics = instance.metrics;
-    String name = updateCallstack(_name, false);
+    String name = getCallStack(_name);
     if (!metrics.containsKey(name)) {
       metrics.put(name, new Metric(name));
     }
