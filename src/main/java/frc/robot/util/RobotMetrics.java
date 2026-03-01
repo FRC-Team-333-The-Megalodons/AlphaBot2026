@@ -60,8 +60,7 @@ public class RobotMetrics {
     if (!metrics.containsKey(name)) {
       metrics.put(name, new Metric(name));
     }
-    Metric metric = metrics.get(name);
-    metric.start();
+    metrics.get(name).start();
   }
 
   public static void stop(String _name) {
@@ -79,6 +78,18 @@ public class RobotMetrics {
     Logger.recordOutput(name + "_avg", metric.average());
     // Logger.recordOutput(name + "_max", metric.max());
   }
+
+  public static void stat(String _name, long value) {
+    HashMap<String, Metric> metrics = instance.metrics;
+    String name = updateCallstack(_name, false);
+    if (!metrics.containsKey(name)) {
+      metrics.put(name, new Metric(name));
+    }
+    Metric metric = metrics.get(name);
+    metric.stat(value);
+    Logger.recordOutput(name + "_avg", metric.average());
+    Logger.recordOutput(name + "_last", metric.last());
+  }
 }
 
 class Metric {
@@ -87,19 +98,12 @@ class Metric {
   long last_start;
 
   public Metric(String _name) {
-    this(_name, false);
-  }
-
-  public Metric(String _name, boolean start) {
     name = _name;
     total = 0;
     count = 0;
     max = 0;
     last = 0;
     last_start = -1;
-    if (start) {
-      start();
-    }
   }
 
   public void start() {
@@ -122,6 +126,13 @@ class Metric {
     last = now() - last_start;
     last_start = -1;
 
+    max = Math.max(max, last);
+    total += last;
+    count += 1;
+  }
+
+  public void stat(long value) {
+    last = value;
     max = Math.max(max, last);
     total += last;
     count += 1;

@@ -195,11 +195,23 @@ public class ModuleIOTalonFX implements ModuleIO {
     // Refresh all signals
 
     RobotMetrics.start("refreshAll");
+    BaseStatusSignal.refreshAll(
+        drivePosition,
+        driveVelocity,
+        driveAppliedVolts,
+        driveCurrent,
+        turnPosition,
+        turnVelocity,
+        turnAppliedVolts,
+        turnCurrent,
+        turnAbsolutePosition);
+    /*
     var driveStatus =
         BaseStatusSignal.refreshAll(drivePosition, driveVelocity, driveAppliedVolts, driveCurrent);
     var turnStatus =
         BaseStatusSignal.refreshAll(turnPosition, turnVelocity, turnAppliedVolts, turnCurrent);
     var turnEncoderStatus = BaseStatusSignal.refreshAll(turnAbsolutePosition);
+    */
     RobotMetrics.stop("refreshAll");
 
     // Update drive inputs
@@ -219,7 +231,8 @@ public class ModuleIOTalonFX implements ModuleIO {
 
     RobotMetrics.start("calcTurnInputs");
     inputs.turnConnected = turnConnectedDebounce.calculate(true);
-    inputs.turnEncoderConnected = turnEncoderConnectedDebounce.calculate(turnEncoderStatus.isOK());
+    inputs.turnEncoderConnected =
+        turnEncoderConnectedDebounce.calculate(true /*turnEncoderStatus.isOK()*/);
     inputs.turnAbsolutePosition = Rotation2d.fromRotations(turnAbsolutePosition.getValueAsDouble());
     inputs.turnPosition = Rotation2d.fromRotations(turnPosition.getValueAsDouble());
     inputs.turnVelocityRadPerSec = Units.rotationsToRadians(turnVelocity.getValueAsDouble());
