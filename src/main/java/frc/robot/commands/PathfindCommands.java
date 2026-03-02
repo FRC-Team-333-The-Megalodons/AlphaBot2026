@@ -22,14 +22,14 @@ public class PathfindCommands {
   }
 
   public static Command precisionPathfindTo(Pose2d targetPose2d, Drive drive) {
-    Translation2d pathFinderCordinates =
-        FieldLayout.isBlue
-            ? new Translation2d(
-                targetPose2d.getTranslation().getX() + 0.2, targetPose2d.getTranslation().getY())
-            : new Translation2d(
-                targetPose2d.getTranslation().getX() - 0.2, targetPose2d.getTranslation().getY());
-    Command pathfindTo = pathfindTo(pathFinderCordinates, targetPose2d.getRotation(), drive, 2.0);
+    Pose2d handoffPose =
+        targetPose2d.transformBy(
+            new edu.wpi.first.math.geometry.Transform2d(
+                new Translation2d(-0.5, 0), new Rotation2d(0)));
+    Command pathfindTo =
+        pathfindTo(handoffPose.getTranslation(), handoffPose.getRotation(), drive, 1.5);
     Command autoPilot = new DriveToPose(drive, targetPose2d);
+
     return pathfindTo.andThen(autoPilot);
   }
 

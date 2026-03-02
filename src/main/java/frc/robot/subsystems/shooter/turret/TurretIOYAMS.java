@@ -1,5 +1,7 @@
 package frc.robot.subsystems.shooter.turret;
 
+import static edu.wpi.first.units.Units.Rotations;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusCode;
@@ -7,6 +9,7 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -19,12 +22,15 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
-import org.littletonrobotics.junction.Logger;
+import yams.units.EasyCRT;
+import yams.units.EasyCRTConfig;
 
-public class TurretIOKraken implements TurretIO {
+public class TurretIOYAMS implements TurretIO {
   private final TalonFX turretMotor;
   private final CANcoder encoder17;
   private final CANcoder encoder18;
+
+  private final EasyCRT easyCrtSolver;
 
   // Inputs
   private final StatusSignal<Angle> turretPosition;
@@ -33,11 +39,14 @@ public class TurretIOKraken implements TurretIO {
   private final StatusSignal<Current> turretCurrent;
   private final StatusSignal<Angle> enc17AbsPos;
   private final StatusSignal<Angle> enc18AbsPos;
-  private final MotionMagicVoltage positionRequest = new MotionMagicVoltage(0);
+
+  private final MotionMagicVoltage magicRequest = new MotionMagicVoltage(0).withSlot(0);
+  private final PositionVoltage trackingRequest = new PositionVoltage(0).withSlot(0);
   private final VoltageOut voltageRequest = new VoltageOut(0);
+
   private boolean hasSeeded = false;
 
-  public TurretIOKraken() {
+  public TurretIOYAMS() {
     CANBus rio = CANBus.roboRIO();
     turretMotor = new TalonFX(TurretConstants.kTurretMotorId, rio);
     encoder17 = new CANcoder(TurretConstants.kEncoder17Id, rio);
@@ -45,7 +54,7 @@ public class TurretIOKraken implements TurretIO {
 
     CANcoderConfiguration encConfig = new CANcoderConfiguration();
     encConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
-    encConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
+    encConfig.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
     encoder17.getConfigurator().apply(encConfig);
     encoder18.getConfigurator().apply(encConfig);
 
@@ -83,42 +92,37 @@ public class TurretIOKraken implements TurretIO {
 
     BaseStatusSignal.setUpdateFrequencyForAll(
         50.0, turretPosition, turretVelocity, turretVolts, turretCurrent, enc17AbsPos, enc18AbsPos);
-  }
 
-  public boolean areEncoderValuesSane(double enc17, double enc18) {
-    // In the real world, neither encoder should ever give a true absolute zero value;
-    // If they do, you know it is B/S (i.e. its giving you a placeholder start value)
-    return (enc17 != 0.0 && enc18 != 0.0);
-  }
+    EasyCRTConfig easyCrtConfig =
+        new EasyCRTConfig(
+                () -> Rotations.of(enc17AbsPos.getValueAsDouble()),
+                () -> Rotations.of(enc18AbsPos.getValueAsDouble()))
+            .withAbsoluteEncoder1Gearing(
+                TurretConstants.kTurretGearTeeth, TurretConstants.kEncoder1Teeth)
+            .withAbsoluteEncoder2Gearing(
+                TurretConstants.kTurretGearTeeth, TurretConstants.kEncoder2Teeth)
+            .withMechanismRange(
+                Rotations.of(TurretConstants.kMinAngle / 360.0),
+                Rotations.of(TurretConstants.kMaxAngle / 360.0))
+            .withAbsoluteEncoderOffsets(
+                Rotations.of(TurretConstants.kEncoder17ZeroOffset),
+                Rotations.of(TurretConstants.kEncoder18ZeroOffset))
+            .withMatchTolerance(Rotations.of(0.06))
+            .withAbsoluteEncoderInversions(
+                TurretConstants.kEncoder17Inverted, TurretConstants.kEncoder18Inverted);
 
-  public static long lastSeededTime = 0;
-  public static final long turretCrtSeedDelay = 5000; // millseconds
+    easyCrtSolver = new EasyCRT(easyCrtConfig);
+  }
 
   @Override
   public void updateInputs(TurretIOInputs inputs) {
-    // Seed Absolute Position once the Robot Boots
     BaseStatusSignal.refreshAll(
         turretPosition, turretVelocity, turretVolts, turretCurrent, enc17AbsPos, enc18AbsPos);
 
-    // if (!hasSeeded || turretMotor.hasResetOccurred()) {
-    long now = System.currentTimeMillis();
-    if (now - lastSeededTime > turretCrtSeedDelay) {
-      if (BaseStatusSignal.isAllGood(enc17AbsPos, enc18AbsPos)
-          && areEncoderValuesSane(enc17AbsPos.getValueAsDouble(), enc18AbsPos.getValueAsDouble())) {
-        double absPos =
-            calculateAbsolutePosition(
-                enc17AbsPos.getValueAsDouble(), enc18AbsPos.getValueAsDouble());
-
-        StatusCode motorStatus = turretMotor.setPosition(absPos, 0.01);
-        if (motorStatus == StatusCode.OK) {
-          hasSeeded = true;
-          lastSeededTime = now;
-          System.out.println("[Turret] Successfully seeded absolute position: " + absPos);
-        }
-      }
+    if (!hasSeeded && BaseStatusSignal.isAllGood(enc17AbsPos, enc18AbsPos)) {
+      seedTurretPosition();
     }
 
-    // inputs.connected = BaseStatusSignal.isAllGood(turretPosition, enc17AbsPos);
     inputs.turretPositionRad = Units.rotationsToRadians(turretPosition.getValueAsDouble());
     inputs.turretPositionDeg = Units.radiansToDegrees(inputs.turretPositionRad);
     inputs.turretVelocityRadPerSec = Units.rotationsToRadians(turretVelocity.getValueAsDouble());
@@ -127,13 +131,22 @@ public class TurretIOKraken implements TurretIO {
 
     inputs.encoder17Rotations = enc17AbsPos.getValueAsDouble();
     inputs.encoder18Rotations = enc18AbsPos.getValueAsDouble();
+
     inputs.calculatedAbsPositionRot =
-        calculateAbsolutePosition(inputs.encoder17Rotations, inputs.encoder18Rotations);
+        easyCrtSolver.getAngleOptional().map(a -> a.in(Rotations)).orElse(0.0);
   }
 
   @Override
-  public void setTurretPosition(Rotation2d position, double velocityFeedforwardRadPerSec) {
-    turretMotor.setControl(positionRequest.withPosition(position.getRotations()));
+  public void setTurretPosition(Rotation2d position, double velocityFFRadPerSec) {
+    if (Math.abs(velocityFFRadPerSec) < 0.05) {
+      turretMotor.setControl(magicRequest.withPosition(position.getRotations()));
+    }
+    // If we are orbiting on the move, use Position tracking with Dynamic Feedforward
+    else {
+      double velocityRps = velocityFFRadPerSec / (2.0 * Math.PI);
+      turretMotor.setControl(
+          trackingRequest.withPosition(position.getRotations()).withVelocity(velocityRps));
+    }
   }
 
   @Override
@@ -146,35 +159,26 @@ public class TurretIOKraken implements TurretIO {
     turretMotor.setControl(voltageRequest.withOutput(0));
   }
 
-  /** Calculates the absolute turret position using the CRT */
-  private double calculateAbsolutePosition(double p17, double p18) {
-    long start = System.currentTimeMillis();
-    double result = calculateAbsolutePosition_impl(p17, p18);
-    Logger.recordOutput("CRT_Calc_Time", System.currentTimeMillis() - start);
-    return result;
-  }
-
-  private double calculateAbsolutePosition_impl(double p17, double p18) {
-    double n1 = 17.0;
-    double n2 = 18.0;
-    double N = 105.0;
-
-    double delta = (n2 * p18) - (n1 * p17);
-    long k_diff = Math.round(delta);
-
-    double rawTurretRot = (-k_diff + p17) * (n1 / N);
-
-    double offsetPosition = rawTurretRot - TurretConstants.kTurretZeroOffset;
-
-    double period = (n1 * n2) / N; // ~2.914
-
-    while (offsetPosition > period / 2.0) offsetPosition -= period;
-    while (offsetPosition < -period / 2.0) offsetPosition += period;
-
-    return offsetPosition;
-  }
-
+  @Override
   public void seedTurretPosition() {
-    hasSeeded = false;
+    if (enc17AbsPos.getValueAsDouble() == 0.0 && enc18AbsPos.getValueAsDouble() == 0.0) {
+      return;
+    }
+
+    easyCrtSolver
+        .getAngleOptional()
+        .ifPresent(
+            mechAngle -> {
+              StatusCode status = turretMotor.setPosition(mechAngle.in(Rotations), 0.05);
+              if (status.isOK()) {
+                hasSeeded = true;
+                System.out.println(
+                    "[Turret] YAMS EasyCRT Successfully seeded absolute position: "
+                        + mechAngle.in(Rotations)
+                        + " rotations.");
+              } else {
+                System.out.println("[Turret] Failed to seed turret motor: " + status.getName());
+              }
+            });
   }
 }

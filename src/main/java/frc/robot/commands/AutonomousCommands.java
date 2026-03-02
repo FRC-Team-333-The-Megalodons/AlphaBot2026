@@ -15,8 +15,11 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
+import frc.robot.subsystems.shooter.turret.Turret;
 import frc.robot.subsystems.spindexer.Spindexer;
 import frc.robot.subsystems.transfer.Transfer;
+import frc.robot.util.FieldLayout;
+import frc.robot.util.MatchStateCalculator;
 
 /** Add your docs here. */
 public class AutonomousCommands {
@@ -44,5 +47,54 @@ public class AutonomousCommands {
         new PathConstraints(1.5, 1.5, Units.degreesToRadians(540), Units.degreesToRadians(720));
 
     return AutoBuilder.pathfindToPose(targetPose, constraints, 0.0);
+  }
+
+  public static Command movingShootCommand(
+      Drive drive,
+      Flywheel flywheel,
+      Turret turret,
+      Intake intake,
+      Spindexer spindexer,
+      Transfer transfer) {
+
+    return Commands.parallel(
+        Commands.run(flywheel::getRPMForDistance, flywheel),
+       turret.aimAtPoint(
+                        () -> {
+                          double lookaheadTime = 0.060;
+
+                          Pose2d currentPose = drive.getPose();
+                          var currentVelocity = drive.robotFieldVelocity();
+
+                          Pose2d predictedPose =
+                              currentPose.exp(
+                                  new edu.wpi.first.math.geometry.Twist2d(
+                                      currentVelocity.dx * lookaheadTime,
+                                      currentVelocity.dy * lookaheadTime,
+                                      currentVelocity.dtheta * lookaheadTime));
+
+                          return MatchStateCalculator.getMovingHub(
+                              predictedPose,
+                              currentVelocity.dx,
+                              currentVelocity.dy);
+                        }),
+        Commands.sequence(
+            Commands.waitUntil(flywheel::isAtSpeed),
+            Commands.parallel(spindexer.activeSpindexerCommand(), transfer.feedShooterCommand())));
+  }
+
+  public static Command outpostToHubSequence(
+      Drive drive,
+      Flywheel flywheel,
+      Turret turret,
+      Intake intake,
+      Spindexer spindexer,
+      Transfer transfer) {
+
+    return Commands.sequence(
+        movingShootCommand(drive, flywheel, turret, intake, spindexer, transfer).withTimeout(2.0),
+        PathfindCommands.precisionPathfindTo(FieldLayout.Outpost.OUTPOST_POSE, drive),
+        movingShootCommand(drive, flywheel, turret, intake, spindexer, transfer).withTimeout(3.5),
+        PathfindCommands.precisionPathfindTo(FieldLayout.Hub.NEAR_FACE, drive));
   }
 }

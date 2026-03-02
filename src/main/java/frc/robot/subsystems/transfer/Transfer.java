@@ -23,7 +23,7 @@ public class Transfer extends SubsystemBase {
   }
 
   public void run() {
-    io.setVoltage(9);
+    io.setVoltage(-11);
   }
 
   public void stop() {

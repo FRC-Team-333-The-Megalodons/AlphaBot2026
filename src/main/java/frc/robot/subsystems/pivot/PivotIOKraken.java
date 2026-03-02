@@ -21,7 +21,8 @@ public class PivotIOKraken implements PivotIO {
 
   @Override
   public void updateInputs(PivotIOInputs inputs) {
-    inputs.positionRad = Units.rotationsToRadians(motor.getPosition().getValueAsDouble());
+    // Skip unnecessary fields to reduce latency
+    // inputs.positionRad = Units.rotationsToRadians(motor.getPosition().getValueAsDouble());
     inputs.appliedVolts = motor.getMotorVoltage().getValueAsDouble();
   }
 
