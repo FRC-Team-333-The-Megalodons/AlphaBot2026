@@ -1,6 +1,7 @@
 package frc.robot.util;
 
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import org.littletonrobotics.junction.Logger;
 
@@ -104,6 +105,7 @@ class Metric {
   String name;
   long total, count, max, last;
   long last_start;
+  //RollingAverage rollingAverage;
 
   public Metric(String _name) {
     name = _name;
@@ -112,6 +114,7 @@ class Metric {
     max = 0;
     last = 0;
     last_start = -1;
+    //rollingAverage = new RollingAverage();
   }
 
   public void start() {
@@ -165,4 +168,53 @@ class Metric {
   public String name() {
     return name;
   }
+}
+
+class RollingAverage {
+    private static final int MAX_WINDOW = 1000;
+    private final long[] buffer;
+    
+    private long totalSum;
+    private int count, index;
+
+    public RollingAverage()
+    {
+        buffer = new long[MAX_WINDOW];
+        totalSum = 0;
+        count = 0;
+        index = 0;
+    }
+
+    /**
+     * Adds a new value to the rolling window.
+     * If the window is full (1000 items), the oldest value is 
+     * automatically evicted and subtracted from the total sum.
+     */
+    public void push(long value) {
+        if (count == MAX_WINDOW) {
+            // Subtract the oldest value (currently at index) before overwriting it
+            totalSum -= buffer[index];
+        } else {
+            // Only increment count until we hit the ceiling
+            count++;
+        }
+
+        // Update state
+        buffer[index] = value;
+        totalSum += value;
+
+        // Move the pointer and wrap around if we hit the end of the array
+        index = (index + 1) % MAX_WINDOW;
+    }
+
+    /**
+     * Calculates the current rolling average.
+     * Returns 0.0 if no elements have been pushed yet.
+     */
+    public double average() {
+        if (count == 0) {
+            return 0.0;
+        }
+        return (double) totalSum / count;
+    }
 }
