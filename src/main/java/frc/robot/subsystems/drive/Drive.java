@@ -166,6 +166,7 @@ public class Drive extends SubsystemBase {
   }
 
   public void periodic_impl() {
+    Logger.recordOutput("Linear Velocity for Intake", this.getFieldVelocityX());
     RobotMetrics.start("odoLock");
     odometryLock.lock(); // Prevents odometry updates while reading data
     RobotMetrics.stop("odoLock");
@@ -423,7 +424,7 @@ public class Drive extends SubsystemBase {
     };
   }
 
-  private double getFieldVelocityX() {
+  public double getFieldVelocityX() {
     return getChassisSpeeds().vxMetersPerSecond;
   }
 
