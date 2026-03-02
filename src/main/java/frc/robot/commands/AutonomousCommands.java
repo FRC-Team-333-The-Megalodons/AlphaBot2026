@@ -59,16 +59,25 @@ public class AutonomousCommands {
 
     return Commands.parallel(
         Commands.run(flywheel::getRPMForDistance, flywheel),
-        turret.aimAtPoint(
-            () -> {
-              double rawDist =
-                  drive.getPose().getTranslation().getDistance(MatchStateCalculator.getHub());
-              return MatchStateCalculator.getMovingHub(
-                  drive.getPose(),
-                  drive.robotFieldVelocity().dx,
-                  drive.robotFieldVelocity().dy,
-                  MatchStateCalculator.getTimeOfFlight(rawDist));
-            }),
+       turret.aimAtPoint(
+                        () -> {
+                          double lookaheadTime = 0.060;
+
+                          Pose2d currentPose = drive.getPose();
+                          var currentVelocity = drive.robotFieldVelocity();
+
+                          Pose2d predictedPose =
+                              currentPose.exp(
+                                  new edu.wpi.first.math.geometry.Twist2d(
+                                      currentVelocity.dx * lookaheadTime,
+                                      currentVelocity.dy * lookaheadTime,
+                                      currentVelocity.dtheta * lookaheadTime));
+
+                          return MatchStateCalculator.getMovingHub(
+                              predictedPose,
+                              currentVelocity.dx,
+                              currentVelocity.dy);
+                        }),
         Commands.sequence(
             Commands.waitUntil(flywheel::isAtSpeed),
             Commands.parallel(spindexer.activeSpindexerCommand(), transfer.feedShooterCommand())));

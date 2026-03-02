@@ -114,6 +114,7 @@ public class RobotContainer {
             new Flywheel(
                 new FlywheelIOKraken(),
                 () -> {
+                  // Keep latency compensation for CAN delay since we have observed significant latency and overruns 
                   double lookaheadTime = 0.060;
                   Pose2d currentPose = drive.getPose();
                   var vel = drive.robotFieldVelocity();
@@ -123,14 +124,9 @@ public class RobotContainer {
                               vel.dx * lookaheadTime,
                               vel.dy * lookaheadTime,
                               vel.dtheta * lookaheadTime));
-
-                  double rawDist =
-                      predictedPose.getTranslation().getDistance(MatchStateCalculator.getHub());
-                  double timeOfFlight = MatchStateCalculator.getTimeOfFlight(rawDist);
-
                   Translation2d virtualHub =
                       MatchStateCalculator.getMovingHub(
-                          predictedPose, vel.dx, vel.dy, timeOfFlight);
+                          predictedPose, vel.dx, vel.dy);
 
                   return predictedPose.getTranslation().getDistance(virtualHub);
                 });
@@ -362,16 +358,10 @@ public class RobotContainer {
                                       currentVelocity.dy * lookaheadTime,
                                       currentVelocity.dtheta * lookaheadTime));
 
-                          double rawDist =
-                              predictedPose
-                                  .getTranslation()
-                                  .getDistance(MatchStateCalculator.getHub());
-
                           return MatchStateCalculator.getMovingHub(
                               predictedPose,
                               currentVelocity.dx,
-                              currentVelocity.dy,
-                              MatchStateCalculator.getTimeOfFlight(rawDist));
+                              currentVelocity.dy);
                         }),
                     Commands.sequence(
                         Commands.waitUntil(flywheel::isAtSpeed),
@@ -433,7 +423,7 @@ public class RobotContainer {
         .whileTrue(
             Commands.either(
                 Commands.parallel(
-                    flywheel.spinUpCommand(2000),
+                    flywheel.dynamicSpinUp(false),
                     Commands.sequence(
                         Commands.waitUntil(flywheel::isAtSpeed),
                         Commands.parallel(
