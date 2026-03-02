@@ -63,32 +63,46 @@ public class Module {
   }
 
   public void periodic_impl() {
-    RobotMetrics.start("UpdateInputs");
+    RobotMetrics.start("1-UpdateInputs");
     io.updateInputs(inputs);
-    RobotMetrics.stop("UpdateInputs");
+    RobotMetrics.stop("1-UpdateInputs");
 
-    Logger.processInputs("Drive/Module" + Integer.toString(index), inputs);
+    RobotMetrics.start("2-OtherStuff");
+    RobotMetrics.start("2-OtherStuff.A");
+    // It turns out this is pretty expensive, roubly 0.3-0.5 milliseconds.
+    // Logger.processInputs("Drive/Module" + Integer.toString(index), inputs);
+    RobotMetrics.stop("2-OtherStuff.A");
 
     // Calculate positions for odometry
+    RobotMetrics.start("2-OtherStuff.B");
     int sampleCount = inputs.odometryTimestamps.length; // All signals are sampled together
-    odometryPositions = new SwerveModulePosition[sampleCount];
+    RobotMetrics.stop("2-OtherStuff.B");
 
+    RobotMetrics.start("2-OtherStuff.C");
+    odometryPositions = new SwerveModulePosition[sampleCount];
+    RobotMetrics.stop("2-OtherStuff.C");
+
+    RobotMetrics.start("2-OtherStuff.D");
     Logger.recordOutput("NumberOdoSamples", sampleCount);
-    RobotMetrics.start("OdoSampleLoop");
+    RobotMetrics.stop("2-OtherStuff.D");
+
+    RobotMetrics.stop("2-OtherStuff");
+
+    RobotMetrics.start("3-OdoSampleLoop");
     for (int i = 0; i < sampleCount; i++) {
       double positionMeters = inputs.odometryDrivePositionsRad[i] * constants.WheelRadius;
       Rotation2d angle = inputs.odometryTurnPositions[i];
       odometryPositions[i] = new SwerveModulePosition(positionMeters, angle);
     }
-    RobotMetrics.stop("OdoSampleLoop");
+    RobotMetrics.stop("3-OdoSampleLoop");
 
     // Update alerts
 
-    RobotMetrics.start("SetAlerts");
+    RobotMetrics.start("4-SetAlerts");
     driveDisconnectedAlert.set(!inputs.driveConnected);
     turnDisconnectedAlert.set(!inputs.turnConnected);
     turnEncoderDisconnectedAlert.set(!inputs.turnEncoderConnected);
-    RobotMetrics.stop("SetAlerts");
+    RobotMetrics.stop("4-SetAlerts");
   }
 
   /** Runs the module with the specified setpoint state. Mutates the state to optimize it. */

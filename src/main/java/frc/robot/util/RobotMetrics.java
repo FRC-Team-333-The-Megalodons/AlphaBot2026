@@ -1,7 +1,6 @@
 package frc.robot.util;
 
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.HashMap;
 import org.littletonrobotics.junction.Logger;
 
@@ -12,6 +11,7 @@ public class RobotMetrics {
   protected HashMap<String, Metric> metrics;
   protected ArrayList<String> callstack;
 
+  static boolean METRICS_ENABLED = false;
   static String prefix = "Metrics";
   public static final RobotMetrics instance = new RobotMetrics();
 
@@ -62,6 +62,9 @@ public class RobotMetrics {
   }
 
   public static void start(String _name) {
+    if (!METRICS_ENABLED) {
+      return;
+    }
     HashMap<String, Metric> metrics = instance.metrics;
 
     String name = updateCallstack(_name, false);
@@ -73,6 +76,9 @@ public class RobotMetrics {
   }
 
   public static void stop(String _name) {
+    if (!METRICS_ENABLED) {
+      return;
+    }
     HashMap<String, Metric> metrics = instance.metrics;
 
     String name = updateCallstack(_name, true);
@@ -89,6 +95,9 @@ public class RobotMetrics {
   }
 
   public static void stat(String _name, long value) {
+    if (!METRICS_ENABLED) {
+      return;
+    }
     HashMap<String, Metric> metrics = instance.metrics;
     String name = getCallStack(_name);
     if (!metrics.containsKey(name)) {
@@ -103,18 +112,19 @@ public class RobotMetrics {
 
 class Metric {
   String name;
-  long total, count, max, last;
+  // long total, count;
+  long max, last;
   long last_start;
-  //RollingAverage rollingAverage;
+  RollingAverage rollingAverage;
 
   public Metric(String _name) {
     name = _name;
-    total = 0;
-    count = 0;
+    // total = 0;
+    // count = 0;
     max = 0;
     last = 0;
     last_start = -1;
-    //rollingAverage = new RollingAverage();
+    rollingAverage = new RollingAverage();
   }
 
   public void start() {
@@ -138,23 +148,26 @@ class Metric {
     last_start = -1;
 
     max = Math.max(max, last);
-    total += last;
-    count += 1;
+    // total += last;
+    // count += 1;
+
+    rollingAverage.push(last);
   }
 
   public void stat(long value) {
     last = value;
     max = Math.max(max, last);
-    total += last;
-    count += 1;
+    // total += last;
+    // count += 1;
+
+    rollingAverage.push(last);
   }
 
   public double average() {
-    if (count < 0) {
-      return -1;
-    }
+    // if (count < 0) { return -1; }
 
-    return (double) total / (double) count;
+    // return (double) total / (double) count;
+    return rollingAverage.average();
   }
 
   public long last() {
@@ -171,50 +184,45 @@ class Metric {
 }
 
 class RollingAverage {
-    private static final int MAX_WINDOW = 1000;
-    private final long[] buffer;
-    
-    private long totalSum;
-    private int count, index;
+  private static final int MAX_WINDOW = 100;
+  private final long[] buffer;
 
-    public RollingAverage()
-    {
-        buffer = new long[MAX_WINDOW];
-        totalSum = 0;
-        count = 0;
-        index = 0;
+  private long totalSum;
+  private int count, index;
+
+  public RollingAverage() {
+    buffer = new long[MAX_WINDOW];
+    totalSum = 0;
+    count = 0;
+    index = 0;
+  }
+
+  /**
+   * Adds a new value to the rolling window. If the window is full (1000 items), the oldest value is
+   * automatically evicted and subtracted from the total sum.
+   */
+  public void push(long value) {
+    if (count == MAX_WINDOW) {
+      // Subtract the oldest value (currently at index) before overwriting it
+      totalSum -= buffer[index];
+    } else {
+      // Only increment count until we hit the ceiling
+      count++;
     }
 
-    /**
-     * Adds a new value to the rolling window.
-     * If the window is full (1000 items), the oldest value is 
-     * automatically evicted and subtracted from the total sum.
-     */
-    public void push(long value) {
-        if (count == MAX_WINDOW) {
-            // Subtract the oldest value (currently at index) before overwriting it
-            totalSum -= buffer[index];
-        } else {
-            // Only increment count until we hit the ceiling
-            count++;
-        }
+    // Update state
+    buffer[index] = value;
+    totalSum += value;
 
-        // Update state
-        buffer[index] = value;
-        totalSum += value;
+    // Move the pointer and wrap around if we hit the end of the array
+    index = (index + 1) % MAX_WINDOW;
+  }
 
-        // Move the pointer and wrap around if we hit the end of the array
-        index = (index + 1) % MAX_WINDOW;
+  /** Calculates the current rolling average. Returns 0.0 if no elements have been pushed yet. */
+  public double average() {
+    if (count == 0) {
+      return 0.0;
     }
-
-    /**
-     * Calculates the current rolling average.
-     * Returns 0.0 if no elements have been pushed yet.
-     */
-    public double average() {
-        if (count == 0) {
-            return 0.0;
-        }
-        return (double) totalSum / count;
-    }
+    return (double) totalSum / count;
+  }
 }
