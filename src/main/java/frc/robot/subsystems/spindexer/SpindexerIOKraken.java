@@ -5,8 +5,6 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
-import edu.wpi.first.math.util.Units;
-import frc.robot.subsystems.pivot.PivotConstants;
 
 public class SpindexerIOKraken implements SpindexerIO {
   CANBus rio = CANBus.roboRIO();

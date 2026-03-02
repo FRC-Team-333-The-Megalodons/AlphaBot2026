@@ -2,7 +2,6 @@ package frc.robot.subsystems.shooter.turret;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
@@ -40,12 +39,12 @@ public class TurretIOKrakenSim implements TurretIO {
     sim.update(0.02);
 
     inputs.connected = true;
-    inputs.turretPositionRad = sim.getAngleRads();
-    inputs.turretVelocityRadPerSec = sim.getVelocityRadPerSec();
+    inputs.turretPositionDeg = Units.radiansToDegrees(sim.getAngleRads());
+    inputs.turretVelocityRPM = sim.getVelocityRadPerSec() * 60.0;
     inputs.turretAppliedVolts = appliedVolts;
     inputs.turretCurrentAmps = sim.getCurrentDrawAmps();
 
-    double turretRotations = Units.radiansToRotations(inputs.turretPositionRad);
+    double turretRotations = Units.degreesToRotations(inputs.turretPositionDeg);
 
     double enc17Raw =
         turretRotations * (TurretConstants.kTurretGearTeeth / TurretConstants.kEncoder1Teeth);
@@ -60,9 +59,9 @@ public class TurretIOKrakenSim implements TurretIO {
   }
 
   @Override
-  public void setTurretPosition(Rotation2d position, double velocityFeedforwardRadPerSec) {
+  public void moveTo(double degrees) {
     closedLoopMode = true;
-    targetPositionRad = position.getRadians();
+    targetPositionRad = Units.degreesToRadians(degrees);
   }
 
   @Override

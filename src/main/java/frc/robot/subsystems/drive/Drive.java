@@ -10,6 +10,8 @@ package frc.robot.subsystems.drive;
 import static edu.wpi.first.units.Units.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.commands.PathfindingCommand;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
@@ -37,11 +39,14 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.commands.PathfindCommands;
 import frc.robot.generated.TunerConstants;
+import frc.robot.interfaces.Initializable;
 import frc.robot.util.LocalADStarAK;
 import frc.robot.util.MatchStateCalculator;
 import java.util.concurrent.locks.Lock;
@@ -49,8 +54,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public class Drive extends SubsystemBase {
-  // private final DoubleArrayPublisher posePublisher;
+public class Drive extends SubsystemBase implements Initializable {
 
   // TunerConstants doesn't include these constants, so they are declared locally
   static final double ODOMETRY_FREQUENCY = TunerConstants.kCANBus.isNetworkFD() ? 250.0 : 100.0;
@@ -124,27 +128,6 @@ public class Drive extends SubsystemBase {
     // Start odometry thread
     PhoenixOdometryThread.getInstance().start();
 
-    // Configure AutoBuilder for PathPlanner
-    AutoBuilder.configure(
-        this::getPose,
-        this::setPose,
-        this::getChassisSpeeds,
-        this::runVelocity,
-        new PPHolonomicDriveController(
-            new PIDConstants(4.0, 0.0, 0.0), new PIDConstants(4.0, 0.0, 0.0)),
-        PP_CONFIG,
-        () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
-        this);
-    Pathfinding.setPathfinder(new LocalADStarAK());
-    PathPlannerLogging.setLogActivePathCallback(
-        (activePath) -> {
-          Logger.recordOutput("Odometry/Trajectory", activePath.toArray(new Pose2d[0]));
-        });
-    PathPlannerLogging.setLogTargetPoseCallback(
-        (targetPose) -> {
-          Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
-        });
-
     // Configure SysId
     sysId =
         new SysIdRoutine(
@@ -155,6 +138,37 @@ public class Drive extends SubsystemBase {
                 (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
+  }
+
+  @Override
+  public void seed() {
+
+    // Configure AutoBuilder for PathPlanner once DriverStation is connected.
+    AutoBuilder.configure(
+      this::getPose,
+      this::setPose,
+      this::getChassisSpeeds,
+      this::runVelocity,
+      new PPHolonomicDriveController(
+          new PIDConstants(4.0, 0.0, 0.0), new PIDConstants(4.0, 0.0, 0.0)),
+      PP_CONFIG,
+      () -> DriverStation.getAlliance().get() == Alliance.Red,
+      this
+    );
+    Pathfinding.setPathfinder(new LocalADStarAK());
+    PathPlannerLogging.setLogActivePathCallback(
+      (activePath) -> {
+        Logger.recordOutput("Odometry/Trajectory", activePath.toArray(new Pose2d[0]));
+      }
+    );
+    PathPlannerLogging.setLogTargetPoseCallback(
+      (targetPose) -> {
+        Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
+      }
+    );
+
+    // Warmup because why not
+    CommandScheduler.getInstance().schedule(PathfindingCommand.warmupCommand());
   }
 
   @Override

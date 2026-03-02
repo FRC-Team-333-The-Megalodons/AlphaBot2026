@@ -14,10 +14,9 @@ public class SpindexerIOKrakenSim implements SpindexerIO {
   private double appliedVolts = 0.0;
 
   @Override
-  public void updateInputs(SpindexerIOInputs inputs) {
-    sim.update(0.02);
-    inputs.velocityRps = sim.getAngularVelocityRPM() / 60.0;
-    inputs.appliedVolts = appliedVolts;
+  public void moveTo(double rpm) {
+    // rough kV -> will tune once i get the robot
+    sim.setInputVoltage(rpm * 60 * 0.5);
   }
 
   @Override
@@ -29,5 +28,12 @@ public class SpindexerIOKrakenSim implements SpindexerIO {
   public void setVoltage(double volts) {
     appliedVolts = volts;
     sim.setInputVoltage(volts);
+  }
+
+  @Override
+  public void updateInputs(SpindexerIOInputs inputs) {
+    sim.update(0.02);
+    inputs.velocityRps = sim.getAngularVelocityRPM() / 60.0;
+    inputs.appliedVolts = sim.getInputVoltage();
   }
 }

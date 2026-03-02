@@ -43,6 +43,8 @@ import frc.robot.subsystems.pivot.Pivot;
 import frc.robot.subsystems.pivot.PivotIO;
 import frc.robot.subsystems.pivot.PivotIOKraken;
 import frc.robot.subsystems.pivot.PivotIOKrakenSim;
+import frc.robot.subsystems.shooter.Targeting.Targeting;
+import frc.robot.subsystems.shooter.Targeting.TargetingIOReal;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIO;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIOKraken;
@@ -81,6 +83,7 @@ public class RobotContainer {
   private final Transfer transfer;
   private final Flywheel flywheel;
   private final Vision vision;
+  private final Targeting targeting;
   private final Pivot pivot;
   private final Turret turret;
 
@@ -107,6 +110,7 @@ public class RobotContainer {
         vision =
             new Vision(
                 drive::addVisionMeasurement, new VisionIOPhotonVision(camera0Name, robotToCamera0));
+        targeting = new Targeting(new TargetingIOReal(), drive::getPose, drive::getChassisSpeeds);
         intake = new Intake(new IntakeIOKraken());
         spindexer = new Spindexer(new SpindexerIOKraken());
         transfer = new Transfer(new TransferIOKraken());
@@ -135,7 +139,7 @@ public class RobotContainer {
                   return predictedPose.getTranslation().getDistance(virtualHub);
                 });
         pivot = new Pivot(new PivotIOKraken());
-        turret = new Turret(new TurretIOYAMS(), drive::getPose);
+        turret = new Turret(new TurretIOYAMS(), targeting::getTargetAngle, drive::getRotation);
 
         // Note:
 
@@ -171,12 +175,13 @@ public class RobotContainer {
             new Vision(
                 drive::addVisionMeasurement,
                 new VisionIOPhotonVisionSim(camera1Name, robotToCamera0, drive::getPose));
+        targeting = new Targeting(new TargetingIOReal(), drive::getPose, drive::getChassisSpeeds);
         intake = new Intake(new IntakeIOKrakenSim());
         spindexer = new Spindexer(new SpindexerIOKrakenSim());
         transfer = new Transfer(new TransferIOKrakenSim());
         flywheel = new Flywheel(new FlywheelIOKrakenSim(), drive::getDistanceToHub);
         pivot = new Pivot(new PivotIOKrakenSim());
-        turret = new Turret(new TurretIOKrakenSim(), drive::getPose);
+        turret = new Turret(new TurretIOKrakenSim(), targeting::getTargetAngle, drive::getRotation);
         break;
 
       default:
@@ -189,12 +194,13 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {});
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {});
+        targeting = new Targeting(new TargetingIOReal(), drive::getPose, drive::getChassisSpeeds);
         intake = new Intake(new IntakeIO() {});
         spindexer = new Spindexer(new SpindexerIO() {});
         transfer = new Transfer(new TransferIO() {});
         flywheel = new Flywheel(new FlywheelIO() {}, drive::getDistanceToHub);
         pivot = new Pivot(new PivotIO() {});
-        turret = new Turret(new TurretIO() {}, drive::getPose);
+        turret = new Turret(new TurretIO() {}, targeting::getTargetAngle, drive::getRotation);
         break;
     }
     NamedCommands.registerCommand(
@@ -262,21 +268,26 @@ public class RobotContainer {
     autoChooser.addOption(
         "Turret SysId (Dynamic Reverse)", turret.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     SmartDashboard.putData("Pathfind to Depot", PathfindCommands.pathfindToDepot(drive));
-    SmartDashboard.putData("Turret/00 Go to 45", turret.runToAngle(Rotation2d.fromDegrees(45)));
-    SmartDashboard.putData("Turret/01 Go to 90", turret.runToAngle(Rotation2d.fromDegrees(90)));
-    SmartDashboard.putData("Turret/02 Go to 135", turret.runToAngle(Rotation2d.fromDegrees(135)));
-    SmartDashboard.putData("Turret/03 Go to 180", turret.runToAngle(Rotation2d.fromDegrees(180)));
+    SmartDashboard.putData("Turret/00 Go to 45", turret.rotateToField(Rotation2d.fromDegrees(45)));
+    SmartDashboard.putData("Turret/01 Go to 90", turret.rotateToField(Rotation2d.kCW_90deg));
+    SmartDashboard.putData("Turret/02 Go to 135", turret.rotateToField(Rotation2d.fromDegrees(135)));
+    SmartDashboard.putData("Turret/03 Go to 180", turret.rotateToField(Rotation2d.k180deg));
 
-    SmartDashboard.putData("Turret/04 Go to -45", turret.runToAngle(Rotation2d.fromDegrees(-45)));
-    SmartDashboard.putData("Turret/05 Go to -90", turret.runToAngle(Rotation2d.fromDegrees(-90)));
-    SmartDashboard.putData("Turret/06 Go to -135", turret.runToAngle(Rotation2d.fromDegrees(-135)));
-    SmartDashboard.putData("Turret/07 Go to -180", turret.runToAngle(Rotation2d.fromDegrees(-180)));
+    SmartDashboard.putData("Turret/04 Go to -45", turret.rotateToField(Rotation2d.fromDegrees(-45)));
+    SmartDashboard.putData("Turret/05 Go to -90", turret.rotateToField(Rotation2d.kCCW_90deg));
+    SmartDashboard.putData("Turret/06 Go to -135", turret.rotateToField(Rotation2d.fromDegrees(-135)));
+    SmartDashboard.putData("Turret/07 Go to -180", turret.rotateToField(Rotation2d.k180deg.unaryMinus()));
 
-    SmartDashboard.putData("Turret/08 Go to 0", turret.runToAngle(Rotation2d.fromDegrees(0)));
+    SmartDashboard.putData("Turret/08 Go to 0", turret.rotateToField(Rotation2d.kZero));
     SmartDashboard.putData("Turret/Reseed Abs Position", turret.reseedPosition());
 
     // Configure the button bindings
     configureButtonBindings();
+  }
+
+  public void initializeSubsystems() {
+    drive.seed();
+    targeting.seed();
   }
 
   /**
@@ -328,7 +339,7 @@ public class RobotContainer {
 
     controller.povUp().whileTrue(PathfindCommands.pathfindToDepot(drive));
     controller.square().whileTrue(PathfindCommands.pathfindToHub(drive));
-    controller.povDown().whileTrue(turret.aimAtPoint(() -> MatchStateCalculator.getHub()));
+    controller.povDown().whileTrue(turret.aimAtPoint());
     controller.L3().whileTrue(PathfindCommands.pathfindtoScoringPosition(drive));
     // controller
     //     .L2()
@@ -342,6 +353,7 @@ public class RobotContainer {
     controller.triangle().whileTrue(pivot.runPercent(-0.1));
     controller.cross().whileTrue(pivot.runPercent(0.1));
 
+    /*
     controller
         .L2()
         .whileTrue(
@@ -384,7 +396,7 @@ public class RobotContainer {
                     )),
                 Commands.parallel(
                     flywheel.spinUpCommand(-4000),
-                    turret.runToAngle(Rotation2d.fromDegrees(0)),
+                    turret.rotateToField(Rotation2d.fromDegrees(0)),
                     Commands.sequence(
                         Commands.waitUntil(flywheel::isAtSpeed),
                         Commands.parallel(
@@ -392,6 +404,7 @@ public class RobotContainer {
                             transfer.feedShooter(),
                             intake.ingest()))),
                 () -> MatchStateCalculator.isInAllianceZone(drive.getPose())));
+    */
 
     // controller
     //     .L2()
@@ -431,6 +444,8 @@ public class RobotContainer {
     //                         transfer.feedShooterCommand(),
     //                         intake.runIntakeCommand()))),
     //             () -> MatchStateCalculator.isInAllianceZone(drive.getPose())));
+    
+    /*
     controller
         .R1()
         .whileTrue(
@@ -454,6 +469,7 @@ public class RobotContainer {
                             transfer.feedShooter(),
                             intake.ingest()))),
                 () -> MatchStateCalculator.isInAllianceZone(drive.getPose())));
+    */
 
     controller.PS().whileTrue(new TuneShooterRPM(flywheel));
     controller

@@ -34,4 +34,7 @@ public class TurretConstants {
   public static final double kCruiseVelocity = 4.0;
   public static final double kAcceleration = 8.0;
   public static final double kJerk = 80.0;
+
+  public static final double positionTolerance = 1.0;
+  public static final double velocityTolerance = 0.6;
 }

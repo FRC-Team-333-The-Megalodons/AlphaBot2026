@@ -1,11 +1,11 @@
 package frc.robot.subsystems.shooter.Targeting;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.util.Targets;
-import frc.robot.util.Zones;
 
 public class TargetingIOReal implements TargetingIO {
 
@@ -51,7 +51,6 @@ public class TargetingIOReal implements TargetingIO {
     return robotPose.getTranslation().getDistance(toTargetCoordinates);
   }
 
-
   public double getDistanceFromHub(Pose2d robotPose) {
       return getDistanceFrom(robotPose, getHub());
   }
@@ -60,9 +59,12 @@ public class TargetingIOReal implements TargetingIO {
       return getDistanceFrom(robotPose, getEnemyHub());
   }
 
-  /*
-  public static Rotation2d getAngleToHub(Pose2d robotPose) {
-
+  public Rotation2d getAngleTo(Pose2d robotPose, Translation2d targetCoordinates) {
+    return targetCoordinates.minus(robotPose.getTranslation()).getAngle();
   }
-  */
+  
+  public Rotation2d getAngleToHub(Pose2d robotPose) {
+    return getAngleTo(robotPose, getHub());
+  }
+  
 }
