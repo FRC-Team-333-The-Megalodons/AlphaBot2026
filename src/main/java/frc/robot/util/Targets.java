@@ -1,23 +1,14 @@
 package frc.robot.util;
 
-import java.util.ArrayList;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import frc.robot.interfaces.Localizable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import frc.robot.interfaces.Localizable;
-
-/**
- * Helper class with a list of targets for the turret and lywheel to aim at.
- * 
- */
+/** Helper class with a list of targets for the turret and lywheel to aim at. */
 public class Targets implements Localizable {
 
   private Map<String, List<Translation2d>> targets;
@@ -40,43 +31,26 @@ public class Targets implements Localizable {
   }
 
   private void configureTargetMap() {
-    addPoints(
-      "redHub",
-      tagCoordinates(10).plus(tagCoordinates(4)).div(2)
-    );
+    addPoints("redHub", tagCoordinates(10).plus(tagCoordinates(4)).div(2));
 
-    addPoints(
-      "blueHub",
-      tagCoordinates(25).plus(tagCoordinates(20)).div(2)
-    );
+    addPoints("blueHub", tagCoordinates(25).plus(tagCoordinates(20)).div(2));
 
     Translation2d ferryXOffset = xUnitVector();
     Translation2d ferryYOffset = yUnitVector().div(4);
 
     addPoints(
-      "redZone",
-      tagCoordinates(6).plus(ferryXOffset).plus(ferryYOffset),
-      tagCoordinates(1).plus(ferryXOffset).minus(ferryYOffset)
-    );
+        "redZone",
+        tagCoordinates(6).plus(ferryXOffset).plus(ferryYOffset),
+        tagCoordinates(1).plus(ferryXOffset).minus(ferryYOffset));
 
     addPoints(
-      "blueZone",
-      tagCoordinates(17).minus(ferryXOffset).plus(ferryYOffset),
-      tagCoordinates(22).minus(ferryXOffset).minus(ferryYOffset)
-    );
+        "blueZone",
+        tagCoordinates(17).minus(ferryXOffset).plus(ferryYOffset),
+        tagCoordinates(22).minus(ferryXOffset).minus(ferryYOffset));
 
     Translation2d neutralYOffset = yUnitVector().times(3);
 
     addPoints(
-      "neutralZone",
-      fieldCenter().plus(neutralYOffset),
-      fieldCenter().minus(neutralYOffset)
-    );
+        "neutralZone", fieldCenter().plus(neutralYOffset), fieldCenter().minus(neutralYOffset));
   }
-
-  
-
-
-
-    
 }

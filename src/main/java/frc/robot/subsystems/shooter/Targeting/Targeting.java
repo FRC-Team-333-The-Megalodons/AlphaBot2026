@@ -17,20 +17,18 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.interfaces.Initializable;
 import frc.robot.util.MatchStateCalculator;
 import frc.robot.util.Zones;
+import java.util.function.Supplier;
 
 /**
  * TODO - Move:
- * 
- * - All projectile math
- * - All interpolation maps
- * - All targeting logic
- * - All fixed poses & targets
- * 
- * Into this class.
- * 
- * This class depends on the robot pose from the drive.
- * The Turret and Flywheel classes depend on the target angle and RPM from this class respectively.
- * 
+ *
+ * <p>- All projectile math - All interpolation maps - All targeting logic - All fixed poses &
+ * targets
+ *
+ * <p>Into this class.
+ *
+ * <p>This class depends on the robot pose from the drive. The Turret and Flywheel classes depend on
+ * the target angle and RPM from this class respectively.
  */
 public class Targeting extends SubsystemBase implements Initializable {
 

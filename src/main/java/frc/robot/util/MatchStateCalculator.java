@@ -88,15 +88,12 @@ public class MatchStateCalculator {
     Translation2d fieldVelocity = new Translation2d(robotVx, robotVy);
     Translation2d goalRelativeVelocity = fieldVelocity.rotateBy(robotToGoalAngle.unaryMinus());
 
- 
     double radialVelocity = goalRelativeVelocity.getX();
     double tangentialVelocity = goalRelativeVelocity.getY();
 
-    
     lastTargetYawVelocityRadPerSec = -(tangentialVelocity / uncompensatedRange);
 
-   
-    double dragConstant = 1.65; 
+    double dragConstant = 1.65;
     double velocityScalar =
         (timeOfFlight <= 0.01)
             ? 1.0
@@ -105,10 +102,9 @@ public class MatchStateCalculator {
     double scaledRadial = radialVelocity * velocityScalar;
     double scaledTangential = tangentialVelocity * velocityScalar;
 
-
     double baseShotSpeed = uncompensatedRange / timeOfFlight;
     double effectiveShotSpeed = baseShotSpeed - scaledRadial;
-    if (effectiveShotSpeed <= 0.0) effectiveShotSpeed = 0.001; 
+    if (effectiveShotSpeed <= 0.0) effectiveShotSpeed = 0.001;
 
     double angularOffsetRad = Math.atan2(-scaledTangential, effectiveShotSpeed);
 

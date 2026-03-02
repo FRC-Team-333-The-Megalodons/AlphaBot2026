@@ -384,25 +384,18 @@ public class RobotContainer {
                               currentVelocity.dx,
                               currentVelocity.dy,
                               MatchStateCalculator.getTimeOfFlight(rawDist));
-                        }
-                    ),
+                        }),
                     Commands.sequence(
                         Commands.waitUntil(flywheel::isAtSpeed),
                         Commands.parallel(
-                            spindexer.spin(),
-                            transfer.feedShooter(),
-                            intake.ingest()
-                        )
-                    )),
+                            spindexer.spin(), transfer.feedShooter(), intake.ingest()))),
                 Commands.parallel(
                     flywheel.spinUpCommand(-4000),
                     turret.rotateToField(Rotation2d.fromDegrees(0)),
                     Commands.sequence(
                         Commands.waitUntil(flywheel::isAtSpeed),
                         Commands.parallel(
-                            spindexer.spin(),
-                            transfer.feedShooter(),
-                            intake.ingest()))),
+                            spindexer.spin(), transfer.feedShooter(), intake.ingest()))),
                 () -> MatchStateCalculator.isInAllianceZone(drive.getPose())));
     */
 
@@ -456,18 +449,14 @@ public class RobotContainer {
                     Commands.sequence(
                         Commands.waitUntil(flywheel::isAtSpeed),
                         Commands.parallel(
-                            spindexer.spin(),
-                            transfer.feedShooter(),
-                            intake.ingest()))),
+                            spindexer.spin(), transfer.feedShooter(), intake.ingest()))),
                 Commands.parallel(
                     flywheel.spinUpCommand(-4000),
                     turret.aimAtFieldZero(),
                     Commands.sequence(
                         Commands.waitUntil(flywheel::isAtSpeed),
                         Commands.parallel(
-                            spindexer.spin(),
-                            transfer.feedShooter(),
-                            intake.ingest()))),
+                            spindexer.spin(), transfer.feedShooter(), intake.ingest()))),
                 () -> MatchStateCalculator.isInAllianceZone(drive.getPose())));
     */
 

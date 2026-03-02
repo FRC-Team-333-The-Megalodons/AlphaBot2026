@@ -17,23 +17,17 @@ public class TargetingIOReal implements TargetingIO {
 
   @Override
   public Translation2d getHub() {
-    return targets.select(
-      DriverStation.getAlliance().get() == Alliance.Red ? "redHub" : "blueHub"
-    );
+    return targets.select(DriverStation.getAlliance().get() == Alliance.Red ? "redHub" : "blueHub");
   }
 
   public Translation2d getEnemyHub() {
-    return targets.select(
-      DriverStation.getAlliance().get() == Alliance.Red ? "blueHub" : "redHub"
-    );
+    return targets.select(DriverStation.getAlliance().get() == Alliance.Red ? "blueHub" : "redHub");
   }
 
   @Override
   public Translation2d getAllianceZoneTarget(Pose2d robotPose) {
     return targets.select(
-      DriverStation.getAlliance().get() == Alliance.Red ? "redZone" : "blueZone",
-      robotPose
-    );
+        DriverStation.getAlliance().get() == Alliance.Red ? "redZone" : "blueZone", robotPose);
   }
 
   @Override
@@ -41,22 +35,16 @@ public class TargetingIOReal implements TargetingIO {
     return targets.select("neutralZone", robotPose);
   }
 
-
-
-
-
-
-    
   public double getDistanceFrom(Pose2d robotPose, Translation2d toTargetCoordinates) {
     return robotPose.getTranslation().getDistance(toTargetCoordinates);
   }
 
   public double getDistanceFromHub(Pose2d robotPose) {
-      return getDistanceFrom(robotPose, getHub());
+    return getDistanceFrom(robotPose, getHub());
   }
 
   public double getDistanceFromEnemyHub(Pose2d robotPose) {
-      return getDistanceFrom(robotPose, getEnemyHub());
+    return getDistanceFrom(robotPose, getEnemyHub());
   }
 
   public Rotation2d getAngleTo(Pose2d robotPose, Translation2d targetCoordinates) {

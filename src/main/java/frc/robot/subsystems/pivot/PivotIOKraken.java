@@ -6,6 +6,7 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.util.Units;
+import frc.robot.util.RobotMetrics;
 
 public class PivotIOKraken implements PivotIO {
   CANBus rio = CANBus.roboRIO();
@@ -23,8 +24,11 @@ public class PivotIOKraken implements PivotIO {
 
   @Override
   public boolean atTarget(double angle) {
-    boolean atPosition = Math.abs(angle - motor.getPosition().getValueAsDouble()) < PivotConstants.POSITION_TOLERANCE;
-    boolean notMoving = Math.abs(motor.getVelocity().getValueAsDouble()) < PivotConstants.VELOCITY_TOLERANCE; 
+    boolean atPosition =
+        Math.abs(angle - motor.getPosition().getValueAsDouble())
+            < PivotConstants.POSITION_TOLERANCE;
+    boolean notMoving =
+        Math.abs(motor.getVelocity().getValueAsDouble()) < PivotConstants.VELOCITY_TOLERANCE;
 
     return atPosition && notMoving;
   }
@@ -41,7 +45,11 @@ public class PivotIOKraken implements PivotIO {
 
   @Override
   public void updateInputs(PivotIOInputs inputs) {
+
+    RobotMetrics.start("PivotKrakenUpdateInputs");
     inputs.appliedVolts = motor.getMotorVoltage().getValueAsDouble();
     inputs.pivotAngle = Units.radiansToDegrees(motor.getPosition().getValueAsDouble());
+
+    RobotMetrics.stop("PivotKrakenUpdateInputs");
   }
 }

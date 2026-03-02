@@ -2,14 +2,12 @@ package frc.robot.util;
 
 import static edu.wpi.first.units.Units.Meters;
 
-import java.util.function.Predicate;
-
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.interfaces.Localizable;
+import java.util.function.Predicate;
 
 public class Zones implements Localizable {
 
@@ -28,13 +26,17 @@ public class Zones implements Localizable {
   public boolean alliance(Pose2d robotPose) {
     Distance x = robotPose.getMeasureX();
 
-    return DriverStation.getAlliance().get() == Alliance.Blue ? inBlueZone.test(x) : inRedZone.test(x);
+    return DriverStation.getAlliance().get() == Alliance.Blue
+        ? inBlueZone.test(x)
+        : inRedZone.test(x);
   }
 
   public boolean enemy(Pose2d robotPose) {
     Distance x = robotPose.getMeasureX();
 
-    return DriverStation.getAlliance().get() == Alliance.Blue ? inRedZone.test(x) : inBlueZone.test(x);
+    return DriverStation.getAlliance().get() == Alliance.Blue
+        ? inRedZone.test(x)
+        : inBlueZone.test(x);
   }
 
   public boolean neutral(Pose2d robotPose) {
