@@ -68,23 +68,23 @@ public class Module {
     RobotMetrics.stop("1-UpdateInputs");
 
     RobotMetrics.start("2-OtherStuff");
-    RobotMetrics.start("2-OtherStuff.A");
+    // RobotMetrics.start("2-OtherStuff.A");
     // It turns out this is pretty expensive, roubly 0.3-0.5 milliseconds.
     // Logger.processInputs("Drive/Module" + Integer.toString(index), inputs);
-    RobotMetrics.stop("2-OtherStuff.A");
+    // RobotMetrics.stop("2-OtherStuff.A");
 
     // Calculate positions for odometry
-    RobotMetrics.start("2-OtherStuff.B");
+    // RobotMetrics.start("2-OtherStuff.B");
     int sampleCount = inputs.odometryTimestamps.length; // All signals are sampled together
-    RobotMetrics.stop("2-OtherStuff.B");
+    // RobotMetrics.stop("2-OtherStuff.B");
 
-    RobotMetrics.start("2-OtherStuff.C");
+    // RobotMetrics.start("2-OtherStuff.C");
     odometryPositions = new SwerveModulePosition[sampleCount];
-    RobotMetrics.stop("2-OtherStuff.C");
+    // RobotMetrics.stop("2-OtherStuff.C");
 
-    RobotMetrics.start("2-OtherStuff.D");
+    // RobotMetrics.start("2-OtherStuff.D");
     Logger.recordOutput("NumberOdoSamples", sampleCount);
-    RobotMetrics.stop("2-OtherStuff.D");
+    // RobotMetrics.stop("2-OtherStuff.D");
 
     RobotMetrics.stop("2-OtherStuff");
 
