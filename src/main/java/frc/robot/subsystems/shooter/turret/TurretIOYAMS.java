@@ -53,12 +53,17 @@ public class TurretIOYAMS implements TurretIO {
     encoder18 = new CANcoder(TurretConstants.kEncoder18Id, rio);
 
     CANcoderConfiguration encConfig = new CANcoderConfiguration();
+    encoder17.getConfigurator().apply(encConfig);
+    encoder18.getConfigurator().apply(encConfig);
+
     encConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
     encConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
     encoder17.getConfigurator().apply(encConfig);
     encoder18.getConfigurator().apply(encConfig);
 
     TalonFXConfiguration motorConfig = new TalonFXConfiguration();
+    turretMotor.getConfigurator().apply(motorConfig);
+
     motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     motorConfig.Feedback.SensorToMechanismRatio = TurretConstants.kMotorToTurretRatio;
     motorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;

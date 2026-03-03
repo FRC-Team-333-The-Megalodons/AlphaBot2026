@@ -2,6 +2,7 @@ package frc.robot.subsystems.shooter.flywheel;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 
 public class FlywheelIOKrakenSim implements FlywheelIO {
@@ -15,7 +16,7 @@ public class FlywheelIOKrakenSim implements FlywheelIO {
   @Override
   public void updateInputs(FlywheelIOInputs inputs) {
     sim.update(0.02);
-    inputs.velocityRadPerSec = sim.getAngularVelocityRadPerSec();
+    inputs.velocityRPM = Units.radiansPerSecondToRotationsPerMinute(sim.getAngularVelocityRadPerSec());
     inputs.appliedVolts = appliedVolts;
   }
 

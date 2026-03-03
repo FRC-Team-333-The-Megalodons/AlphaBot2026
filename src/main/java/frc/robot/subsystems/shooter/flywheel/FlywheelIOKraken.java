@@ -19,6 +19,9 @@ public class FlywheelIOKraken implements FlywheelIO {
 
   public FlywheelIOKraken() {
     var config = new TalonFXConfiguration();
+    motor.getConfigurator().apply(config);
+    motor2.getConfigurator().apply(config);
+
 
     // Slot 0 Gains
     config.Slot0.kS = FlywheelConstants.kS;
@@ -33,24 +36,31 @@ public class FlywheelIOKraken implements FlywheelIO {
     motor.getConfigurator().apply(config);
     motor2.getConfigurator().apply(config);
 
-    // Motor 2 follows Motor 1
-    motor2.setControl(new Follower(motor.getDeviceID(), MotorAlignmentValue.Opposed));
+    // Motor 1 follows Motor 2
+    motor.setControl(new Follower(motor2.getDeviceID(), MotorAlignmentValue.Opposed));
   }
 
   @Override
   public void updateInputs(FlywheelIOInputs inputs) {
-    inputs.velocityRadPerSec = Units.rotationsToRadians(motor.getVelocity().getValueAsDouble());
+    inputs.velocityRPM = rpsToRPM(motor.getVelocity().getValue());
     inputs.appliedVolts = motor.getMotorVoltage().getValueAsDouble();
   }
 
   @Override
-  public void setVelocity(double radPerSec) {
-    double rps = Units.radiansToRotations(radPerSec);
-    motor.setControl(mmVelocity.withVelocity(rps));
+  public boolean atTarget(double targetRPM) {
+    double currentRPM = inputs.velocityRPM;
+    return Math.abs(targetRPM) > 0
+      && Math.abs(Math.abs(currentRPM) - Math.abs(targetRPM))
+        < FlywheelConstants.VELOCITY_TOLERANCE_RPM;
+  }
+
+  @Override
+  public void moveTo(double rpm) {
+    motor2.setControl(mmVelocity.withVelocity(rpmToRPS(rpm)));
   }
 
   @Override
   public void setVoltage(double volts) {
-    motor.setControl(new VoltageOut(volts));
+    motor2.setControl(new VoltageOut(volts));
   }
 }

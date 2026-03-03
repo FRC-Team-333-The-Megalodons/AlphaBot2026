@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -94,9 +95,33 @@ public class Targeting extends SubsystemBase implements Initializable {
       return targetSpeed;
   }
 
+  public double spinUpTesting() {
+    
+    // TODO: Fix This - this was originally in RobotContainer - this functionality should be in defaultTargetingBehavior()
+    double lookaheadTime = 0.060;
+    Pose2d currentPose = drive.getPose();
+    var vel = drive.robotFieldVelocity();
+    Pose2d predictedPose =
+        currentPose.exp(
+            new Twist2d(
+                vel.dx * lookaheadTime,
+                vel.dy * lookaheadTime,
+                vel.dtheta * lookaheadTime));
+
+    double rawDist =
+        predictedPose.getTranslation().getDistance(MatchStateCalculator.getHub());
+    double timeOfFlight = MatchStateCalculator.getTimeOfFlight(rawDist);
+
+    Translation2d virtualHub =
+        MatchStateCalculator.getMovingHub(
+            predictedPose, vel.dx, vel.dy, timeOfFlight);
+
+    return predictedPose.getTranslation().getDistance(virtualHub);
+  }
+
   public Translation2d lookAheadTesting() {
 
-    // TODO: Fix This - this was originally in RobotContainer
+    // TODO: Fix This - this was originally in RobotContainer - this functionality should be in defaultTargetingBehavior()
     double lookaheadTime = 0.060;
 
     Pose2d currentPose = robotPoseSupplier.get();

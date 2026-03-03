@@ -4,52 +4,28 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.drive.Drive;
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
+
 import org.littletonrobotics.junction.Logger;
 
 public class Flywheel extends SubsystemBase {
   private final FlywheelIO io;
   private final FlywheelIOInputsAutoLogged inputs = new FlywheelIOInputsAutoLogged();
   private double targetRPM = 0;
-  private DoubleSupplier distanceSupplier;
+  private Supplier<AngularVelocity> flywheelSpeedSupplier;
 
-  private final InterpolatingDoubleTreeMap distanceToRPM = new InterpolatingDoubleTreeMap();
-
-  private final InterpolatingDoubleTreeMap distanceToVelocityScalar =
-      new InterpolatingDoubleTreeMap();
+  
   private final SysIdRoutine sysIdRoutine;
 
-  public Flywheel(FlywheelIO io, DoubleSupplier distanceSupplier) {
+  public Flywheel(FlywheelIO io, Supplier<AngularVelocity> flywheelSpeedSupplier) {
     this.io = io;
-    this.distanceSupplier = distanceSupplier;
-
-    distanceToVelocityScalar.put(1.57, 0.4);
-    distanceToVelocityScalar.put(2.0, 0.30);
-    distanceToVelocityScalar.put(2.5, 0.25);
-    distanceToVelocityScalar.put(3.00, 0.15);
-    distanceToVelocityScalar.put(3.50, 0.1);
-    distanceToVelocityScalar.put(4.00, 0.07);
-    // Distance to RPM
-    distanceToRPM.put(1.57, 2100.0);
-    distanceToRPM.put(1.7, 2180.0);
-    distanceToRPM.put(1.9, 2220.0);
-    distanceToRPM.put(2.1, 2250.0);
-    distanceToRPM.put(2.3, 2280.0);
-    distanceToRPM.put(2.67, 2300.0);
-    distanceToRPM.put(2.82, 2350.0);
-    distanceToRPM.put(3.15, 2390.0);
-    distanceToRPM.put(3.5, 2530.0);
-    distanceToRPM.put(3.7, 2610.0);
-    distanceToRPM.put(4.0, 2660.0);
-
-    distanceToRPM.put(4.2, 2850.0);
-
-    distanceToRPM.put(4.4, 3050.0);
-    // distanceToRPM.put(4.6, -2340.0);
+    this.flywheelSpeedSupplier = flywheelSpeedSupplier;
 
     sysIdRoutine =
         new SysIdRoutine(
@@ -59,70 +35,55 @@ public class Flywheel extends SubsystemBase {
                 (log) -> {
                   log.motor("flywheel-sysid")
                       .voltage(Volts.of(inputs.appliedVolts))
-                      .angularVelocity(RadiansPerSecond.of(inputs.velocityRadPerSec));
+                      .angularVelocity(io.rpmToRPS(inputs.velocityRPM));
                 },
                 this));
   }
 
-  public double getVelocityScalar(double distanceMeters) {
-    return distanceToVelocityScalar.get(distanceMeters);
-  }
-
-  public double getRPMForDistance() {
-    return distanceToRPM.get(distanceSupplier.getAsDouble());
+  private double dynamicRPM() {
+    return io.rpsToRPM(flywheelSpeedSupplier.get());
   }
 
   @Override
   public void periodic() {
     io.updateInputs(inputs);
-    double currentRPM = inputs.velocityRadPerSec * (30.0 / Math.PI);
+    double currentRPM = inputs.velocityRPM;
     Logger.recordOutput("Shooter/CurrentRPM", currentRPM);
     Logger.recordOutput("Shooter/TargetRPM", targetRPM);
 
     Logger.processInputs("Shooter", inputs);
   }
 
-  public boolean isAtSpeed() {
-    double currentRPM = inputs.velocityRadPerSec * (30.0 / Math.PI);
-    return Math.abs(targetRPM) > 0
-        && Math.abs(Math.abs(currentRPM) - Math.abs(targetRPM))
-            < FlywheelConstants.VELOCITY_TOLERANCE_RPM;
+  public boolean ready() {
+    return isAt(dynamicRPM());
   }
 
-  public double calculateRPM(Drive drive) {
-    return targetRPM = this.getRPMForDistance();
+  public boolean isAt(double rpm) {
+    return io.atTarget(rpm);
   }
 
   public Command dynamicSpinUp(boolean waitUntilCompletion) {
-    Command com = runEnd(() -> this.setRPM(this.getRPMForDistance()), this::stop);
 
-    return waitUntilCompletion ? com.until(() -> this.isAtSpeed()) : com;
+    Command com = waitUntilCompletion ?
+      run(() -> io.moveTo(dynamicRPM())).until(this::ready) :
+      runOnce(() -> io.moveTo(dynamicRPM()));
+
+    return com.handleInterrupt(() -> io.setVoltage(0.0));
   }
 
-  public Command spinUpCommand(double rpm) {
-    return runEnd(() -> this.setRPM(rpm), this::stop);
+  public Command spinAt(double rpm, boolean waitUntilCompletion) {
+    Command com = waitUntilCompletion ?
+      run(() -> io.moveTo(rpm)).until(() -> isAt(rpm)) :
+      runOnce(() -> io.moveTo(rpm));
+
+    return com.handleInterrupt(() -> io.setVoltage(0.0));
   }
 
-  public void runVelocity(double rpm) {
-    this.setRPM(rpm);
-  }
-
-  public void runMotionMagic(double rpm) {
-    this.setRPM(rpm);
-  }
-
-  public Command runMotionMagicTest(double rpm) {
-    return runEnd(() -> this.runMotionMagic(rpm), this::stop).withName("MotionMagicTest");
-  }
-
-  public void setRPM(double rpm) {
-    this.targetRPM = rpm;
-    io.setVelocity(rpm * (Math.PI / 30.0));
-  }
-
-  public void stop() {
-    this.targetRPM = 0;
-    io.setVoltage(0.0);
+  public Command stop() {
+    return runOnce(() -> {
+      this.targetRPM = 0;
+      io.setVoltage(0.0);
+    });
   }
 
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {

@@ -66,7 +66,6 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.util.FieldLayout;
-import frc.robot.util.MatchStateCalculator;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -114,30 +113,7 @@ public class RobotContainer {
         intake = new Intake(new IntakeIOKraken());
         spindexer = new Spindexer(new SpindexerIOKraken());
         transfer = new Transfer(new TransferIOKraken());
-        flywheel =
-            new Flywheel(
-                new FlywheelIOKraken(),
-                () -> {
-                  double lookaheadTime = 0.060;
-                  Pose2d currentPose = drive.getPose();
-                  var vel = drive.robotFieldVelocity();
-                  Pose2d predictedPose =
-                      currentPose.exp(
-                          new Twist2d(
-                              vel.dx * lookaheadTime,
-                              vel.dy * lookaheadTime,
-                              vel.dtheta * lookaheadTime));
-
-                  double rawDist =
-                      predictedPose.getTranslation().getDistance(MatchStateCalculator.getHub());
-                  double timeOfFlight = MatchStateCalculator.getTimeOfFlight(rawDist);
-
-                  Translation2d virtualHub =
-                      MatchStateCalculator.getMovingHub(
-                          predictedPose, vel.dx, vel.dy, timeOfFlight);
-
-                  return predictedPose.getTranslation().getDistance(virtualHub);
-                });
+        flywheel = new Flywheel(new FlywheelIOKraken(), targeting::getTargetSpeed);
         pivot = new Pivot(new PivotIOKraken());
         turret = new Turret(new TurretIOYAMS(), targeting::getTargetAngle, drive::getRotation);
 
@@ -179,7 +155,7 @@ public class RobotContainer {
         intake = new Intake(new IntakeIOKrakenSim());
         spindexer = new Spindexer(new SpindexerIOKrakenSim());
         transfer = new Transfer(new TransferIOKrakenSim());
-        flywheel = new Flywheel(new FlywheelIOKrakenSim(), drive::getDistanceToHub);
+        flywheel = new Flywheel(new FlywheelIOKrakenSim(), targeting::getTargetSpeed);
         pivot = new Pivot(new PivotIOKrakenSim());
         turret = new Turret(new TurretIOKrakenSim(), targeting::getTargetAngle, drive::getRotation);
         break;
@@ -198,7 +174,7 @@ public class RobotContainer {
         intake = new Intake(new IntakeIO() {});
         spindexer = new Spindexer(new SpindexerIO() {});
         transfer = new Transfer(new TransferIO() {});
-        flywheel = new Flywheel(new FlywheelIO() {}, drive::getDistanceToHub);
+        flywheel = new Flywheel(new FlywheelIO() {}, targeting::getTargetSpeed);
         pivot = new Pivot(new PivotIO() {});
         turret = new Turret(new TurretIO() {}, targeting::getTargetAngle, drive::getRotation);
         break;
