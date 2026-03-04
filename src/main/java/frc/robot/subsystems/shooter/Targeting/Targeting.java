@@ -22,6 +22,8 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.interfaces.Initializable;
@@ -36,6 +38,7 @@ public class Targeting extends SubsystemBase implements Initializable {
 
   private Zones zones;
   private TargetingIO io;
+  private Field2d targetVisualization;
   
   // Input from drive
   private Supplier<Pose2d> robotPoseSupplier;
@@ -63,6 +66,8 @@ public class Targeting extends SubsystemBase implements Initializable {
         rawTarget = io.getAllianceZoneTarget(pose);
       else
         rawTarget = io.getHub();
+
+      targetVisualization.setRobotPose(new Pose2d(rawTarget, Rotation2d.kZero));
       
       // You now have pose, speeds, and target. Calculate Turret Angle & Flywheel Distance & save to targetAngle & targetSpeed.
       Pose2d predictedPose = pose.exp(
@@ -113,6 +118,8 @@ public class Targeting extends SubsystemBase implements Initializable {
     inputs.augmentedTargetYaw = inputs.targetYaw;
 
     setDefaultCommand(defaultTargetingBehavior());
+    targetVisualization.setRobotPose(new Pose2d(io.getHub(), Rotation2d.kZero));
+    SmartDashboard.putData(targetVisualization);
   }
 
   /**
