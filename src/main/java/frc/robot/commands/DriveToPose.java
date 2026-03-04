@@ -13,6 +13,10 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drive.Drive;
 
+/**
+ * @deprecated Use <code>DriveCommands.driveToPose()</code>.
+ */
+@Deprecated
 public class DriveToPose extends Command {
   private final Drive drive;
   private final APTarget target;

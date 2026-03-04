@@ -44,6 +44,7 @@ public class Turret extends SubsystemBase implements Initializable {
   @Override
   public void seed() {
     CommandScheduler.getInstance().schedule(seedPosition());
+    //setDefaultCommand(autoAim());
   }
 
   @Override
@@ -121,6 +122,34 @@ public class Turret extends SubsystemBase implements Initializable {
   }
   */
 
+  public Command autoAim() {
+    return Commands.run(() -> {
+
+      Rotation2d targetFieldAngle = new Rotation2d(targetAngleSupplier.get());
+      Rotation2d targetRobotAngle = targetFieldAngle.minus(robotRotationSupplier.get());
+
+      double currentDeg = inputs.turretPositionDeg;
+      double targetDeg = targetRobotAngle.getDegrees();
+
+      double diff = targetDeg - currentDeg;
+
+      diff = MathUtil.inputModulus(diff, -180, 180);
+      double optimalTargetDeg = currentDeg + diff;
+
+      if (optimalTargetDeg > TurretConstants.kMaxAngle) {
+        optimalTargetDeg -= 360.0;
+      } else if (optimalTargetDeg < TurretConstants.kMinAngle) {
+        optimalTargetDeg += 360.0;
+      }
+
+      optimalTargetDeg =
+          MathUtil.clamp(
+              optimalTargetDeg, TurretConstants.kMinAngle, TurretConstants.kMaxAngle);
+
+      io.moveTo(optimalTargetDeg);
+    }, this);
+  }
+
   /**
    * Debugging Command to test global field angle rotation of turret.
    * 
@@ -150,33 +179,7 @@ public class Turret extends SubsystemBase implements Initializable {
     }, this);
   }
 
-  public Command aimAtPoint() {
-    return Commands.run(() -> {
-
-      Rotation2d targetFieldAngle = new Rotation2d(targetAngleSupplier.get());
-      Rotation2d targetRobotAngle = targetFieldAngle.minus(robotRotationSupplier.get());
-
-      double currentDeg = inputs.turretPositionDeg;
-      double targetDeg = targetRobotAngle.getDegrees();
-
-      double diff = targetDeg - currentDeg;
-
-      diff = MathUtil.inputModulus(diff, -180, 180);
-      double optimalTargetDeg = currentDeg + diff;
-
-      if (optimalTargetDeg > TurretConstants.kMaxAngle) {
-        optimalTargetDeg -= 360.0;
-      } else if (optimalTargetDeg < TurretConstants.kMinAngle) {
-        optimalTargetDeg += 360.0;
-      }
-
-      optimalTargetDeg =
-          MathUtil.clamp(
-              optimalTargetDeg, TurretConstants.kMinAngle, TurretConstants.kMaxAngle);
-
-      io.moveTo(optimalTargetDeg);
-    }, this);
-  }
+  
 
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
     return sysIdRoutine.quasistatic(direction);

@@ -8,12 +8,15 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.util.Units;
 
 public class FlywheelIOKraken implements FlywheelIO {
   private final CANBus rio = CANBus.roboRIO();
   private final TalonFX motor = new TalonFX(FlywheelConstants.MOTOR_ID, rio);
   private final TalonFX motor2 = new TalonFX(FlywheelConstants.MOTOR_2_ID, rio);
+  
 
   private final MotionMagicVelocityVoltage mmVelocity = new MotionMagicVelocityVoltage(0);
 

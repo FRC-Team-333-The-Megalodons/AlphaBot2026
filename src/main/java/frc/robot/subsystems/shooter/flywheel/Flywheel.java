@@ -5,11 +5,11 @@ import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.drive.Drive;
-import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
@@ -17,15 +17,14 @@ import org.littletonrobotics.junction.Logger;
 public class Flywheel extends SubsystemBase {
   private final FlywheelIO io;
   private final FlywheelIOInputsAutoLogged inputs = new FlywheelIOInputsAutoLogged();
-  private double targetRPM = 0;
-  private Supplier<AngularVelocity> flywheelSpeedSupplier;
 
+  private Supplier<Distance> distanceSupplier;
   
   private final SysIdRoutine sysIdRoutine;
 
-  public Flywheel(FlywheelIO io, Supplier<AngularVelocity> flywheelSpeedSupplier) {
+  public Flywheel(FlywheelIO io, Supplier<Distance> distanceSupplier) {
     this.io = io;
-    this.flywheelSpeedSupplier = flywheelSpeedSupplier;
+    this.distanceSupplier = distanceSupplier;
 
     sysIdRoutine =
         new SysIdRoutine(
@@ -41,17 +40,14 @@ public class Flywheel extends SubsystemBase {
   }
 
   private double dynamicRPM() {
-    return io.rpsToRPM(flywheelSpeedSupplier.get());
+    inputs.targetRPM = io.getRPMFromDistance(distanceSupplier.get());
+    return inputs.targetRPM;
   }
 
   @Override
   public void periodic() {
     io.updateInputs(inputs);
     double currentRPM = inputs.velocityRPM;
-    Logger.recordOutput("Shooter/CurrentRPM", currentRPM);
-    Logger.recordOutput("Shooter/TargetRPM", targetRPM);
-
-    Logger.processInputs("Shooter", inputs);
   }
 
   public boolean ready() {
@@ -72,6 +68,8 @@ public class Flywheel extends SubsystemBase {
   }
 
   public Command spinAt(double rpm, boolean waitUntilCompletion) {
+    inputs.targetRPM = rpm;
+
     Command com = waitUntilCompletion ?
       run(() -> io.moveTo(rpm)).until(() -> isAt(rpm)) :
       runOnce(() -> io.moveTo(rpm));
@@ -81,7 +79,6 @@ public class Flywheel extends SubsystemBase {
 
   public Command stop() {
     return runOnce(() -> {
-      this.targetRPM = 0;
       io.setVoltage(0.0);
     });
   }

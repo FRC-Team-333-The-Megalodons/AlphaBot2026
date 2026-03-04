@@ -27,7 +27,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.AutonomousCommands;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.PathfindCommands;
-import frc.robot.commands.TuneShooterRPM;
+import frc.robot.commands.ShootingCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
@@ -109,11 +109,11 @@ public class RobotContainer {
         vision =
             new Vision(
                 drive::addVisionMeasurement, new VisionIOPhotonVision(camera0Name, robotToCamera0));
-        targeting = new Targeting(new TargetingIOReal(), drive::getPose, drive::getChassisSpeeds);
+        targeting = new Targeting(new TargetingIOReal(), drive::getPose, drive::robotFieldVelocity);
         intake = new Intake(new IntakeIOKraken());
         spindexer = new Spindexer(new SpindexerIOKraken());
         transfer = new Transfer(new TransferIOKraken());
-        flywheel = new Flywheel(new FlywheelIOKraken(), targeting::getTargetSpeed);
+        flywheel = new Flywheel(new FlywheelIOKraken(), targeting::getTargetDistance);
         pivot = new Pivot(new PivotIOKraken());
         turret = new Turret(new TurretIOYAMS(), targeting::getTargetAngle, drive::getRotation);
 
@@ -151,11 +151,11 @@ public class RobotContainer {
             new Vision(
                 drive::addVisionMeasurement,
                 new VisionIOPhotonVisionSim(camera1Name, robotToCamera0, drive::getPose));
-        targeting = new Targeting(new TargetingIOReal(), drive::getPose, drive::getChassisSpeeds);
+        targeting = new Targeting(new TargetingIOReal(), drive::getPose, drive::robotFieldVelocity);
         intake = new Intake(new IntakeIOKrakenSim());
         spindexer = new Spindexer(new SpindexerIOKrakenSim());
         transfer = new Transfer(new TransferIOKrakenSim());
-        flywheel = new Flywheel(new FlywheelIOKrakenSim(), targeting::getTargetSpeed);
+        flywheel = new Flywheel(new FlywheelIOKrakenSim(), targeting::getTargetDistance);
         pivot = new Pivot(new PivotIOKrakenSim());
         turret = new Turret(new TurretIOKrakenSim(), targeting::getTargetAngle, drive::getRotation);
         break;
@@ -170,11 +170,11 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {});
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {});
-        targeting = new Targeting(new TargetingIOReal(), drive::getPose, drive::getChassisSpeeds);
+        targeting = new Targeting(new TargetingIOReal(), drive::getPose, drive::robotFieldVelocity);
         intake = new Intake(new IntakeIO() {});
         spindexer = new Spindexer(new SpindexerIO() {});
         transfer = new Transfer(new TransferIO() {});
-        flywheel = new Flywheel(new FlywheelIO() {}, targeting::getTargetSpeed);
+        flywheel = new Flywheel(new FlywheelIO() {}, targeting::getTargetDistance);
         pivot = new Pivot(new PivotIO() {});
         turret = new Turret(new TurretIO() {}, targeting::getTargetAngle, drive::getRotation);
         break;
@@ -189,7 +189,7 @@ public class RobotContainer {
         Commands.deadline(
             PathfindCommands.precisionPathfindTo(FieldLayout.Outpost.OUTPOST_POSE, drive),
             AutonomousCommands.movingShootCommand(
-                drive, flywheel, turret, intake, spindexer, transfer)));
+                drive, flywheel, targeting, turret, intake, spindexer, transfer)));
     NamedCommands.registerCommand(
         "WaitTowerAndShoot",
         Commands.deadline(
@@ -198,11 +198,11 @@ public class RobotContainer {
                 PathfindCommands.precisionPathfindTo(FieldLayout.Tower.CLIMBING_POSE, drive),
                 Commands.waitSeconds(3.0)),
             AutonomousCommands.movingShootCommand(
-                drive, flywheel, turret, intake, spindexer, transfer)));
+                drive, flywheel, targeting, turret, intake, spindexer, transfer)));
     NamedCommands.registerCommand(
         "OutpostToHubSequence",
         AutonomousCommands.outpostToHubSequence(
-            drive, flywheel, turret, intake, spindexer, transfer));
+            drive, flywheel, targeting, turret, intake, spindexer, transfer));
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -299,10 +299,10 @@ public class RobotContainer {
         .touchpad()
         .onTrue(
             Commands.runOnce(
-                    () ->
-                        drive.setPose(
-                            new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
-                    drive)
+                () ->
+                    drive.setPose(
+                        new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
+                drive)
                 .ignoringDisable(true));
     controller
         .R3()
@@ -315,7 +315,7 @@ public class RobotContainer {
 
     controller.povUp().whileTrue(PathfindCommands.pathfindToDepot(drive));
     controller.square().whileTrue(PathfindCommands.pathfindToHub(drive));
-    controller.povDown().whileTrue(turret.aimAtPoint());
+    controller.povDown().whileTrue(turret.autoAim());
     controller.L3().whileTrue(PathfindCommands.pathfindtoScoringPosition(drive));
     // controller
     //     .L2()
@@ -329,51 +329,22 @@ public class RobotContainer {
     controller.triangle().whileTrue(pivot.runPercent(-0.1));
     controller.cross().whileTrue(pivot.runPercent(0.1));
 
-    /*
     controller
         .L2()
         .whileTrue(
-            Commands.either(
+            Commands.sequence(
+                Commands.deadline(
+                    flywheel.dynamicSpinUp(true).andThen(Commands.waitSeconds(0.1)),
+                    turret.autoAim()
+                ),
                 Commands.parallel(
-                    flywheel.dynamicSpinUp(false),
-                    turret.aimAtPoint(
-                        () -> {
-                          double lookaheadTime = 0.060;
-
-                          Pose2d currentPose = drive.getPose();
-                          var currentVelocity = drive.robotFieldVelocity();
-
-                          Pose2d predictedPose =
-                              currentPose.exp(
-                                  new edu.wpi.first.math.geometry.Twist2d(
-                                      currentVelocity.dx * lookaheadTime,
-                                      currentVelocity.dy * lookaheadTime,
-                                      currentVelocity.dtheta * lookaheadTime));
-
-                          double rawDist =
-                              predictedPose
-                                  .getTranslation()
-                                  .getDistance(MatchStateCalculator.getHub());
-
-                          return MatchStateCalculator.getMovingHub(
-                              predictedPose,
-                              currentVelocity.dx,
-                              currentVelocity.dy,
-                              MatchStateCalculator.getTimeOfFlight(rawDist));
-                        }),
-                    Commands.sequence(
-                        Commands.waitUntil(flywheel::isAtSpeed),
-                        Commands.parallel(
-                            spindexer.spin(), transfer.feedShooter(), intake.ingest()))),
-                Commands.parallel(
-                    flywheel.spinUpCommand(-4000),
-                    turret.rotateToField(Rotation2d.fromDegrees(0)),
-                    Commands.sequence(
-                        Commands.waitUntil(flywheel::isAtSpeed),
-                        Commands.parallel(
-                            spindexer.spin(), transfer.feedShooter(), intake.ingest()))),
-                () -> MatchStateCalculator.isInAllianceZone(drive.getPose())));
-    */
+                    spindexer.spin(),
+                    transfer.feedShooter(),
+                    intake.ingest()
+                )
+            )
+        );
+                
 
     // controller
     //     .L2()
@@ -381,7 +352,7 @@ public class RobotContainer {
     //         Commands.either(
     //             Commands.parallel(
     //                 flywheel.dynamicSpinUp(false),
-    //                 turret.aimAtPoint(
+    //                 turret.autoAim(
     //                     () -> {
     //                       double currentDistance =
     //                           drive
@@ -414,29 +385,29 @@ public class RobotContainer {
     //                         intake.runIntakeCommand()))),
     //             () -> MatchStateCalculator.isInAllianceZone(drive.getPose())));
     
-    /*
+    
     controller
         .R1()
         .whileTrue(
             Commands.either(
                 Commands.parallel(
                     flywheel.dynamicSpinUp(false),
-                    turret.aimAtPoint(() -> MatchStateCalculator.getHub()),
+                    turret.autoAim(() -> MatchStateCalculator.getHub()),
                     Commands.sequence(
-                        Commands.waitUntil(flywheel::isAtSpeed),
+                        Commands.waitUntil(flywheel::ready),
                         Commands.parallel(
                             spindexer.spin(), transfer.feedShooter(), intake.ingest()))),
                 Commands.parallel(
                     flywheel.spinUpCommand(-4000),
                     turret.aimAtFieldZero(),
                     Commands.sequence(
-                        Commands.waitUntil(flywheel::isAtSpeed),
+                        Commands.waitUntil(flywheel::ready),
                         Commands.parallel(
                             spindexer.spin(), transfer.feedShooter(), intake.ingest()))),
                 () -> MatchStateCalculator.isInAllianceZone(drive.getPose())));
-    */
+    
 
-    controller.PS().whileTrue(new TuneShooterRPM(flywheel));
+    controller.PS().whileTrue(ShootingCommands.dashboardRPMControl(flywheel));
     controller
         .povDown()
         .whileTrue(PathfindCommands.precisionPathfindTo(FieldLayout.Tower.CLIMBING_POSE, drive));

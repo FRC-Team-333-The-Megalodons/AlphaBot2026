@@ -1,6 +1,7 @@
 package frc.robot.subsystems.shooter.Targeting;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import org.littletonrobotics.junction.AutoLog;
 
@@ -20,4 +21,18 @@ public interface TargetingIO {
   public Translation2d getAllianceZoneTarget(Pose2d robotPose);
 
   public Translation2d getNeutralZoneTarget(Pose2d robotPose);
+
+  public Rotation2d getAngleTo(Pose2d robotPose, Translation2d targetCoordinates);
+
+  public double getDistanceFrom(Pose2d robotPose, Translation2d toTargetCoordinates);
+
+  public double getDistanceFromHub(Pose2d robotPose);
+
+  public double getTOFFromDistance(double distanceMeters);
+
+  public Translation2d velocityCompensatedCoordinates(
+    Pose2d robotPose,
+    Translation2d fieldVelocity,
+    double tof
+  );
 }

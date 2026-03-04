@@ -11,30 +11,29 @@ import frc.robot.util.Targets;
 public class TargetingIOReal implements TargetingIO {
 
   private Targets targets;
-  private final InterpolatingDoubleTreeMap distanceToRPM;
+  private final InterpolatingDoubleTreeMap distanceToTOF;
   private final InterpolatingDoubleTreeMap distanceToVelocityScalar;
+  private final double dragConstant; 
+  static double lastTargetYawVelocityRadPerSec;
 
   public TargetingIOReal() {
     targets = new Targets();
-    distanceToRPM = new InterpolatingDoubleTreeMap();
+    
+    distanceToTOF = new InterpolatingDoubleTreeMap();
     distanceToVelocityScalar = new InterpolatingDoubleTreeMap();
     configureInterpolations();
+
+    dragConstant = 1.65;
+    lastTargetYawVelocityRadPerSec = 0;
   }
 
   private void configureInterpolations() {
-    distanceToRPM.put(1.57, 2100.0);
-    distanceToRPM.put(1.7, 2180.0);
-    distanceToRPM.put(1.9, 2220.0);
-    distanceToRPM.put(2.1, 2250.0);
-    distanceToRPM.put(2.3, 2280.0);
-    distanceToRPM.put(2.67, 2300.0);
-    distanceToRPM.put(2.82, 2350.0);
-    distanceToRPM.put(3.15, 2390.0);
-    distanceToRPM.put(3.5, 2530.0);
-    distanceToRPM.put(3.7, 2610.0);
-    distanceToRPM.put(4.0, 2660.0);
-    distanceToRPM.put(4.2, 2850.0);
-    distanceToRPM.put(4.4, 3050.0);
+    distanceToTOF.put(1.57, 0.8);
+    distanceToTOF.put(2.00, 3.7);
+    distanceToTOF.put(2.50, 3.77);
+    distanceToTOF.put(3.0, 4.03);
+    distanceToTOF.put(3.50, 1.1);
+    distanceToTOF.put(4.0, 1.1);
 
     distanceToVelocityScalar.put(1.57, 0.4);
     distanceToVelocityScalar.put(2.0, 0.30);
@@ -44,24 +43,34 @@ public class TargetingIOReal implements TargetingIO {
     distanceToVelocityScalar.put(4.00, 0.07);
   }
 
+  private Translation2d selectTarget(String targetName) {
+    inputs.targetName = targetName;
+    return targets.select(targetName);
+  }
+
+  private Translation2d selectTarget(String targetName, Pose2d robotPose) {
+    inputs.targetName = targetName;
+    return targets.select(targetName, robotPose);
+  }
+
   @Override
   public Translation2d getHub() {
-    return targets.select(DriverStation.getAlliance().get() == Alliance.Red ? "redHub" : "blueHub");
+    return selectTarget(DriverStation.getAlliance().get() == Alliance.Red ? "redHub" : "blueHub");
   }
 
   public Translation2d getEnemyHub() {
-    return targets.select(DriverStation.getAlliance().get() == Alliance.Red ? "blueHub" : "redHub");
+    return selectTarget(DriverStation.getAlliance().get() == Alliance.Red ? "blueHub" : "redHub");
   }
 
   @Override
   public Translation2d getAllianceZoneTarget(Pose2d robotPose) {
-    return targets.select(
+    return selectTarget(
         DriverStation.getAlliance().get() == Alliance.Red ? "redZone" : "blueZone", robotPose);
   }
 
   @Override
   public Translation2d getNeutralZoneTarget(Pose2d robotPose) {
-    return targets.select("neutralZone", robotPose);
+    return selectTarget("neutralZone", robotPose);
   }
 
   public double getDistanceFrom(Pose2d robotPose, Translation2d toTargetCoordinates) {
@@ -76,8 +85,8 @@ public class TargetingIOReal implements TargetingIO {
     return getDistanceFrom(robotPose, getEnemyHub());
   }
 
-  public double getRPMFrOMDistance(double distanceMeters) {
-    return distanceToRPM.get(distanceMeters);
+  public double getTOFFromDistance(double distanceMeters) {
+    return distanceToTOF.get(distanceMeters);
   }
 
   public double getVelocityScalar(double distanceMeters) {
@@ -92,4 +101,35 @@ public class TargetingIOReal implements TargetingIO {
     return getAngleTo(robotPose, getHub());
   }
   
+  public Translation2d velocityCompensatedCoordinates(
+    Pose2d robotPose,
+    Translation2d fieldVelocity,
+    double tof
+  ) {
+    Translation2d hubOffset = getHub().minus(robotPose.getTranslation());
+    double uncompensatedRange = hubOffset.getNorm();
+    Rotation2d robotToGoalAngle = hubOffset.getAngle();
+
+    Translation2d goalRelativeVelocity = fieldVelocity.rotateBy(robotToGoalAngle.unaryMinus());
+    double tangentialVelocity = goalRelativeVelocity.getY();
+    lastTargetYawVelocityRadPerSec = -(tangentialVelocity / uncompensatedRange);
+
+    double velocityScalar = (1.0 - Math.exp(-dragConstant * tof)) / (dragConstant * tof);
+    Translation2d goalRelativeVelocityScaled = goalRelativeVelocity.times(velocityScalar);
+
+    double scaledRadialVelocity = goalRelativeVelocityScaled.getX();
+    double scaledTangentialVelocity = goalRelativeVelocityScaled.getY();
+
+    double baseShotSpeed = uncompensatedRange / tof;
+    double effectiveShotSpeed = Math.max(baseShotSpeed - scaledRadialVelocity, 0.001);
+
+    double angularOffsetRad = Math.atan2(-scaledTangentialVelocity, effectiveShotSpeed);
+
+    double effectiveRange = tof * Math.hypot(scaledTangentialVelocity, effectiveShotSpeed);
+
+    Rotation2d finalHeading = robotToGoalAngle.plus(Rotation2d.fromRadians(angularOffsetRad));
+    Translation2d virtualOffset = new Translation2d(effectiveRange, finalHeading);
+
+    return robotPose.getTranslation().plus(virtualOffset);
+  }
 }

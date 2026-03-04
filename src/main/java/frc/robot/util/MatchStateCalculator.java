@@ -9,6 +9,16 @@ import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
+/**
+ * @deprecated Use The new Targeting Subsystem.
+ * 
+ * This code can be found, scattered amongst the following files:
+ * - <code>Targeting.java</code>
+ * - <code>TargetingIOImpl.java</code>
+ * - <code>Targets.java</code>
+ * - <code>Zones.java</code>
+ */
+@Deprecated
 public class MatchStateCalculator {
   public static AprilTagFieldLayout tagLayout =
       AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
