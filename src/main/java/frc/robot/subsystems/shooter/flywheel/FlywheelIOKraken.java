@@ -17,6 +17,7 @@ public class FlywheelIOKraken implements FlywheelIO {
   private final MotionMagicVelocityVoltage mmVelocity = new MotionMagicVelocityVoltage(0);
 
   public FlywheelIOKraken() {
+    configureMap();
     var config = new TalonFXConfiguration();
     motor.getConfigurator().apply(config);
     motor2.getConfigurator().apply(config);

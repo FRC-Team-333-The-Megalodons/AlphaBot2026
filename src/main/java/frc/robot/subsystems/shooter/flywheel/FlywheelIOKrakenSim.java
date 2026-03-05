@@ -6,6 +6,11 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 
 public class FlywheelIOKrakenSim implements FlywheelIO {
+
+  public FlywheelIOKrakenSim() {
+    configureMap();
+  }
+
   private final FlywheelSim sim =
       new FlywheelSim(
           LinearSystemId.createFlywheelSystem(DCMotor.getKrakenX60(1), 0.008, 1.0),

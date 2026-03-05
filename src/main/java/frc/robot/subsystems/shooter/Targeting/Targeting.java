@@ -138,6 +138,7 @@ public class Targeting extends SubsystemBase implements Initializable {
 
   @Override
   public void periodic() {
+    io.updateInputs(inputs);
     Logger.processInputs("Turret", inputs);
   }
 }

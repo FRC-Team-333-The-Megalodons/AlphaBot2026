@@ -15,7 +15,7 @@ public class TargetingIOReal implements TargetingIO {
   private final InterpolatingDoubleTreeMap distanceToVelocityScalar;
   private final double dragConstant;
   static double lastTargetYawVelocityRadPerSec;
-  private 
+  private String currentTargetName = "hub";
 
   public TargetingIOReal() {
     targets = new Targets();
@@ -43,10 +43,11 @@ public class TargetingIOReal implements TargetingIO {
     distanceToVelocityScalar.put(3.50, 0.1);
     distanceToVelocityScalar.put(4.00, 0.07);
   }
+
   @Override
   public void updateInputs(TargetingIOInputs inputs) {
     // No sensor inputs to update in this implementation
-    inputs.targetName = targets.get
+    inputs.targetName = currentTargetName;
   }
 
   private Translation2d selectTarget(String targetName) {
@@ -59,22 +60,30 @@ public class TargetingIOReal implements TargetingIO {
 
   @Override
   public Translation2d getHub() {
-    return selectTarget(DriverStation.getAlliance().get() == Alliance.Red ? "redHub" : "blueHub");
+    // 3. Update the tracked variable whenever this is called.
+    // Note: Using .orElse() is safer than .get() in case Alliance isn't set yet!
+    currentTargetName =
+        DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red ? "redHub" : "blueHub";
+    return selectTarget(currentTargetName);
   }
 
   public Translation2d getEnemyHub() {
-    return selectTarget(DriverStation.getAlliance().get() == Alliance.Red ? "blueHub" : "redHub");
+    currentTargetName =
+        DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red ? "blueHub" : "redHub";
+    return selectTarget(currentTargetName);
   }
 
   @Override
   public Translation2d getAllianceZoneTarget(Pose2d robotPose) {
-    return selectTarget(
-        DriverStation.getAlliance().get() == Alliance.Red ? "redZone" : "blueZone", robotPose);
+    currentTargetName =
+        DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red ? "redZone" : "blueZone";
+    return selectTarget(currentTargetName, robotPose);
   }
 
   @Override
   public Translation2d getNeutralZoneTarget(Pose2d robotPose) {
-    return selectTarget("neutralZone", robotPose);
+    currentTargetName = "neutralZone";
+    return selectTarget(currentTargetName, robotPose);
   }
 
   public double getDistanceFrom(Pose2d robotPose, Translation2d toTargetCoordinates) {

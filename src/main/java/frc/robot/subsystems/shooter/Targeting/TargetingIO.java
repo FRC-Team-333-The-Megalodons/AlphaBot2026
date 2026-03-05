@@ -16,6 +16,8 @@ public interface TargetingIO {
     public double augmentedTargetYaw = 0.0;
   }
 
+  public default void updateInputs(TargetingIOInputs inputs) {}
+
   public Translation2d getHub();
 
   public Translation2d getAllianceZoneTarget(Pose2d robotPose);

@@ -17,11 +17,9 @@ public interface FlywheelIO extends Automatable {
     public double appliedVolts = 0.0;
   }
 
-  static InterpolatingDoubleTreeMap distanceToRPM = configureMap();
+  static InterpolatingDoubleTreeMap distanceToRPM = new InterpolatingDoubleTreeMap();
 
-  private static InterpolatingDoubleTreeMap configureMap() {
-    var map = new InterpolatingDoubleTreeMap();
-
+  public default void configureMap() {
     distanceToRPM.put(1.57, 2100.0);
     distanceToRPM.put(1.7, 2180.0);
     distanceToRPM.put(1.9, 2220.0);
@@ -35,8 +33,6 @@ public interface FlywheelIO extends Automatable {
     distanceToRPM.put(4.0, 2660.0);
     distanceToRPM.put(4.2, 2850.0);
     distanceToRPM.put(4.4, 3050.0);
-
-    return map;
   }
 
   public default void updateInputs(FlywheelIOInputs inputs) {}
