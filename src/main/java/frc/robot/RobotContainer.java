@@ -15,8 +15,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -246,13 +244,17 @@ public class RobotContainer {
     SmartDashboard.putData("Pathfind to Depot", PathfindCommands.pathfindToDepot(drive));
     SmartDashboard.putData("Turret/00 Go to 45", turret.rotateToField(Rotation2d.fromDegrees(45)));
     SmartDashboard.putData("Turret/01 Go to 90", turret.rotateToField(Rotation2d.kCW_90deg));
-    SmartDashboard.putData("Turret/02 Go to 135", turret.rotateToField(Rotation2d.fromDegrees(135)));
+    SmartDashboard.putData(
+        "Turret/02 Go to 135", turret.rotateToField(Rotation2d.fromDegrees(135)));
     SmartDashboard.putData("Turret/03 Go to 180", turret.rotateToField(Rotation2d.k180deg));
 
-    SmartDashboard.putData("Turret/04 Go to -45", turret.rotateToField(Rotation2d.fromDegrees(-45)));
+    SmartDashboard.putData(
+        "Turret/04 Go to -45", turret.rotateToField(Rotation2d.fromDegrees(-45)));
     SmartDashboard.putData("Turret/05 Go to -90", turret.rotateToField(Rotation2d.kCCW_90deg));
-    SmartDashboard.putData("Turret/06 Go to -135", turret.rotateToField(Rotation2d.fromDegrees(-135)));
-    SmartDashboard.putData("Turret/07 Go to -180", turret.rotateToField(Rotation2d.k180deg.unaryMinus()));
+    SmartDashboard.putData(
+        "Turret/06 Go to -135", turret.rotateToField(Rotation2d.fromDegrees(-135)));
+    SmartDashboard.putData(
+        "Turret/07 Go to -180", turret.rotateToField(Rotation2d.k180deg.unaryMinus()));
 
     SmartDashboard.putData("Turret/08 Go to 0", turret.rotateToField(Rotation2d.kZero));
     SmartDashboard.putData("Turret/Reseed Abs Position", turret.reseedPosition());
@@ -299,10 +301,10 @@ public class RobotContainer {
         .touchpad()
         .onTrue(
             Commands.runOnce(
-                () ->
-                    drive.setPose(
-                        new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
-                drive)
+                    () ->
+                        drive.setPose(
+                            new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
+                    drive)
                 .ignoringDisable(true));
     controller
         .R3()
@@ -335,16 +337,8 @@ public class RobotContainer {
             Commands.sequence(
                 Commands.deadline(
                     flywheel.dynamicSpinUp(true).andThen(Commands.waitSeconds(0.1)),
-                    turret.autoAim()
-                ),
-                Commands.parallel(
-                    spindexer.spin(),
-                    transfer.feedShooter(),
-                    intake.ingest()
-                )
-            )
-        );
-                
+                    turret.autoAim()),
+                Commands.parallel(spindexer.spin(), transfer.feedShooter(), intake.ingest())));
 
     // controller
     //     .L2()
@@ -384,15 +378,14 @@ public class RobotContainer {
     //                         transfer.feedShooterCommand(),
     //                         intake.runIntakeCommand()))),
     //             () -> MatchStateCalculator.isInAllianceZone(drive.getPose())));
-    
-    
+
     controller
         .R1()
         .whileTrue(
             Commands.either(
                 Commands.parallel(
                     flywheel.dynamicSpinUp(false),
-                    turret.autoAim(() -> MatchStateCalculator.getHub()),
+                    turret.autoAim(),
                     Commands.sequence(
                         Commands.waitUntil(flywheel::ready),
                         Commands.parallel(
@@ -405,7 +398,6 @@ public class RobotContainer {
                         Commands.parallel(
                             spindexer.spin(), transfer.feedShooter(), intake.ingest()))),
                 () -> MatchStateCalculator.isInAllianceZone(drive.getPose())));
-    
 
     controller.PS().whileTrue(ShootingCommands.dashboardRPMControl(flywheel));
     controller

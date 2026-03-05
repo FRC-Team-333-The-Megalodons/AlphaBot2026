@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Helper class with a list of targets for the turret and lywheel to aim at. */
+/** Helper class with a list of targets for the turret and flywheel to aim at. */
 public class Targets implements Localizable {
 
   private Map<String, List<Translation2d>> targets;

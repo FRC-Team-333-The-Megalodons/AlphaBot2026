@@ -31,8 +31,5 @@ public interface TargetingIO {
   public double getTOFFromDistance(double distanceMeters);
 
   public Translation2d velocityCompensatedCoordinates(
-    Pose2d robotPose,
-    Translation2d fieldVelocity,
-    double tof
-  );
+      Pose2d robotPose, Translation2d fieldVelocity, double tof);
 }

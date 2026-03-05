@@ -10,7 +10,6 @@ package frc.robot.subsystems.drive;
 import static edu.wpi.first.units.Units.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.commands.PathfindingCommand;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
@@ -44,7 +43,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
-import frc.robot.commands.PathfindCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.interfaces.Initializable;
 import frc.robot.util.LocalADStarAK;
@@ -146,27 +144,24 @@ public class Drive extends SubsystemBase implements Initializable {
 
     // Configure AutoBuilder for PathPlanner once DriverStation is connected.
     AutoBuilder.configure(
-      this::getPose,
-      this::setPose,
-      this::getChassisSpeeds,
-      this::runVelocity,
-      new PPHolonomicDriveController(
-          new PIDConstants(4.0, 0.0, 0.0), new PIDConstants(4.0, 0.0, 0.0)),
-      PP_CONFIG,
-      () -> DriverStation.getAlliance().get() == Alliance.Red,
-      this
-    );
+        this::getPose,
+        this::setPose,
+        this::getChassisSpeeds,
+        this::runVelocity,
+        new PPHolonomicDriveController(
+            new PIDConstants(4.0, 0.0, 0.0), new PIDConstants(4.0, 0.0, 0.0)),
+        PP_CONFIG,
+        () -> DriverStation.getAlliance().get() == Alliance.Red,
+        this);
     Pathfinding.setPathfinder(new LocalADStarAK());
     PathPlannerLogging.setLogActivePathCallback(
-      (activePath) -> {
-        Logger.recordOutput("Odometry/Trajectory", activePath.toArray(new Pose2d[0]));
-      }
-    );
+        (activePath) -> {
+          Logger.recordOutput("Odometry/Trajectory", activePath.toArray(new Pose2d[0]));
+        });
     PathPlannerLogging.setLogTargetPoseCallback(
-      (targetPose) -> {
-        Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
-      }
-    );
+        (targetPose) -> {
+          Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
+        });
 
     // Warmup because why not
     CommandScheduler.getInstance().schedule(PathfindingCommand.warmupCommand());

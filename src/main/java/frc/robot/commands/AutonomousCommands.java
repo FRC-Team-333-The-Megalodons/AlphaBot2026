@@ -20,23 +20,15 @@ import frc.robot.subsystems.shooter.turret.Turret;
 import frc.robot.subsystems.spindexer.Spindexer;
 import frc.robot.subsystems.transfer.Transfer;
 import frc.robot.util.FieldLayout;
-import frc.robot.util.MatchStateCalculator;
 
 /** Add your docs here. */
 public class AutonomousCommands {
 
-    
   public static Command shootCommand(
-
       Drive drive, Flywheel flywheel, Intake intake, Spindexer spindexer, Transfer transfer) {
     return Commands.sequence(
         flywheel.dynamicSpinUp(true),
-        Commands.parallel(
-            intake.ingest(),
-            spindexer.spin(),
-            transfer.feedShooter()
-        )
-    );
+        Commands.parallel(intake.ingest(), spindexer.spin(), transfer.feedShooter()));
   }
 
   public static Command pathfindToTower(Drive drive) {
@@ -58,17 +50,9 @@ public class AutonomousCommands {
 
     return Commands.deadline(
         Commands.sequence(
-            Commands.deadline(
-                flywheel.dynamicSpinUp(true),
-                turret.autoAim()
-            ),
-            Commands.parallel(
-                spindexer.spin(),
-                transfer.feedShooter()
-            )
-        ),
-        targeting.simpleTargeting()
-    );
+            Commands.deadline(flywheel.dynamicSpinUp(true), turret.autoAim()),
+            Commands.parallel(spindexer.spin(), transfer.feedShooter())),
+        targeting.simpleTargeting());
   }
 
   public static Command outpostToHubSequence(
@@ -81,9 +65,11 @@ public class AutonomousCommands {
       Transfer transfer) {
 
     return Commands.sequence(
-        movingShootCommand(drive, flywheel, targeting, turret, intake, spindexer, transfer).withTimeout(2.0),
+        movingShootCommand(drive, flywheel, targeting, turret, intake, spindexer, transfer)
+            .withTimeout(2.0),
         PathfindCommands.precisionPathfindTo(FieldLayout.Outpost.OUTPOST_POSE, drive),
-        movingShootCommand(drive, flywheel, targeting, turret, intake, spindexer, transfer).withTimeout(3.5),
+        movingShootCommand(drive, flywheel, targeting, turret, intake, spindexer, transfer)
+            .withTimeout(3.5),
         PathfindCommands.precisionPathfindTo(FieldLayout.Hub.NEAR_FACE, drive));
   }
 }

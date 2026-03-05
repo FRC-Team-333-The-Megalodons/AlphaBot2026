@@ -16,7 +16,8 @@ public class FlywheelIOKrakenSim implements FlywheelIO {
   @Override
   public void updateInputs(FlywheelIOInputs inputs) {
     sim.update(0.02);
-    inputs.velocityRPM = Units.radiansPerSecondToRotationsPerMinute(sim.getAngularVelocityRadPerSec());
+    inputs.velocityRPM =
+        Units.radiansPerSecondToRotationsPerMinute(sim.getAngularVelocityRadPerSec());
     inputs.appliedVolts = appliedVolts;
   }
 

@@ -13,12 +13,12 @@ public class TargetingIOReal implements TargetingIO {
   private Targets targets;
   private final InterpolatingDoubleTreeMap distanceToTOF;
   private final InterpolatingDoubleTreeMap distanceToVelocityScalar;
-  private final double dragConstant; 
+  private final double dragConstant;
   static double lastTargetYawVelocityRadPerSec;
 
   public TargetingIOReal() {
     targets = new Targets();
-    
+
     distanceToTOF = new InterpolatingDoubleTreeMap();
     distanceToVelocityScalar = new InterpolatingDoubleTreeMap();
     configureInterpolations();
@@ -96,16 +96,13 @@ public class TargetingIOReal implements TargetingIO {
   public Rotation2d getAngleTo(Pose2d robotPose, Translation2d targetCoordinates) {
     return targetCoordinates.minus(robotPose.getTranslation()).getAngle();
   }
-  
+
   public Rotation2d getAngleToHub(Pose2d robotPose) {
     return getAngleTo(robotPose, getHub());
   }
-  
+
   public Translation2d velocityCompensatedCoordinates(
-    Pose2d robotPose,
-    Translation2d fieldVelocity,
-    double tof
-  ) {
+      Pose2d robotPose, Translation2d fieldVelocity, double tof) {
     Translation2d hubOffset = getHub().minus(robotPose.getTranslation());
     double uncompensatedRange = hubOffset.getNorm();
     Rotation2d robotToGoalAngle = hubOffset.getAngle();

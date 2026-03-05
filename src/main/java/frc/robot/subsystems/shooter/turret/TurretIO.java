@@ -1,7 +1,6 @@
 package frc.robot.subsystems.shooter.turret;
 
 import frc.robot.interfaces.Automatable;
-
 import org.littletonrobotics.junction.AutoLog;
 
 public interface TurretIO extends Automatable {
@@ -18,7 +17,10 @@ public interface TurretIO extends Automatable {
     public double calculatedAbsPositionRot = 0.0;
   }
 
-  public default boolean encodersGood() { return true; };
+  public default boolean encodersGood() {
+    return true;
+  }
+  ;
 
   public default void updateInputs(TurretIOInputs inputs) {}
 

@@ -9,7 +9,8 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Distance;
 
 /**
- * Any Subsystem or IO interface which require commonly-used coordinates, should implement this interface.
+ * Any Subsystem or IO interface which require commonly-used coordinates, should implement this
+ * interface.
  */
 public interface Localizable {
   static final AprilTagFieldLayout tagLayout =

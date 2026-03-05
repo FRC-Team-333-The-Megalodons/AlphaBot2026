@@ -1,15 +1,13 @@
 package frc.robot.subsystems.shooter.flywheel;
 
-import org.littletonrobotics.junction.AutoLog;
-
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
-
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import frc.robot.interfaces.Automatable;
+import org.littletonrobotics.junction.AutoLog;
 
 public interface FlywheelIO extends Automatable {
   @AutoLog
@@ -20,7 +18,7 @@ public interface FlywheelIO extends Automatable {
   }
 
   static InterpolatingDoubleTreeMap distanceToRPM = configureMap();
-  
+
   private static InterpolatingDoubleTreeMap configureMap() {
     var map = new InterpolatingDoubleTreeMap();
 
@@ -53,7 +51,11 @@ public interface FlywheelIO extends Automatable {
     return distanceToRPM.get(distance.in(Meters));
   }
 
-  public default double rpsToRPM(AngularVelocity rps) { return rps.in(RotationsPerSecond) * 60.0; }
+  public default double rpsToRPM(AngularVelocity rps) {
+    return rps.in(RotationsPerSecond) * 60.0;
+  }
 
-  public default AngularVelocity rpmToRPS(double rpm) { return RotationsPerSecond.of(rpm/60.0);   }
+  public default AngularVelocity rpmToRPS(double rpm) {
+    return RotationsPerSecond.of(rpm / 60.0);
+  }
 }

@@ -9,14 +9,10 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
-import edu.wpi.first.math.util.Units;
-
 public class FlywheelIOKraken implements FlywheelIO {
   private final CANBus rio = CANBus.roboRIO();
   private final TalonFX motor = new TalonFX(FlywheelConstants.MOTOR_ID, rio);
   private final TalonFX motor2 = new TalonFX(FlywheelConstants.MOTOR_2_ID, rio);
-  
 
   private final MotionMagicVelocityVoltage mmVelocity = new MotionMagicVelocityVoltage(0);
 
@@ -24,7 +20,6 @@ public class FlywheelIOKraken implements FlywheelIO {
     var config = new TalonFXConfiguration();
     motor.getConfigurator().apply(config);
     motor2.getConfigurator().apply(config);
-
 
     // Slot 0 Gains
     config.Slot0.kS = FlywheelConstants.kS;
@@ -53,8 +48,8 @@ public class FlywheelIOKraken implements FlywheelIO {
   public boolean atTarget(double targetRPM) {
     double currentRPM = inputs.velocityRPM;
     return Math.abs(targetRPM) > 0
-      && Math.abs(Math.abs(currentRPM) - Math.abs(targetRPM))
-        < FlywheelConstants.VELOCITY_TOLERANCE_RPM;
+        && Math.abs(Math.abs(currentRPM) - Math.abs(targetRPM))
+            < FlywheelConstants.VELOCITY_TOLERANCE_RPM;
   }
 
   @Override

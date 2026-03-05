@@ -1,5 +1,7 @@
 package frc.robot.subsystems.shooter.turret;
 
+import static edu.wpi.first.units.Units.Degrees;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusCode;
@@ -18,9 +20,6 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
-
-import static edu.wpi.first.units.Units.Degrees;
-
 import org.littletonrobotics.junction.Logger;
 
 public class TurretIOKraken implements TurretIO {
@@ -129,14 +128,12 @@ public class TurretIOKraken implements TurretIO {
     inputs.encoder17Rotations = enc17AbsPos.getValueAsDouble();
     inputs.encoder18Rotations = enc18AbsPos.getValueAsDouble();
     inputs.calculatedAbsPositionRot =
-      calculateAbsolutePosition(inputs.encoder17Rotations, inputs.encoder18Rotations);
+        calculateAbsolutePosition(inputs.encoder17Rotations, inputs.encoder18Rotations);
   }
 
   @Override
   public void moveTo(double degrees) {
-    turretMotor.setControl(
-      positionRequest.withPosition(Units.degreesToRotations(degrees))
-    );
+    turretMotor.setControl(positionRequest.withPosition(Units.degreesToRotations(degrees)));
   }
 
   @Override
