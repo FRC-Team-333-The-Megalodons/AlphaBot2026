@@ -391,13 +391,12 @@ public class RobotContainer {
                         Commands.parallel(
                             spindexer.spin(), transfer.feedShooter(), intake.ingest()))),
                 Commands.parallel(
-                    flywheel.spinUpCommand(-4000),
-                    turret.aimAtFieldZero(),
+                    flywheel.spinAt(4000, false),
                     Commands.sequence(
                         Commands.waitUntil(flywheel::ready),
                         Commands.parallel(
                             spindexer.spin(), transfer.feedShooter(), intake.ingest()))),
-                () -> MatchStateCalculator.isInAllianceZone(drive.getPose())));
+                () -> targeting.isInAllianceZone()));
 
     controller.PS().whileTrue(ShootingCommands.dashboardRPMControl(flywheel));
     controller

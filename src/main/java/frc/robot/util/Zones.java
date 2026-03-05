@@ -26,7 +26,7 @@ public class Zones implements Localizable {
   public boolean alliance(Pose2d robotPose) {
     Distance x = robotPose.getMeasureX();
 
-    return DriverStation.getAlliance().get() == Alliance.Blue
+    return DriverStation.getAlliance().orElseGet(() -> Alliance.Red) == Alliance.Blue
         ? inBlueZone.test(x)
         : inRedZone.test(x);
   }

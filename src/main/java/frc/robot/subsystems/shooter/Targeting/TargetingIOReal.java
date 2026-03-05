@@ -15,6 +15,7 @@ public class TargetingIOReal implements TargetingIO {
   private final InterpolatingDoubleTreeMap distanceToVelocityScalar;
   private final double dragConstant;
   static double lastTargetYawVelocityRadPerSec;
+  private 
 
   public TargetingIOReal() {
     targets = new Targets();
@@ -42,14 +43,17 @@ public class TargetingIOReal implements TargetingIO {
     distanceToVelocityScalar.put(3.50, 0.1);
     distanceToVelocityScalar.put(4.00, 0.07);
   }
+  @Override
+  public void updateInputs(TargetingIOInputs inputs) {
+    // No sensor inputs to update in this implementation
+    inputs.targetName = targets.get
+  }
 
   private Translation2d selectTarget(String targetName) {
-    inputs.targetName = targetName;
     return targets.select(targetName);
   }
 
   private Translation2d selectTarget(String targetName, Pose2d robotPose) {
-    inputs.targetName = targetName;
     return targets.select(targetName, robotPose);
   }
 

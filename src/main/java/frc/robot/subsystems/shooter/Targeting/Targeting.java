@@ -26,6 +26,8 @@ import org.littletonrobotics.junction.Logger;
  */
 public class Targeting extends SubsystemBase implements Initializable {
 
+  private final TargetingIOInputsAutoLogged inputs = new TargetingIOInputsAutoLogged();
+
   private Zones zones;
   private TargetingIO io;
   private Field2d targetVisualization;
@@ -93,7 +95,7 @@ public class Targeting extends SubsystemBase implements Initializable {
                   pose, new Translation2d(vel.dx, vel.dy), inputs.targetDistance);
 
           inputs.augmentedTargetDistance = io.getDistanceFrom(pose, velocityCompensatedTarget);
-          inputs.augmentedTargetYaw = io.getAngleTo(pose, velocityCompensatedTarget).getMeasure();
+          inputs.augmentedTargetYaw = io.getAngleTo(pose, velocityCompensatedTarget).getDegrees();
         });
   }
 
@@ -128,6 +130,10 @@ public class Targeting extends SubsystemBase implements Initializable {
    */
   public Distance getTargetDistance() {
     return Meters.of(inputs.augmentedTargetDistance);
+  }
+
+  public boolean isInAllianceZone() {
+    return zones.alliance(robotPoseSupplier.get());
   }
 
   @Override

@@ -151,7 +151,7 @@ public class Drive extends SubsystemBase implements Initializable {
         new PPHolonomicDriveController(
             new PIDConstants(4.0, 0.0, 0.0), new PIDConstants(4.0, 0.0, 0.0)),
         PP_CONFIG,
-        () -> DriverStation.getAlliance().get() == Alliance.Red,
+        () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
         this);
     Pathfinding.setPathfinder(new LocalADStarAK());
     PathPlannerLogging.setLogActivePathCallback(
@@ -180,19 +180,21 @@ public class Drive extends SubsystemBase implements Initializable {
     odometryLock.lock(); // Prevents odometry updates while reading data
     RobotMetrics.stop("odoLock");
 
-    RobotMetrics.start("updateGyro");
-    gyroIO.updateInputs(gyroInputs);
-    RobotMetrics.stop("updateGyro");
+    try {
+      RobotMetrics.start("updateGyro");
+      gyroIO.updateInputs(gyroInputs);
+      RobotMetrics.stop("updateGyro");
 
-    Logger.processInputs("Drive/Gyro", gyroInputs);
+      Logger.processInputs("Drive/Gyro", gyroInputs);
 
-    RobotMetrics.start("modulePeriodic");
-    for (var module : modules) {
-      module.periodic();
+      RobotMetrics.start("modulePeriodic");
+      for (var module : modules) {
+        module.periodic();
+      }
+      RobotMetrics.stop("modulePeriodic");
+    } finally {
+      odometryLock.unlock(); // Always unlocks, even if the code crashes above
     }
-    RobotMetrics.stop("modulePeriodic");
-
-    odometryLock.unlock();
 
     // Stop moving when disabled
 
