@@ -178,7 +178,8 @@ public class RobotContainer {
         turret = new Turret(new TurretIO() {}, targeting::getTargetAngle, drive::getRotation);
         break;
     }
-
+    drive.seed();
+    registerNamedCommands();
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -241,14 +242,10 @@ public class RobotContainer {
     configureButtonBindings();
   }
 
-  public void initializeSubsystems() {
-    drive.seed();
-    targeting.seed();
+  private void registerNamedCommands() {
     NamedCommands.registerCommand(
         "Shoot", AutonomousCommands.shootCommand(drive, flywheel, intake, spindexer, transfer));
-
     NamedCommands.registerCommand("DriveToTower", AutonomousCommands.pathfindToTower(drive));
-
     NamedCommands.registerCommand(
         "OutpostAndShoot",
         Commands.deadline(
@@ -268,6 +265,10 @@ public class RobotContainer {
         "OutpostToHubSequence",
         AutonomousCommands.outpostToHubSequence(
             drive, flywheel, targeting, turret, intake, spindexer, transfer));
+  }
+
+  public void onDriverStationConnected() {
+    targeting.seed();
   }
 
   /**

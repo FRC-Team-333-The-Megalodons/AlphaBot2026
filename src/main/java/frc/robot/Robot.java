@@ -91,7 +91,7 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void driverStationConnected() {
-    robotContainer.initializeSubsystems();
+    robotContainer.onDriverStationConnected();
   }
 
   /** This function is called once when the robot is disabled. */
