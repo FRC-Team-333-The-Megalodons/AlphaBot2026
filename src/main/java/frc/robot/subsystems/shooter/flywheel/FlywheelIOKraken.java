@@ -17,7 +17,6 @@ public class FlywheelIOKraken implements FlywheelIO {
   private final MotionMagicVelocityVoltage mmVelocity = new MotionMagicVelocityVoltage(0);
 
   public FlywheelIOKraken() {
-    configureMap();
     var config = new TalonFXConfiguration();
     motor.getConfigurator().apply(config);
     motor2.getConfigurator().apply(config);
@@ -41,13 +40,13 @@ public class FlywheelIOKraken implements FlywheelIO {
 
   @Override
   public void updateInputs(FlywheelIOInputs inputs) {
-    inputs.velocityRPM = rpsToRPM(motor.getVelocity().getValue());
-    inputs.appliedVolts = motor.getMotorVoltage().getValueAsDouble();
+    inputs.velocityRPM = rpsToRPM(motor2.getVelocity().getValue());
+    inputs.appliedVolts = motor2.getMotorVoltage().getValueAsDouble();
   }
 
   @Override
   public boolean atTarget(double targetRPM) {
-    double currentRPM = rpsToRPM(motor.getVelocity().getValue());
+    double currentRPM = rpsToRPM(motor2.getVelocity().getValue());
     return Math.abs(targetRPM) > 0
         && Math.abs(Math.abs(currentRPM) - Math.abs(targetRPM))
             < FlywheelConstants.VELOCITY_TOLERANCE_RPM;

@@ -7,9 +7,7 @@ import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 
 public class FlywheelIOKrakenSim implements FlywheelIO {
 
-  public FlywheelIOKrakenSim() {
-    configureMap();
-  }
+  public FlywheelIOKrakenSim() {}
 
   private final FlywheelSim sim =
       new FlywheelSim(

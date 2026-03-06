@@ -108,7 +108,6 @@ public class Targeting extends SubsystemBase implements Initializable {
             : Rotation2d.k180deg.getDegrees();
     inputs.augmentedTargetYaw = inputs.targetYaw;
 
-    setDefaultCommand(defaultTargetingBehavior());
     targetVisualization.setRobotPose(new Pose2d(io.getHub(), Rotation2d.kZero));
     SmartDashboard.putData(targetVisualization);
   }

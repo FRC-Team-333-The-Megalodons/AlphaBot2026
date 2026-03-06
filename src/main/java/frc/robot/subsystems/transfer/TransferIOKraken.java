@@ -1,28 +1,69 @@
 package frc.robot.subsystems.transfer;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Voltage;
 
 public class TransferIOKraken implements TransferIO {
-  CANBus rio = CANBus.roboRIO();
-  private final TalonFX motor = new TalonFX(TransferConstants.MOTOR_ID, rio);
+  private final TalonFX motor;
+
+  private final StatusSignal<AngularVelocity> velocitySignal;
+  private final StatusSignal<Voltage> voltageSignal;
+  private final StatusSignal<Current> currentSignal;
+
+  private final MotionMagicVelocityVoltage mmVelocity = new MotionMagicVelocityVoltage(0);
 
   public TransferIOKraken() {
+    CANBus rio = CANBus.roboRIO();
+    motor = new TalonFX(TransferConstants.MOTOR_ID, rio);
+
     TalonFXConfiguration config = new TalonFXConfiguration();
+
+    config.Feedback.SensorToMechanismRatio = TransferConstants.GEAR_RATIO;
+
+    // Apply PID and Feedforward
+    config.Slot0.kS = TransferConstants.kS;
+    config.Slot0.kV = TransferConstants.kV;
+    config.Slot0.kA = TransferConstants.kA;
+    config.Slot0.kP = TransferConstants.kP;
+
+    config.MotionMagic.MotionMagicAcceleration = TransferConstants.MAX_ACCEL;
+    config.MotionMagic.MotionMagicJerk = TransferConstants.MAX_JERK;
+
     motor.getConfigurator().apply(config);
 
-    config.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.1;
-    config.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.1;
+    velocitySignal = motor.getVelocity();
+    voltageSignal = motor.getMotorVoltage();
+    currentSignal = motor.getStatorCurrent();
 
-    motor.getConfigurator().apply(config);
+    BaseStatusSignal.setUpdateFrequencyForAll(50.0, velocitySignal, voltageSignal, currentSignal);
   }
 
   @Override
   public void updateInputs(TransferIOInputs inputs) {
-    inputs.appliedVolts = motor.getMotorVoltage().getValueAsDouble();
-    inputs.currentAmps = motor.getStatorCurrent().getValueAsDouble();
+    BaseStatusSignal.refreshAll(velocitySignal, voltageSignal, currentSignal);
+
+    inputs.velocityRpm = velocitySignal.getValueAsDouble() * 60.0;
+    inputs.appliedVolts = voltageSignal.getValueAsDouble();
+    inputs.currentAmps = currentSignal.getValueAsDouble();
+  }
+
+  @Override
+  public void moveTo(double rpm) {
+    motor.setControl(mmVelocity.withVelocity(rpm / 60.0));
+  }
+
+  @Override
+  public boolean atTarget(double rpm) {
+    return Math.abs(rpm - (velocitySignal.getValueAsDouble() * 60.0))
+        < TransferConstants.VELOCITY_TOLERANCE;
   }
 
   @Override

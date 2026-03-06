@@ -19,7 +19,7 @@ public class Transfer extends SubsystemBase {
   }
 
   public Command feedShooter() {
-    return runEnd(this::run, this::stop);
+    return runEnd(() -> io.moveTo(TransferConstants.TARGET_RPM), this::stop);
   }
 
   private void run() {

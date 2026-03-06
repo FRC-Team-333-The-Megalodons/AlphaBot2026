@@ -286,6 +286,9 @@ public class RobotContainer {
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
 
+    // Keep calculating angles and distances in the background forever
+    targeting.setDefaultCommand(targeting.defaultTargetingBehavior());
+
     // Lock to 0° when A button is held
     controller
         .circle()
@@ -336,12 +339,7 @@ public class RobotContainer {
 
     controller
         .L2()
-        .whileTrue(
-            Commands.sequence(
-                Commands.deadline(
-                    flywheel.dynamicSpinUp(true).andThen(Commands.waitSeconds(0.1)),
-                    turret.autoAim()),
-                Commands.parallel(spindexer.spin(), transfer.feedShooter(), intake.ingest())));
+        .whileTrue(ShootingCommands.autoAimAndFire(flywheel, turret, spindexer, transfer, intake));
 
     // controller
     //     .L2()
@@ -381,25 +379,6 @@ public class RobotContainer {
     //                         transfer.feedShooterCommand(),
     //                         intake.runIntakeCommand()))),
     //             () -> MatchStateCalculator.isInAllianceZone(drive.getPose())));
-
-    controller
-        .R1()
-        .whileTrue(
-            Commands.either(
-                Commands.parallel(
-                    flywheel.dynamicSpinUp(false),
-                    turret.autoAim(),
-                    Commands.sequence(
-                        Commands.waitUntil(flywheel::ready),
-                        Commands.parallel(
-                            spindexer.spin(), transfer.feedShooter(), intake.ingest()))),
-                Commands.parallel(
-                    flywheel.spinAt(4000, false),
-                    Commands.sequence(
-                        Commands.waitUntil(flywheel::ready),
-                        Commands.parallel(
-                            spindexer.spin(), transfer.feedShooter(), intake.ingest()))),
-                () -> targeting.isInAllianceZone()));
 
     controller.PS().whileTrue(ShootingCommands.dashboardRPMControl(flywheel));
     controller

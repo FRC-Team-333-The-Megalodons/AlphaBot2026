@@ -20,12 +20,15 @@ public class Spindexer extends SubsystemBase {
 
   public Command spinAt(double rpm, boolean waitForCompletion) {
     Runnable func = () -> io.moveTo(rpm);
-    Command com = waitForCompletion ? run(func).until(() -> io.atTarget(rpm)) : runOnce(func);
+    Command com =
+        waitForCompletion
+            ? run(func).until(() -> io.atTarget(rpm))
+            : run(func); // Changed runOnce to run!
     return com.handleInterrupt(this::stop);
   }
 
   public Command spin() {
-    return runEnd(this::run, this::stop);
+    return runEnd(() -> io.moveTo(SpindexerConstants.TARGET_RPM), this::stop);
   }
 
   private void run() {
@@ -33,6 +36,6 @@ public class Spindexer extends SubsystemBase {
   }
 
   private void stop() {
-    ;
+    io.setVoltage(0.0);
   }
 }

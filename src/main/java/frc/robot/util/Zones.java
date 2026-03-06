@@ -34,7 +34,7 @@ public class Zones implements Localizable {
   public boolean enemy(Pose2d robotPose) {
     Distance x = robotPose.getMeasureX();
 
-    return DriverStation.getAlliance().get() == Alliance.Blue
+    return DriverStation.getAlliance().orElseGet(() -> Alliance.Red) == Alliance.Blue
         ? inRedZone.test(x)
         : inBlueZone.test(x);
   }

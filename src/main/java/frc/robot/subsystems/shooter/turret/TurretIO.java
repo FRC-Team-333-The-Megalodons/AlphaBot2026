@@ -29,4 +29,8 @@ public interface TurretIO extends Automatable {
   public default void seedTurretPosition() {}
 
   public default void stop() {}
+
+  public default boolean atTarget(double angle) {
+    return false;
+  }
 }

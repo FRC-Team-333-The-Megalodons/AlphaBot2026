@@ -35,8 +35,11 @@ public class Flywheel extends SubsystemBase {
   }
 
   private double dynamicRPM() {
-    inputs.targetRPM = io.getRPMFromDistance(distanceSupplier.get());
-    return inputs.targetRPM;
+    double target = io.getRPMFromDistance(distanceSupplier.get());
+
+    Logger.recordOutput("Flywheel/TargetRPM", target);
+
+    return target;
   }
 
   @Override

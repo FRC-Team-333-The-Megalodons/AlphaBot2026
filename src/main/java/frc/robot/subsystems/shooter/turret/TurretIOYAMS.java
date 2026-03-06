@@ -126,32 +126,29 @@ public class TurretIOYAMS implements TurretIO {
 
   @Override
   public void updateInputs(TurretIOInputs inputs) {
-
     BaseStatusSignal.refreshAll(
         turretPosition, turretVelocity, turretVolts, turretCurrent, enc17AbsPos, enc18AbsPos);
 
-    if (hasSeeded) {
-      inputs.turretPositionDeg = turretPosition.getValue().in(Degrees);
-      inputs.turretVelocityRPM = turretVelocity.getValueAsDouble() * 60.0;
+    inputs.turretPositionDeg = turretPosition.getValue().in(Degrees);
+    inputs.turretVelocityRPM = turretVelocity.getValueAsDouble() * 60.0;
 
-      inputs.turretAppliedVolts = turretVolts.getValueAsDouble();
-      inputs.turretCurrentAmps = turretCurrent.getValueAsDouble();
+    inputs.turretAppliedVolts = turretVolts.getValueAsDouble();
+    inputs.turretCurrentAmps = turretCurrent.getValueAsDouble();
 
-      inputs.encoder17Rotations = enc17AbsPos.getValue().in(Rotations);
-      inputs.encoder18Rotations = enc18AbsPos.getValue().in(Rotations);
+    inputs.encoder17Rotations = enc17AbsPos.getValue().in(Rotations);
+    inputs.encoder18Rotations = enc18AbsPos.getValue().in(Rotations);
 
-      inputs.calculatedAbsPositionRot =
-          easyCrtSolver.getAngleOptional().map(a -> a.in(Rotations)).orElse(0.0);
-    }
+    inputs.calculatedAbsPositionRot =
+        easyCrtSolver.getAngleOptional().map(a -> a.in(Rotations)).orElse(0.0);
   }
 
   @Override
   public boolean atTarget(double angle) {
-    boolean atPosition =
-        Math.abs(angle - turretMotor.getPosition().getValueAsDouble())
-            < TurretConstants.positionTolerance;
-    boolean notMoving =
-        Math.abs(turretMotor.getVelocity().getValueAsDouble()) < TurretConstants.velocityTolerance;
+    double currentPosDeg = Units.rotationsToDegrees(turretMotor.getPosition().getValueAsDouble());
+    double currentVelRpm = turretMotor.getVelocity().getValueAsDouble() * 60.0;
+
+    boolean atPosition = Math.abs(angle - currentPosDeg) < TurretConstants.positionTolerance;
+    boolean notMoving = Math.abs(currentVelRpm) < TurretConstants.velocityTolerance;
 
     return atPosition && notMoving;
   }

@@ -1,5 +1,6 @@
 package frc.robot.subsystems.shooter.turret;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
@@ -177,6 +178,14 @@ public class Turret extends SubsystemBase implements Initializable {
           io.moveTo(optimalTargetDeg);
         },
         this);
+  }
+  /** Returns true if the turret is within 2 degrees of the target angle */
+  // TODO:Need to play aound with this threshold value to find the optimal one
+  public boolean atTarget() {
+    double currentAngle = inputs.turretPositionDeg;
+    double targetAngle = targetAngleSupplier.get().in(Degrees);
+
+    return Math.abs(currentAngle - targetAngle) < 2.0;
   }
 
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
