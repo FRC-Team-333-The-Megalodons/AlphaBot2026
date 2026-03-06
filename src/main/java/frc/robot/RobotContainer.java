@@ -42,6 +42,7 @@ import frc.robot.subsystems.pivot.PivotIO;
 import frc.robot.subsystems.pivot.PivotIOKraken;
 import frc.robot.subsystems.pivot.PivotIOKrakenSim;
 import frc.robot.subsystems.shooter.Targeting.Targeting;
+import frc.robot.subsystems.shooter.Targeting.TargetingIO;
 import frc.robot.subsystems.shooter.Targeting.TargetingIOReal;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIO;
@@ -168,7 +169,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {});
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {});
-        targeting = new Targeting(new TargetingIOReal(), drive::getPose, drive::robotFieldVelocity);
+        targeting = new Targeting(new TargetingIO() {}, drive::getPose, drive::robotFieldVelocity);
         intake = new Intake(new IntakeIO() {});
         spindexer = new Spindexer(new SpindexerIO() {});
         transfer = new Transfer(new TransferIO() {});
@@ -177,30 +178,7 @@ public class RobotContainer {
         turret = new Turret(new TurretIO() {}, targeting::getTargetAngle, drive::getRotation);
         break;
     }
-    NamedCommands.registerCommand(
-        "Shoot", AutonomousCommands.shootCommand(drive, flywheel, intake, spindexer, transfer));
 
-    NamedCommands.registerCommand("DriveToTower", AutonomousCommands.pathfindToTower(drive));
-
-    NamedCommands.registerCommand(
-        "OutpostAndShoot",
-        Commands.deadline(
-            PathfindCommands.precisionPathfindTo(FieldLayout.Outpost.OUTPOST_POSE, drive),
-            AutonomousCommands.movingShootCommand(
-                drive, flywheel, targeting, turret, intake, spindexer, transfer)));
-    NamedCommands.registerCommand(
-        "WaitTowerAndShoot",
-        Commands.deadline(
-            Commands.sequence(
-                Commands.waitSeconds(1.5),
-                PathfindCommands.precisionPathfindTo(FieldLayout.Tower.CLIMBING_POSE, drive),
-                Commands.waitSeconds(3.0)),
-            AutonomousCommands.movingShootCommand(
-                drive, flywheel, targeting, turret, intake, spindexer, transfer)));
-    NamedCommands.registerCommand(
-        "OutpostToHubSequence",
-        AutonomousCommands.outpostToHubSequence(
-            drive, flywheel, targeting, turret, intake, spindexer, transfer));
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -266,6 +244,30 @@ public class RobotContainer {
   public void initializeSubsystems() {
     drive.seed();
     targeting.seed();
+    NamedCommands.registerCommand(
+        "Shoot", AutonomousCommands.shootCommand(drive, flywheel, intake, spindexer, transfer));
+
+    NamedCommands.registerCommand("DriveToTower", AutonomousCommands.pathfindToTower(drive));
+
+    NamedCommands.registerCommand(
+        "OutpostAndShoot",
+        Commands.deadline(
+            PathfindCommands.precisionPathfindTo(FieldLayout.Outpost.OUTPOST_POSE, drive),
+            AutonomousCommands.movingShootCommand(
+                drive, flywheel, targeting, turret, intake, spindexer, transfer)));
+    NamedCommands.registerCommand(
+        "WaitTowerAndShoot",
+        Commands.deadline(
+            Commands.sequence(
+                Commands.waitSeconds(1.5),
+                PathfindCommands.precisionPathfindTo(FieldLayout.Tower.CLIMBING_POSE, drive),
+                Commands.waitSeconds(3.0)),
+            AutonomousCommands.movingShootCommand(
+                drive, flywheel, targeting, turret, intake, spindexer, transfer)));
+    NamedCommands.registerCommand(
+        "OutpostToHubSequence",
+        AutonomousCommands.outpostToHubSequence(
+            drive, flywheel, targeting, turret, intake, spindexer, transfer));
   }
 
   /**
@@ -400,7 +402,7 @@ public class RobotContainer {
 
     controller.PS().whileTrue(ShootingCommands.dashboardRPMControl(flywheel));
     controller
-        .povDown()
+        .povRight()
         .whileTrue(PathfindCommands.precisionPathfindTo(FieldLayout.Tower.CLIMBING_POSE, drive));
   }
 

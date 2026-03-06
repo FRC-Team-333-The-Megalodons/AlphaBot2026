@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 
 public class Flywheel extends SubsystemBase {
   private final FlywheelIO io;
@@ -41,7 +42,7 @@ public class Flywheel extends SubsystemBase {
   @Override
   public void periodic() {
     io.updateInputs(inputs);
-    double currentRPM = inputs.velocityRPM;
+    Logger.processInputs("Flywheel", inputs);
   }
 
   public boolean ready() {
@@ -53,22 +54,19 @@ public class Flywheel extends SubsystemBase {
   }
 
   public Command dynamicSpinUp(boolean waitUntilCompletion) {
-
     Command com =
         waitUntilCompletion
             ? run(() -> io.moveTo(dynamicRPM())).until(this::ready)
-            : runOnce(() -> io.moveTo(dynamicRPM()));
+            : run(() -> io.moveTo(dynamicRPM()));
 
     return com.handleInterrupt(() -> io.setVoltage(0.0));
   }
 
   public Command spinAt(double rpm, boolean waitUntilCompletion) {
-    inputs.targetRPM = rpm;
-
     Command com =
         waitUntilCompletion
             ? run(() -> io.moveTo(rpm)).until(() -> isAt(rpm))
-            : runOnce(() -> io.moveTo(rpm));
+            : run(() -> io.moveTo(rpm));
 
     return com.handleInterrupt(() -> io.setVoltage(0.0));
   }

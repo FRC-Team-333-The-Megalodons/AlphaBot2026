@@ -18,20 +18,36 @@ public interface TargetingIO {
 
   public default void updateInputs(TargetingIOInputs inputs) {}
 
-  public Translation2d getHub();
+  public default Translation2d getHub() {
+    return new Translation2d();
+  }
 
-  public Translation2d getAllianceZoneTarget(Pose2d robotPose);
+  public default Translation2d getAllianceZoneTarget(Pose2d robotPose) {
+    return new Translation2d();
+  }
 
-  public Translation2d getNeutralZoneTarget(Pose2d robotPose);
+  public default Translation2d getNeutralZoneTarget(Pose2d robotPose) {
+    return new Translation2d();
+  }
 
-  public Rotation2d getAngleTo(Pose2d robotPose, Translation2d targetCoordinates);
+  public default Rotation2d getAngleTo(Pose2d robotPose, Translation2d targetCoordinates) {
+    return new Rotation2d();
+  }
 
-  public double getDistanceFrom(Pose2d robotPose, Translation2d toTargetCoordinates);
+  public default double getDistanceFrom(Pose2d robotPose, Translation2d toTargetCoordinates) {
+    return 0.0;
+  }
 
-  public double getDistanceFromHub(Pose2d robotPose);
+  public default double getDistanceFromHub(Pose2d robotPose) {
+    return 0.0;
+  }
 
-  public double getTOFFromDistance(double distanceMeters);
+  public default double getTOFFromDistance(double distanceMeters) {
+    return 0.0;
+  }
 
-  public Translation2d velocityCompensatedCoordinates(
-      Pose2d robotPose, Translation2d fieldVelocity, double tof);
+  public default Translation2d velocityCompensatedCoordinates(
+      Pose2d robotPose, Translation2d fieldVelocity, double tof) {
+    return new Translation2d();
+  }
 }
