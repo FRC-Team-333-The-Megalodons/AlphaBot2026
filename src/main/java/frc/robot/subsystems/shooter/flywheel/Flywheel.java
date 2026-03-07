@@ -18,12 +18,11 @@ public class Flywheel extends SubsystemBase {
 
   private final SysIdRoutine sysIdRoutine;
 
-
   private enum PreSpinState {
     IDLE,
-   
+
     SPINNING,
-  
+
     COASTING
   }
 
@@ -52,7 +51,6 @@ public class Flywheel extends SubsystemBase {
                 this));
   }
 
-
   private double dynamicRPM() {
     double target = io.getRPMFromDistance(distanceSupplier.get());
     Logger.recordOutput("Flywheel/TargetRPM", target);
@@ -71,12 +69,12 @@ public class Flywheel extends SubsystemBase {
           coastDownTimer.stop();
           coastDownTimer.reset();
         }
-        
+
         break;
 
       case SPINNING:
         if (spinRequested) {
-         
+
           io.moveTo(dynamicRPM());
           coastDownTimer.stop();
           coastDownTimer.reset();
@@ -88,7 +86,7 @@ public class Flywheel extends SubsystemBase {
 
       case COASTING:
         if (spinRequested) {
-         
+
           preSpinState = PreSpinState.SPINNING;
           coastDownTimer.stop();
           coastDownTimer.reset();
@@ -98,7 +96,7 @@ public class Flywheel extends SubsystemBase {
           coastDownTimer.reset();
           io.setVoltage(0.0);
         } else {
-       
+
           io.moveTo(dynamicRPM());
         }
         break;
@@ -109,7 +107,6 @@ public class Flywheel extends SubsystemBase {
     Logger.recordOutput("Flywheel/VelocityRPM", inputs.velocityRPM);
   }
 
- 
   private void requestPreSpin() {
     spinRequested = true;
   }
@@ -117,8 +114,6 @@ public class Flywheel extends SubsystemBase {
   private void stopPreSpin() {
     spinRequested = false;
   }
-
- 
 
   public boolean ready() {
     return isAt(dynamicRPM());
@@ -128,12 +123,10 @@ public class Flywheel extends SubsystemBase {
     return io.atTarget(rpm);
   }
 
-  
   public boolean isPreSpunUp() {
     return preSpinState == PreSpinState.SPINNING || preSpinState == PreSpinState.COASTING;
   }
 
-  
   public Command shootOnMoveSpinUp() {
     return runEnd(this::requestPreSpin, this::stopPreSpin);
   }
@@ -156,7 +149,6 @@ public class Flywheel extends SubsystemBase {
     return com.handleInterrupt(() -> io.setVoltage(0.0));
   }
 
- 
   public void setRPMDirect(double rpm) {
     io.moveTo(rpm);
   }

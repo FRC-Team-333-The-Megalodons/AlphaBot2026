@@ -16,7 +16,7 @@ public class SpindexerIOKrakenSim implements SpindexerIO {
 
   @Override
   public void moveTo(double rpm) {
-   
+
     double volts = (rpm / 60.0) * SpindexerConstants.kV;
     setVoltage(MathUtil.clamp(volts, -12.0, 12.0));
   }

@@ -142,10 +142,9 @@ public class TurretIOYAMS implements TurretIO {
         easyCrtSolver.getAngleOptional().map(a -> a.in(Rotations)).orElse(0.0);
   }
 
-
   @Override
   public boolean atTarget(double angle) {
-   
+
     double currentPosDeg = turretPosition.getValue().in(Degrees);
     double currentVelRpm = turretVelocity.getValueAsDouble() * 60.0;
 
@@ -172,7 +171,7 @@ public class TurretIOYAMS implements TurretIO {
 
   @Override
   public void seedTurretPosition() {
-   
+
     BaseStatusSignal.refreshAll(enc17AbsPos, enc18AbsPos);
 
     easyCrtSolver

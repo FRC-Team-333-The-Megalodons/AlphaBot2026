@@ -7,7 +7,6 @@ public final class TransferConstants {
   public static final double TARGET_RPM = -2000.0;
   public static final double VELOCITY_TOLERANCE = 50.0;
 
-  
   public static final double FEED_VOLTAGE = -9.0;
 
   // Starting Gains

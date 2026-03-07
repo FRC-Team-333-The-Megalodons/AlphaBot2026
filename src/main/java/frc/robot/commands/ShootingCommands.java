@@ -22,7 +22,6 @@ public class ShootingCommands {
             .withSize(2, 1)
             .getEntry();
 
-
     return flywheel.runEnd(
         () -> {
           double targetRPM = rpmEntry.getDouble(0.0);
@@ -31,7 +30,6 @@ public class ShootingCommands {
         flywheel::stopMotor);
   }
 
- 
   public static Command autoAimAndFire(
       Flywheel flywheel, Turret turret, Spindexer spindexer, Transfer transfer, Intake intake) {
 
@@ -49,7 +47,7 @@ public class ShootingCommands {
     return Commands.parallel(
         turret.autoAim(),
         flywheel.shootOnMoveSpinUp(),
-          intake.eject(),
+        intake.eject(),
         Commands.sequence(
             Commands.waitUntil(() -> flywheel.ready() && turret.atTarget()),
             Commands.parallel(spindexer.spin(), transfer.feedShooter())));

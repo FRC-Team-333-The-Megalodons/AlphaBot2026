@@ -244,7 +244,7 @@ public class RobotContainer {
 
   private void registerNamedCommands() {
     NamedCommands.registerCommand(
-        "Shoot", AutonomousCommands.shootCommand(drive, flywheel, intake, spindexer, transfer));
+        "Shoot", ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, intake));
     NamedCommands.registerCommand("DriveToTower", AutonomousCommands.pathfindToTower(drive));
     NamedCommands.registerCommand(
         "OutpostAndShoot",

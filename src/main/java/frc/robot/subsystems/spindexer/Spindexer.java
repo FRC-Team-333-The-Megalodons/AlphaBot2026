@@ -9,52 +9,40 @@ public class Spindexer extends SubsystemBase {
   private final SpindexerIO io;
   private final SpindexerIOInputsAutoLogged inputs = new SpindexerIOInputsAutoLogged();
 
- 
-
   private enum SpinState {
-    
     IDLE,
-    
+
     FORWARD,
-    
+
     REVERSING
   }
 
   private SpinState state = SpinState.IDLE;
 
-  
   private boolean spinRequested = false;
 
-  
   private final Timer jamTimer = new Timer();
 
-  
   private final Timer reverseTimer = new Timer();
 
- 
   private final Timer startupTimer = new Timer();
 
   public Spindexer(SpindexerIO io) {
     this.io = io;
   }
 
- 
   private boolean isJammedByVelocity() {
     return inputs.velocityRps < SpindexerConstants.JAM_VELOCITY_THRESHOLD_RPS;
   }
 
- 
   private boolean isJammedByCurrent() {
     return inputs.currentAmps > SpindexerConstants.JAM_CURRENT_THRESHOLD_AMPS;
   }
 
-  
   private boolean jamConditionMet() {
     if (startupTimer.get() < SpindexerConstants.STARTUP_GRACE_SECONDS) return false;
     return isJammedByVelocity() || isJammedByCurrent();
   }
-
-  
 
   @Override
   public void periodic() {
@@ -123,7 +111,6 @@ public class Spindexer extends SubsystemBase {
     Logger.recordOutput("Spindexer/JamTimerSeconds", jamTimer.get());
   }
 
-  
   private void requestSpin() {
     if (state == SpinState.IDLE) {
       state = SpinState.FORWARD;
