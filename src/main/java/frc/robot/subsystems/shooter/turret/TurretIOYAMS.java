@@ -142,10 +142,12 @@ public class TurretIOYAMS implements TurretIO {
         easyCrtSolver.getAngleOptional().map(a -> a.in(Rotations)).orElse(0.0);
   }
 
+
   @Override
   public boolean atTarget(double angle) {
-    double currentPosDeg = Units.rotationsToDegrees(turretMotor.getPosition().getValueAsDouble());
-    double currentVelRpm = turretMotor.getVelocity().getValueAsDouble() * 60.0;
+   
+    double currentPosDeg = turretPosition.getValue().in(Degrees);
+    double currentVelRpm = turretVelocity.getValueAsDouble() * 60.0;
 
     boolean atPosition = Math.abs(angle - currentPosDeg) < TurretConstants.positionTolerance;
     boolean notMoving = Math.abs(currentVelRpm) < TurretConstants.velocityTolerance;
@@ -170,23 +172,29 @@ public class TurretIOYAMS implements TurretIO {
 
   @Override
   public void seedTurretPosition() {
+   
+    BaseStatusSignal.refreshAll(enc17AbsPos, enc18AbsPos);
 
     easyCrtSolver
         .getAngleOptional()
         .ifPresent(
             mechAngle -> {
               StatusCode status = turretMotor.setPosition(mechAngle.in(Rotations), 0.25);
+
               if (status.isOK()) {
                 hasSeeded = true;
                 System.out.println(
-                    "[Turret] YAMS EasyCRT Successfully seeded absolute position: "
+                    "[Turret] YAMS EasyCRT successfully seeded absolute position: "
                         + mechAngle.in(Rotations)
-                        + " rotations.");
+                        + " rotations ("
+                        + mechAngle.in(edu.wpi.first.units.Units.Degrees)
+                        + " degrees).");
               } else {
-                System.out.println("[Turret] Failed to seed turret motor: " + status.getName());
+                System.out.println(
+                    "[Turret] Failed to seed turret motor position: "
+                        + status.getName()
+                        + ". Will retry.");
               }
-
-              hasSeeded = true;
             });
   }
 }

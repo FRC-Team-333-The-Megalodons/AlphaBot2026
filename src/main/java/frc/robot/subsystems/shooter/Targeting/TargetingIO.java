@@ -46,8 +46,18 @@ public interface TargetingIO {
     return 0.0;
   }
 
+  /**
+   * FIX (Bug B): Added {@code selectedTarget} parameter.
+   *
+   * <p>Previously the signature was {@code (Pose2d, Translation2d, double)} and the implementation
+   * hardcoded {@code getHub()} internally. This meant the compensation was always calculated
+   * relative to the hub regardless of the actual target.
+   *
+   * <p>The selected target is now passed in explicitly so the math is correct for hub shots,
+   * passing shots, and any future target types.
+   */
   public default Translation2d velocityCompensatedCoordinates(
-      Pose2d robotPose, Translation2d fieldVelocity, double tof) {
+      Pose2d robotPose, Translation2d fieldVelocity, double tof, Translation2d selectedTarget) {
     return new Translation2d();
   }
 }

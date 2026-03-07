@@ -36,9 +36,11 @@ public class TransferIOKraken implements TransferIO {
   public void updateInputs(TransferIOInputs inputs) {
     BaseStatusSignal.refreshAll(velocitySignal, voltageSignal, currentSignal);
 
-    // If velocityRpm complains because it's no longer in the inputs, just use inputs.appliedVolts
     inputs.appliedVolts = voltageSignal.getValueAsDouble();
     inputs.currentAmps = currentSignal.getValueAsDouble();
+
+  
+    inputs.velocityRpm = velocitySignal.getValueAsDouble() * 60.0;
   }
 
   @Override

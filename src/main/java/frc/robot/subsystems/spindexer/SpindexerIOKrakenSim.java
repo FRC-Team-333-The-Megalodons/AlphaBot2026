@@ -1,5 +1,6 @@
 package frc.robot.subsystems.spindexer;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
@@ -15,13 +16,14 @@ public class SpindexerIOKrakenSim implements SpindexerIO {
 
   @Override
   public void moveTo(double rpm) {
-    // rough kV -> will tune once i get the robot
-    sim.setInputVoltage(rpm * 60 * 0.5);
+   
+    double volts = (rpm / 60.0) * SpindexerConstants.kV;
+    setVoltage(MathUtil.clamp(volts, -12.0, 12.0));
   }
 
   @Override
   public void setVelocity(double rps) {
-    setVoltage(rps * 0.5); // rough kV -> will tune once i get the robot
+    setVoltage(MathUtil.clamp(rps * SpindexerConstants.kV, -12.0, 12.0));
   }
 
   @Override

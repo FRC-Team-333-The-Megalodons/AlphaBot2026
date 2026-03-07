@@ -6,6 +6,7 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
@@ -31,10 +32,16 @@ public class FlywheelIOKraken implements FlywheelIO {
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
+    // FIX (Bug 2): Invert motor2 so that a positive RPM command (matching the
+    // distance-to-RPM map) spins in the correct shooting direction. Previously
+    // Flywheel.dynamicSpinUp() was negating the RPM to compensate, which was fragile.
+    // Now direction is owned here at the hardware layer, and all callers pass positive RPM.
+    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+
     motor.getConfigurator().apply(config);
     motor2.getConfigurator().apply(config);
 
-    // Motor 1 follows Motor 2
+    // Motor 1 follows Motor 2 in the opposite direction (counter-rotation for shooting)
     motor.setControl(new Follower(motor2.getDeviceID(), MotorAlignmentValue.Opposed));
   }
 

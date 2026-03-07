@@ -41,7 +41,7 @@ public class Targets implements Localizable {
     addPoints(
         "redZone",
         tagCoordinates(6).plus(ferryXOffset).plus(ferryYOffset),
-        tagCoordinates(1).plus(ferryXOffset).minus(ferryYOffset));
+        tagCoordinates(1).plus(ferryXOffset).minus(ferryYOffset.times(2)));
 
     addPoints(
         "blueZone",

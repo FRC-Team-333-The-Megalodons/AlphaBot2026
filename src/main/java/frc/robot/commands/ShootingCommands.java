@@ -22,18 +22,16 @@ public class ShootingCommands {
             .withSize(2, 1)
             .getEntry();
 
+
     return flywheel.runEnd(
         () -> {
           double targetRPM = rpmEntry.getDouble(0.0);
-          flywheel.spinAt(targetRPM, false);
+          flywheel.setRPMDirect(targetRPM);
         },
-        flywheel::stop);
+        flywheel::stopMotor);
   }
 
-  /**
-   * Automatically aims the turret (Hub or Ferry based on field zone), spins up the flywheel to the
-   * dynamic distance, and fires when both are ready.
-   */
+ 
   public static Command autoAimAndFire(
       Flywheel flywheel, Turret turret, Spindexer spindexer, Transfer transfer, Intake intake) {
 
@@ -44,14 +42,16 @@ public class ShootingCommands {
             Commands.waitUntil(() -> flywheel.ready()),
             Commands.parallel(spindexer.spin(), transfer.feedShooter(), intake.ingest())));
   }
-  // public static Command autoAimAndFire(
-  //     Flywheel flywheel, Turret turret, Spindexer spindexer, Transfer transfer, Intake intake) {
 
-  //   return Commands.parallel(
-  //       turret.autoAim(),
-  //       flywheel.dynamicSpinUp(false),
-  //       spindexer.spin(),
-  //       transfer.feedShooter(),
-  //       intake.ingest());
-  // }
+  public static Command shootOnMove(
+      Flywheel flywheel, Turret turret, Spindexer spindexer, Transfer transfer, Intake intake) {
+
+    return Commands.parallel(
+        turret.autoAim(),
+        flywheel.shootOnMoveSpinUp(),
+          intake.eject(),
+        Commands.sequence(
+            Commands.waitUntil(() -> flywheel.ready() && turret.atTarget()),
+            Commands.parallel(spindexer.spin(), transfer.feedShooter())));
+  }
 }

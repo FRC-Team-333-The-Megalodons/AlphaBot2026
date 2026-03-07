@@ -4,6 +4,7 @@ import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 
 public class IntakeIOKraken implements IntakeIO {
   CANBus rio = CANBus.roboRIO();
@@ -16,6 +17,7 @@ public class IntakeIOKraken implements IntakeIO {
     // Make sure intake revving up doesn't cause a voltage sag.
     config.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.25;
     config.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.25;
+    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     motor.getConfigurator().apply(config);
   }
 

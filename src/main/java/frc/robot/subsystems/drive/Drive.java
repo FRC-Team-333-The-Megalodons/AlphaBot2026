@@ -434,20 +434,20 @@ public class Drive extends SubsystemBase implements Initializable {
     };
   }
 
-  private double getFieldVelocityX() {
-    return getChassisSpeeds().vxMetersPerSecond;
-  }
-
-  private double getFieldVelocityY() {
-    return getChassisSpeeds().vyMetersPerSecond;
-  }
-
   public double getFieldAngularVelocity() {
     return getChassisSpeeds().omegaRadiansPerSecond;
   }
 
+
   public Twist2d robotFieldVelocity() {
-    return new Twist2d(getFieldVelocityX(), getFieldVelocityY(), getFieldAngularVelocity());
+    ChassisSpeeds robotRelative = getChassisSpeeds();
+    // Rotate from robot frame → field frame using the current odometry heading
+    ChassisSpeeds fieldRelative =
+        ChassisSpeeds.fromRobotRelativeSpeeds(robotRelative, getRotation());
+    return new Twist2d(
+        fieldRelative.vxMetersPerSecond,
+        fieldRelative.vyMetersPerSecond,
+        fieldRelative.omegaRadiansPerSecond);
   }
 
   public double getDistanceToHub() {

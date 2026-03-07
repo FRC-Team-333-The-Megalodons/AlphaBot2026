@@ -1,6 +1,5 @@
 package frc.robot.subsystems.shooter.turret;
 
-import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
@@ -86,40 +85,6 @@ public class Turret extends SubsystemBase implements Initializable {
     return Commands.runOnce(() -> io.seedTurretPosition());
   }
 
-  /*
-  public Command aimAtFieldZero() {
-    return Commands.run(
-        () -> {
-          Pose2d robotPose = robotPoseSupplier.get();
-
-          Rotation2d targetFieldAngle = Rotation2d.fromDegrees(0);
-
-          Rotation2d targetRobotAngle = targetFieldAngle.minus(robotPose.getRotation());
-
-          double currentDeg = inputs.turretPositionDeg;
-          double targetDeg = targetRobotAngle.getDegrees();
-
-          double diff = targetDeg - currentDeg;
-
-          diff = MathUtil.inputModulus(diff, -180, 180);
-          double optimalTargetDeg = currentDeg + diff;
-
-          if (optimalTargetDeg > TurretConstants.kMaxAngle) {
-            optimalTargetDeg -= 360.0;
-          } else if (optimalTargetDeg < TurretConstants.kMinAngle) {
-            optimalTargetDeg += 360.0;
-          }
-
-          optimalTargetDeg =
-              MathUtil.clamp(
-                  optimalTargetDeg, TurretConstants.kMinAngle, TurretConstants.kMaxAngle);
-
-          io.moveTo(optimalTargetDeg);
-        },
-        this);
-  }
-  */
-
   public Command autoAim() {
     return Commands.run(
         () -> {
@@ -149,12 +114,6 @@ public class Turret extends SubsystemBase implements Initializable {
         this);
   }
 
-  /**
-   * Debugging Command to test global field angle rotation of turret.
-   *
-   * @param targetAngleRelative The global target angle.
-   * @return A command.
-   */
   public Command rotateToField(Rotation2d targetAngle) {
     return Commands.run(
         () -> {
@@ -179,13 +138,20 @@ public class Turret extends SubsystemBase implements Initializable {
         },
         this);
   }
-  /** Returns true if the turret is within 2 degrees of the target angle */
-  // TODO:Need to play aound with this threshold value to find the optimal one
+
+  // TODO: Play around with the threshold value (currently 4.0 deg) to find the optimal one
   public boolean atTarget() {
     double currentAngle = inputs.turretPositionDeg;
-    double targetAngle = targetAngleSupplier.get().in(Degrees);
 
-    return Math.abs(currentAngle - targetAngle) < 4.0;
+    // Convert field-relative target angle → robot-relative, matching autoAim()'s frame
+    Rotation2d targetFieldAngle = new Rotation2d(targetAngleSupplier.get());
+    Rotation2d targetRobotAngle = targetFieldAngle.minus(robotRotationSupplier.get());
+    double targetDeg = targetRobotAngle.getDegrees();
+
+    // Use inputModulus to get the shortest angular difference and handle wrap-around
+    double diff = MathUtil.inputModulus(targetDeg - currentAngle, -180, 180);
+
+    return Math.abs(diff) < 4.0;
   }
 
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {

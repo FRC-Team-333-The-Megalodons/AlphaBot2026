@@ -33,7 +33,6 @@ public class Targeting extends SubsystemBase implements Initializable {
 
   // Input from drive
   private Supplier<Pose2d> robotPoseSupplier;
-  // private Supplier<ChassisSpeeds> robotSpeedsSupplier;
   private Supplier<Twist2d> robotVelocitySupplier;
 
   public Targeting(
@@ -52,31 +51,41 @@ public class Targeting extends SubsystemBase implements Initializable {
 
           double lookaheadTime = 0.060;
 
-          if (zones.enemy(pose)) rawTarget = io.getNeutralZoneTarget(pose);
-          else if (zones.neutral(pose)) rawTarget = io.getAllianceZoneTarget(pose);
-          else rawTarget = io.getHub();
+         
+          if (zones.alliance(pose)) rawTarget = io.getHub();
+          else rawTarget = io.getAllianceZoneTarget(pose);
 
           targetVisualization.setRobotPose(new Pose2d(rawTarget, Rotation2d.kZero));
 
-          // You now have pose, speeds, and target. Calculate Turret Angle & Flywheel Distance &
-          // save to targetAngle & targetSpeed.
+        
           Pose2d predictedPose =
-              pose.exp(
-                  new Twist2d(
-                      vel.dx * lookaheadTime, vel.dy * lookaheadTime, vel.dtheta * lookaheadTime));
+              new Pose2d(
+                  pose.getX() + vel.dx * lookaheadTime,
+                  pose.getY() + vel.dy * lookaheadTime,
+                  pose.getRotation().plus(new Rotation2d(vel.dtheta * lookaheadTime)));
 
           inputs.targetDistance = predictedPose.getTranslation().getDistance(rawTarget);
           inputs.targetYaw = io.getAngleTo(predictedPose, rawTarget).getDegrees();
           double tof = io.getTOFFromDistance(inputs.targetDistance);
 
+         
           Translation2d velocityCompensatedTarget =
               io.velocityCompensatedCoordinates(
-                  predictedPose, new Translation2d(vel.dx, vel.dy), tof);
+                  predictedPose, new Translation2d(vel.dx, vel.dy), tof, rawTarget);
 
           inputs.augmentedTargetDistance =
               io.getDistanceFrom(predictedPose, velocityCompensatedTarget);
           inputs.augmentedTargetYaw =
               io.getAngleTo(predictedPose, velocityCompensatedTarget).getDegrees();
+
+          // Log the raw and compensated targets for AdvantageScope debugging
+          Logger.recordOutput("Targeting/RawTarget", new Pose2d(rawTarget, Rotation2d.kZero));
+          Logger.recordOutput(
+              "Targeting/CompensatedTarget",
+              new Pose2d(velocityCompensatedTarget, Rotation2d.kZero));
+          Logger.recordOutput("Targeting/TOF", tof);
+          Logger.recordOutput("Targeting/RobotVelocityX", vel.dx);
+          Logger.recordOutput("Targeting/RobotVelocityY", vel.dy);
         });
   }
 
@@ -85,13 +94,14 @@ public class Targeting extends SubsystemBase implements Initializable {
         () -> {
           Pose2d pose = robotPoseSupplier.get();
           Twist2d vel = robotVelocitySupplier.get();
+          Translation2d hub = io.getHub();
 
           inputs.targetDistance = io.getDistanceFromHub(pose);
-          inputs.targetYaw = io.getAngleTo(pose, io.getHub()).getDegrees();
+          inputs.targetYaw = io.getAngleTo(pose, hub).getDegrees();
 
           Translation2d velocityCompensatedTarget =
               io.velocityCompensatedCoordinates(
-                  pose, new Translation2d(vel.dx, vel.dy), inputs.targetDistance);
+                  pose, new Translation2d(vel.dx, vel.dy), inputs.targetDistance, hub);
 
           inputs.augmentedTargetDistance = io.getDistanceFrom(pose, velocityCompensatedTarget);
           inputs.augmentedTargetYaw = io.getAngleTo(pose, velocityCompensatedTarget).getDegrees();
@@ -112,20 +122,12 @@ public class Targeting extends SubsystemBase implements Initializable {
     SmartDashboard.putData(targetVisualization);
   }
 
-  /**
-   * For use as a supplier to the Turret subsystem.
-   *
-   * @return the Target angle of the turret
-   */
+ 
   public Angle getTargetAngle() {
     return Degrees.of(inputs.augmentedTargetYaw);
   }
 
-  /**
-   * For use as a supplier to the Flywheel subsystem.
-   *
-   * @return The target speed of the flywheel.
-   */
+ 
   public Distance getTargetDistance() {
     return Meters.of(inputs.augmentedTargetDistance);
   }

@@ -349,7 +349,7 @@ public class RobotContainer {
 
     controller
         .L2()
-        .whileTrue(ShootingCommands.autoAimAndFire(flywheel, turret, spindexer, transfer, intake));
+        .whileTrue(ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, intake));
 
     // controller
     //     .L2()

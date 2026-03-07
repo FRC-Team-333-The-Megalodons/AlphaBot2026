@@ -19,6 +19,7 @@ public class Transfer extends SubsystemBase {
   }
 
   public Command feedShooter() {
-    return runEnd(() -> io.setVoltage(-9.0), () -> io.setVoltage(0.0));
+    
+    return runEnd(() -> io.setVoltage(TransferConstants.FEED_VOLTAGE), () -> io.setVoltage(0.0));
   }
 }
