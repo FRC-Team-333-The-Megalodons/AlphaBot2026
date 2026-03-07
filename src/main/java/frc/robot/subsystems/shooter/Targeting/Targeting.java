@@ -51,13 +51,11 @@ public class Targeting extends SubsystemBase implements Initializable {
 
           double lookaheadTime = 0.060;
 
-         
           if (zones.alliance(pose)) rawTarget = io.getHub();
           else rawTarget = io.getAllianceZoneTarget(pose);
 
           targetVisualization.setRobotPose(new Pose2d(rawTarget, Rotation2d.kZero));
 
-        
           Pose2d predictedPose =
               new Pose2d(
                   pose.getX() + vel.dx * lookaheadTime,
@@ -68,7 +66,6 @@ public class Targeting extends SubsystemBase implements Initializable {
           inputs.targetYaw = io.getAngleTo(predictedPose, rawTarget).getDegrees();
           double tof = io.getTOFFromDistance(inputs.targetDistance);
 
-         
           Translation2d velocityCompensatedTarget =
               io.velocityCompensatedCoordinates(
                   predictedPose, new Translation2d(vel.dx, vel.dy), tof, rawTarget);
@@ -122,12 +119,10 @@ public class Targeting extends SubsystemBase implements Initializable {
     SmartDashboard.putData(targetVisualization);
   }
 
- 
   public Angle getTargetAngle() {
     return Degrees.of(inputs.augmentedTargetYaw);
   }
 
- 
   public Distance getTargetDistance() {
     return Meters.of(inputs.augmentedTargetDistance);
   }

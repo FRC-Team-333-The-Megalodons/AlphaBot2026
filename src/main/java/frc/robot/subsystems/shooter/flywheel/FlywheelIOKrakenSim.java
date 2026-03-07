@@ -14,7 +14,6 @@ public class FlywheelIOKrakenSim implements FlywheelIO {
           DCMotor.getKrakenX60(1),
           0.001);
 
-  
   private final SimpleMotorFeedforward ff =
       new SimpleMotorFeedforward(FlywheelConstants.kS, FlywheelConstants.kV);
 
@@ -33,7 +32,6 @@ public class FlywheelIOKrakenSim implements FlywheelIO {
     inputs.appliedVolts = appliedVolts;
   }
 
-
   @Override
   public void moveTo(double rpm) {
     targetRPM = rpm;
@@ -42,7 +40,6 @@ public class FlywheelIOKrakenSim implements FlywheelIO {
     setVoltage(volts);
   }
 
-  
   @Override
   public boolean atTarget(double rpm) {
     double currentRPM =

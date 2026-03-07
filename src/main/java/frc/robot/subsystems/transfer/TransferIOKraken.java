@@ -39,7 +39,6 @@ public class TransferIOKraken implements TransferIO {
     inputs.appliedVolts = voltageSignal.getValueAsDouble();
     inputs.currentAmps = currentSignal.getValueAsDouble();
 
-  
     inputs.velocityRpm = velocitySignal.getValueAsDouble() * 60.0;
   }
 
