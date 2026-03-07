@@ -238,8 +238,13 @@ public class RobotContainer {
     SmartDashboard.putData("Turret/08 Go to 0", turret.rotateToField(Rotation2d.kZero));
     SmartDashboard.putData("Turret/Reseed Abs Position", turret.reseedPosition());
 
+    seedTurret();
     // Configure the button bindings
     configureButtonBindings();
+  }
+
+  public void seedTurret() {
+    turret.seed();
   }
 
   private void registerNamedCommands() {

@@ -9,7 +9,9 @@ public final class SpindexerConstants {
   public static final double VELOCITY_TOLERANCE = 50.0;
 
   // Normal spin voltage (forward)
-  public static final double SPIN_VOLTAGE = 6.0;
+  public static final double SPIN_VOLTAGE_STOPPED = 0.0;
+  public static final double SPIN_VOLTAGE = 8.0;
+  public static final double SPIN_VOLTAGE_SLOW = 5.0;
 
   public static final double JAM_VELOCITY_THRESHOLD_RPS = 15.0;
 

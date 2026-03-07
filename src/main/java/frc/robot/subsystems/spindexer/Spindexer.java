@@ -47,6 +47,27 @@ public class Spindexer extends SubsystemBase {
   @Override
   public void periodic() {
     io.updateInputs(inputs);
+    double spinVoltage = decide_spin_voltage();
+    io.setVoltage(spinVoltage);
+    Logger.recordOutput("Spindexer/Voltage", spinVoltage);
+  }
+
+  public double decide_spin_voltage() {
+    if (!spinRequested) {
+      return SpindexerConstants.SPIN_VOLTAGE_STOPPED;
+    }
+    // For the beginning of the second, we spin fast; for the rest of the second, we spin slow.
+    final long cutoff_ms = 500; // If this is 750, it means spend 750 at fast, and 250 at slow.
+    final long current_ms = System.currentTimeMillis() % 1000;
+
+    if (current_ms > cutoff_ms) {
+      return SpindexerConstants.SPIN_VOLTAGE_SLOW;
+    }
+    return SpindexerConstants.SPIN_VOLTAGE;
+  }
+
+  public void periodic_with_jam_detection() {
+    io.updateInputs(inputs);
     Logger.processInputs("Spindexer", inputs);
 
     // --- Spin not requested: shut everything down and reset ---

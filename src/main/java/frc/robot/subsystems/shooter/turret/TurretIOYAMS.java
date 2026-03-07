@@ -124,6 +124,8 @@ public class TurretIOYAMS implements TurretIO {
     return BaseStatusSignal.isAllGood(enc17AbsPos, enc18AbsPos);
   }
 
+  long lastRealtimeCalcCRT = 0;
+
   @Override
   public void updateInputs(TurretIOInputs inputs) {
     BaseStatusSignal.refreshAll(
@@ -138,8 +140,16 @@ public class TurretIOYAMS implements TurretIO {
     inputs.encoder17Rotations = enc17AbsPos.getValue().in(Rotations);
     inputs.encoder18Rotations = enc18AbsPos.getValue().in(Rotations);
 
-    inputs.calculatedAbsPositionRot =
-        easyCrtSolver.getAngleOptional().map(a -> a.in(Rotations)).orElse(0.0);
+    // This isn't actually used, it's just for debugging to compare the seeded value
+    //  with the realtime value. This can be a bit expensive, so rather than doing this
+    //  every iteration, we can still get our value-add for debugging by doing this once
+    //  every 5 seconds or so.
+    long now = System.currentTimeMillis();
+    if (now - lastRealtimeCalcCRT > 5000) {
+      inputs.calculatedAbsPositionRot =
+          easyCrtSolver.getAngleOptional().map(a -> a.in(Rotations)).orElse(0.0); 
+      lastRealtimeCalcCRT = now;
+    }
   }
 
   @Override
