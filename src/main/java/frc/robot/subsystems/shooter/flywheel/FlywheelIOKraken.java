@@ -46,7 +46,7 @@ public class FlywheelIOKraken implements FlywheelIO {
 
   @Override
   public boolean atTarget(double targetRPM) {
-    double currentRPM = rpsToRPM(motor2.getVelocity().getValue());
+    double currentRPM = rpsToRPM(motor.getVelocity().getValue());
     return Math.abs(targetRPM) > 0
         && Math.abs(Math.abs(currentRPM) - Math.abs(targetRPM))
             < FlywheelConstants.VELOCITY_TOLERANCE_RPM;

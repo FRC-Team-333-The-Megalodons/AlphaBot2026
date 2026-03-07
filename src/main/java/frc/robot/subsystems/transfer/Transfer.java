@@ -19,14 +19,6 @@ public class Transfer extends SubsystemBase {
   }
 
   public Command feedShooter() {
-    return runEnd(() -> io.moveTo(TransferConstants.TARGET_RPM), this::stop);
-  }
-
-  private void run() {
-    io.setVoltage(9);
-  }
-
-  private void stop() {
-    io.setVoltage(0.0);
+    return runEnd(() -> io.setVoltage(-9.0), () -> io.setVoltage(0.0));
   }
 }

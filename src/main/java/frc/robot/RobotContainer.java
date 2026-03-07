@@ -332,8 +332,18 @@ public class RobotContainer {
     //             intake.runIntakeCommand(),
     //             spindexer.activeSpindexerCommand(),
     //             transfer.feedShooterCommand()));
-    controller.L1().whileTrue(intake.ingest());
+    controller
+        .L1()
+        .whileTrue(
+            intake.dynamicIngest(
+                () -> {
+                  var fieldVelocity = drive.robotFieldVelocity();
 
+                  double absX = Math.abs(fieldVelocity.dx);
+                  double absY = Math.abs(fieldVelocity.dy);
+
+                  return Math.max(absX, absY);
+                }));
     controller.triangle().whileTrue(pivot.runPercent(-0.1));
     controller.cross().whileTrue(pivot.runPercent(0.1));
 

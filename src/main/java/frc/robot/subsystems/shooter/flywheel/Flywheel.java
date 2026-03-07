@@ -59,8 +59,8 @@ public class Flywheel extends SubsystemBase {
   public Command dynamicSpinUp(boolean waitUntilCompletion) {
     Command com =
         waitUntilCompletion
-            ? run(() -> io.moveTo(dynamicRPM())).until(this::ready)
-            : run(() -> io.moveTo(dynamicRPM()));
+            ? run(() -> io.moveTo(-dynamicRPM())).until(this::ready)
+            : run(() -> io.moveTo(-dynamicRPM()));
 
     return com.handleInterrupt(() -> io.setVoltage(0.0));
   }

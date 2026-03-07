@@ -14,6 +14,6 @@ public class FlywheelConstants {
   public static final double MAX_ACCEL = 200.0;
   public static final double MAX_JERK = 1000.0;
 
-  public static final double VELOCITY_TOLERANCE_RPM = 50.0;
+  public static final double VELOCITY_TOLERANCE_RPM = 150.0;
   public static final double muiltplication = 1;
 }

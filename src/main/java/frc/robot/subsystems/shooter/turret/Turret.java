@@ -185,7 +185,7 @@ public class Turret extends SubsystemBase implements Initializable {
     double currentAngle = inputs.turretPositionDeg;
     double targetAngle = targetAngleSupplier.get().in(Degrees);
 
-    return Math.abs(currentAngle - targetAngle) < 2.0;
+    return Math.abs(currentAngle - targetAngle) < 4.0;
   }
 
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {

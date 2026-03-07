@@ -175,6 +175,7 @@ public class Drive extends SubsystemBase implements Initializable {
   }
 
   public void periodic_impl() {
+    Logger.recordOutput("LinearVelocity", robotFieldVelocity().dx);
 
     RobotMetrics.start("odoLock");
     odometryLock.lock(); // Prevents odometry updates while reading data

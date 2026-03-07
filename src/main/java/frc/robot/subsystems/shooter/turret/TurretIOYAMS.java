@@ -175,7 +175,7 @@ public class TurretIOYAMS implements TurretIO {
         .getAngleOptional()
         .ifPresent(
             mechAngle -> {
-              StatusCode status = turretMotor.setPosition(mechAngle.in(Rotations), 0.05);
+              StatusCode status = turretMotor.setPosition(mechAngle.in(Rotations), 0.25);
               if (status.isOK()) {
                 hasSeeded = true;
                 System.out.println(
