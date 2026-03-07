@@ -147,7 +147,7 @@ public class TurretIOYAMS implements TurretIO {
     long now = System.currentTimeMillis();
     if (now - lastRealtimeCalcCRT > 5000) {
       inputs.calculatedAbsPositionRot =
-          easyCrtSolver.getAngleOptional().map(a -> a.in(Rotations)).orElse(0.0); 
+          easyCrtSolver.getAngleOptional().map(a -> a.in(Rotations)).orElse(0.0);
       lastRealtimeCalcCRT = now;
     }
   }
