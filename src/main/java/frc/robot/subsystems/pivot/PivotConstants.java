@@ -17,11 +17,11 @@ public final class PivotConstants {
   public static final double kG = 0.0;
 
   // TODO: Tune these.
-  public static final double kCruiseVelocity = 40.0; 
-  public static final double kAcceleration = 80.0;  
-  public static final double kJerk = 400.0;          
+  public static final double kCruiseVelocity = 40.0;
+  public static final double kAcceleration = 80.0;
+  public static final double kJerk = 400.0;
 
-  // Soft limits 
+  // Soft limits
   // TODO: set  min/max based on physical range of motion
   public static final double kMinAngleDeg = 0.0;
   public static final double kMaxAngleDeg = 90.0;

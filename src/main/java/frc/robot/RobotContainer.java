@@ -283,7 +283,7 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    // Default command, normal field-relative drive
+
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
             drive,
@@ -291,32 +291,30 @@ public class RobotContainer {
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
 
-    // Keep calculating angles and distances in the background forever
     targeting.setDefaultCommand(targeting.defaultTargetingBehavior());
 
-    // Lock to 0° when A button is held
     controller
-        .circle()
+        .L2()
         .whileTrue(
-            DriveCommands.joystickDriveAtAngle(
-                drive,
-                () -> -controller.getLeftY(),
-                () -> -controller.getLeftX(),
-                () -> Rotation2d.kZero));
+            intake.dynamicIngest(
+                () -> {
+                  var fieldVelocity = drive.robotFieldVelocity();
+                  double absX = Math.abs(fieldVelocity.dx);
+                  double absY = Math.abs(fieldVelocity.dy);
+                  return Math.max(absX, absY);
+                }));
 
-    // Switch to X pattern when X button is pressed
-    // controller.cross().onTrue(Commands.runOnce(drive::stopWithX, drive));
+    controller.L1().whileTrue(pivot.motionMagicDown());
 
-    // Reset gyro to 0° when B button is pressed
+    // Locks wheels in x shape
+    controller.L3().onTrue(Commands.runOnce(drive::stopWithX, drive));
+
     controller
-        .touchpad()
-        .onTrue(
-            Commands.runOnce(
-                    () ->
-                        drive.setPose(
-                            new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
-                    drive)
-                .ignoringDisable(true));
+        .R2()
+        .whileTrue(ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, intake));
+
+    controller.R1().whileTrue(pivot.motionMagicUp());
+
     controller
         .R3()
         .whileTrue(
@@ -326,76 +324,56 @@ public class RobotContainer {
                 () -> -controller.getLeftX(),
                 () -> -controller.getRightX()));
 
-    controller.povUp().whileTrue(PathfindCommands.pathfindToDepot(drive));
-    controller.square().whileTrue(PathfindCommands.pathfindToHub(drive));
-    controller.povDown().whileTrue(turret.autoAim());
-    controller.L3().whileTrue(PathfindCommands.pathfindtoScoringPosition(drive));
-    // controller
-    //     .L2()
-    //     .whileTrue(
-    //         Commands.parallel(
-    //             intake.runIntakeCommand(),
-    //             spindexer.activeSpindexerCommand(),
-    //             transfer.feedShooterCommand()));
     controller
-        .L1()
+        .triangle()
         .whileTrue(
-            intake.dynamicIngest(
-                () -> {
-                  var fieldVelocity = drive.robotFieldVelocity();
-
-                  double absX = Math.abs(fieldVelocity.dx);
-                  double absY = Math.abs(fieldVelocity.dy);
-
-                  return Math.max(absX, absY);
-                }));
-    controller.triangle().whileTrue(pivot.runPercent(-0.1));
-    controller.cross().whileTrue(pivot.runPercent(0.1));
+            DriveCommands.joystickDriveAtAngle(
+                drive,
+                () -> -controller.getLeftY(),
+                () -> -controller.getLeftX(),
+                () -> Rotation2d.fromDegrees(0)));
 
     controller
-        .L2()
-        .whileTrue(ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, intake));
+        .cross()
+        .whileTrue(
+            DriveCommands.joystickDriveAtAngle(
+                drive,
+                () -> -controller.getLeftY(),
+                () -> -controller.getLeftX(),
+                () -> Rotation2d.fromDegrees(180)));
 
-    // controller
-    //     .L2()
-    //     .whileTrue(
-    //         Commands.either(
-    //             Commands.parallel(
-    //                 flywheel.dynamicSpinUp(false),
-    //                 turret.autoAim(
-    //                     () -> {
-    //                       double currentDistance =
-    //                           drive
-    //                               .getPose()
-    //                               .getTranslation()
-    //                               .getDistance(MatchStateCalculator.getHub());
-    //                       double flightTime = flywheel.getTimeOfFlight(currentDistance);
-    //                       double dynamicScalar = flywheel.getVelocityScalar(currentDistance);
+    controller
+        .square()
+        .whileTrue(
+            DriveCommands.joystickDriveAtAngle(
+                drive,
+                () -> -controller.getLeftY(),
+                () -> -controller.getLeftX(),
+                () -> Rotation2d.fromDegrees(90)));
 
-    //                       return MatchStateCalculator.getMovingHub(
-    //                           drive.getPose(),
-    //                           drive.robotFieldVelocity(),
-    //                           flightTime,
-    //                           dynamicScalar);
-    //                     }),
-    //                 Commands.sequence(
-    //                     Commands.waitUntil(flywheel::isAtSpeed),
-    //                     Commands.parallel(
-    //                         spindexer.activeSpindexerCommand(),
-    //                         transfer.feedShooterCommand(),
-    //                         intake.runIntakeCommand()))),
-    //             Commands.parallel(
-    //                 flywheel.spinUpCommand(4000),
-    //                 turret.aimAtFieldZero(), // Continuously tracks 0 degrees relative to field
-    //                 Commands.sequence(
-    //                     Commands.waitUntil(flywheel::isAtSpeed),
-    //                     Commands.parallel(
-    //                         spindexer.activeSpindexerCommand(),
-    //                         transfer.feedShooterCommand(),
-    //                         intake.runIntakeCommand()))),
-    //             () -> MatchStateCalculator.isInAllianceZone(drive.getPose())));
+    controller
+        .circle()
+        .whileTrue(
+            DriveCommands.joystickDriveAtAngle(
+                drive,
+                () -> -controller.getLeftY(),
+                () -> -controller.getLeftX(),
+                () -> Rotation2d.fromDegrees(-90)));
+
+    controller
+        .touchpad()
+        .onTrue(
+            Commands.runOnce(
+                    () ->
+                        drive.setPose(
+                            new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
+                    drive)
+                .ignoringDisable(true));
 
     controller.PS().whileTrue(ShootingCommands.dashboardRPMControl(flywheel));
+
+    controller.povUp().whileTrue(PathfindCommands.pathfindToDepot(drive));
+
     controller
         .povRight()
         .whileTrue(PathfindCommands.precisionPathfindTo(FieldLayout.Tower.CLIMBING_POSE, drive));

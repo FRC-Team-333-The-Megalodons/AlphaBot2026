@@ -8,9 +8,9 @@ public interface PivotIO extends Automatable {
   @AutoLog
   public static class PivotIOInputs {
     public double appliedVolts = 0.0;
-    public double positionDeg = 0.0;   
-    public double velocityRPM = 0.0;   
-    public double currentAmps = 0.0; 
+    public double positionDeg = 0.0;
+    public double velocityRPM = 0.0;
+    public double currentAmps = 0.0;
   }
 
   public default void updateInputs(PivotIOInputs inputs) {}

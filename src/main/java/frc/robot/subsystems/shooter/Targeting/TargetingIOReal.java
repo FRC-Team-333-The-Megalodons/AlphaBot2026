@@ -132,6 +132,7 @@ public class TargetingIOReal implements TargetingIO {
   public Rotation2d getAngleToHub(Pose2d robotPose) {
     return getAngleTo(robotPose, getHub());
   }
+
   @Override
   public Translation2d velocityCompensatedCoordinates(
       Pose2d robotPose, Translation2d fieldVelocity, double tof, Translation2d selectedTarget) {

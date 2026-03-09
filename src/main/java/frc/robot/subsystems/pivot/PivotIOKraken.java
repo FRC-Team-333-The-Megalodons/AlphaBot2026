@@ -83,7 +83,6 @@ public class PivotIOKraken implements PivotIO {
     RobotMetrics.stop("PivotKrakenUpdateInputs");
   }
 
-
   @Override
   public boolean atTarget(double degrees) {
     double currentDeg = Units.rotationsToDegrees(position.getValueAsDouble());
