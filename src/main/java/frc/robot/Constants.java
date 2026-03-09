@@ -30,6 +30,7 @@ public final class Constants {
   }
 
   public static final double DEFAULT_EPSILON = 0.001;
+
   public static boolean fuzzyEquals(double a, double b, double epsilon) {
     return Math.abs(a - b) <= epsilon;
   }

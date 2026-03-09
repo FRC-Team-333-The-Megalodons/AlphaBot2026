@@ -6,7 +6,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import frc.robot.Constants;
 import frc.robot.util.Targets;
 
 public class TargetingIOReal implements TargetingIO {
@@ -160,9 +159,9 @@ public class TargetingIOReal implements TargetingIO {
       Pose2d robotPose, Translation2d fieldVelocity, double tof, Translation2d selectedTarget) {
 
     // Make sure that "close-to-zero" velocity doesn't result in us doing actual adjustments.
-    if (Constants.allFuzzyEqualsZero(fieldVelocity.getX(), fieldVelocity.getY())) {
-      return new Translation2d();
-    }
+    // if (Constants.allFuzzyEqualsZero(fieldVelocity.getX(), fieldVelocity.getY())) {
+    //   return new Translation2d();
+    // }
 
     // Use the passed-in target, not a hardcoded getHub()
     Translation2d hubOffset = selectedTarget.minus(robotPose.getTranslation());
