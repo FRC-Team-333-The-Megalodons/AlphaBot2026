@@ -132,28 +132,6 @@ public class TargetingIOReal implements TargetingIO {
   public Rotation2d getAngleToHub(Pose2d robotPose) {
     return getAngleTo(robotPose, getHub());
   }
-
-  /**
-   * Computes a virtual "lead" target coordinate that accounts for robot motion during flight.
-   *
-   * <p>FIX (Bug B): The previous implementation called {@code getHub()} internally, hardcoding the
-   * hub as the reference target regardless of which target was actually selected by {@code
-   * Targeting.defaultTargetingBehavior()}. This meant that in the neutral or enemy zone, where the
-   * actual target is a passing position, the velocity compensation math was still calculated
-   * relative to the hub — a completely different point on the field — producing a wrong lead angle
-   * for any non-hub shot.
-   *
-   * <p>Fix: the actual selected target is now passed in as {@code selectedTarget}, so the
-   * compensation is always relative to wherever the robot is actually trying to shoot.
-   *
-   * @param robotPose current (or predicted) robot pose
-   * @param fieldVelocity robot velocity in the FIELD frame (dx = field-X, dy = field-Y) — NOTE:
-   *     Drive.robotFieldVelocity() now returns true field-relative speeds after Bug A was fixed, so
-   *     this is correct.
-   * @param tof time of flight in seconds from the TOF map
-   * @param selectedTarget the actual target Translation2d chosen this loop
-   * @return the virtual lead coordinate to aim at
-   */
   @Override
   public Translation2d velocityCompensatedCoordinates(
       Pose2d robotPose, Translation2d fieldVelocity, double tof, Translation2d selectedTarget) {
