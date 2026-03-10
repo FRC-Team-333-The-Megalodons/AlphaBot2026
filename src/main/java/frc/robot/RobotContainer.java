@@ -37,6 +37,10 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOKraken;
 import frc.robot.subsystems.intake.IntakeIOKrakenSim;
+import frc.robot.subsystems.leds.Led;
+import frc.robot.subsystems.leds.LedIO;
+import frc.robot.subsystems.leds.LedIOCANdle;
+import frc.robot.subsystems.leds.LedIOSim;
 import frc.robot.subsystems.pivot.Pivot;
 import frc.robot.subsystems.pivot.PivotIO;
 import frc.robot.subsystems.pivot.PivotIOKraken;
@@ -84,6 +88,7 @@ public class RobotContainer {
   private final Targeting targeting;
   private final Pivot pivot;
   private final Turret turret;
+  private final Led leds;
 
   // Controller
   private final CommandPS5Controller controller = new CommandPS5Controller(0);
@@ -115,6 +120,7 @@ public class RobotContainer {
         flywheel = new Flywheel(new FlywheelIOKraken(), targeting::getTargetDistance);
         pivot = new Pivot(new PivotIOKraken());
         turret = new Turret(new TurretIOYAMS(), targeting::getTargetAngle, drive::getRotation);
+        leds = new Led(new LedIOCANdle());
 
         // Note:
 
@@ -157,6 +163,7 @@ public class RobotContainer {
         flywheel = new Flywheel(new FlywheelIOKrakenSim(), targeting::getTargetDistance);
         pivot = new Pivot(new PivotIOKrakenSim());
         turret = new Turret(new TurretIOKrakenSim(), targeting::getTargetAngle, drive::getRotation);
+        leds = new Led(new LedIOSim());
         break;
 
       default:
@@ -176,6 +183,7 @@ public class RobotContainer {
         flywheel = new Flywheel(new FlywheelIO() {}, targeting::getTargetDistance);
         pivot = new Pivot(new PivotIO() {});
         turret = new Turret(new TurretIO() {}, targeting::getTargetAngle, drive::getRotation);
+        leds = new Led(new LedIO() {});
         break;
     }
     drive.seed();
@@ -283,6 +291,7 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
+    leds.setDefaultCommand(leds.gameStateAwareLeds(flywheel));
 
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
