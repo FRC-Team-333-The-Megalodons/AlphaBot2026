@@ -11,6 +11,5 @@ public interface LedIO {
 
   public default void updateInputs(LedIOInputs inputs) {}
 
-
   public default void setState(LedState state) {}
 }

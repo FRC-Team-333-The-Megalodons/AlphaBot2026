@@ -4,7 +4,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
-import frc.robot.util.RobotStates;
 import org.littletonrobotics.junction.Logger;
 
 public class Led extends SubsystemBase {
@@ -24,20 +23,19 @@ public class Led extends SubsystemBase {
     Logger.processInputs("Led", inputs);
   }
 
- 
-
   private void setState(LedState state) {
     currentState = state;
     inputs.currentState = state.name();
     io.setState(state);
   }
+
   public Command gameStateAwareLeds(Flywheel flywheel) {
     return run(() -> {
           if (DriverStation.isDisabled()) {
             setState(LedState.DISABLED);
             return;
           }
-           if (flywheel.ready()) {
+          if (flywheel.ready()) {
             setState(LedState.READY_TO_FIRE);
             return;
           }
@@ -45,20 +43,20 @@ public class Led extends SubsystemBase {
             setState(LedState.SPINNING_UP);
             return;
           }
-        //   if (RobotStates.pieceState == RobotStates.GamePieceState.HAS_PIECE) {
-        //     setState(LedState.HAS_PIECE);
-        //     return;
-        //   }
-        //    if (RobotStates.pieceState == RobotStates.GamePieceState.INTAKING) {
-        //     setState(LedState.INTAKING);
-        //     return;
-        //   }
+          //   if (RobotStates.pieceState == RobotStates.GamePieceState.HAS_PIECE) {
+          //     setState(LedState.HAS_PIECE);
+          //     return;
+          //   }
+          //    if (RobotStates.pieceState == RobotStates.GamePieceState.INTAKING) {
+          //     setState(LedState.INTAKING);
+          //     return;
+          //   }
 
-        //   if (RobotStates.location == RobotStates.FieldLocation.NEUTRAL_ZONE
-        //       || RobotStates.location == RobotStates.FieldLocation.OPP_ALLINACE_ZONE) {
-        //     setState(LedState.NEUTRAL_ZONE);
-        //     return;
-        //   }
+          //   if (RobotStates.location == RobotStates.FieldLocation.NEUTRAL_ZONE
+          //       || RobotStates.location == RobotStates.FieldLocation.OPP_ALLINACE_ZONE) {
+          //     setState(LedState.NEUTRAL_ZONE);
+          //     return;
+          //   }
 
           // Default
           setState(LedState.IDLE);
@@ -66,8 +64,6 @@ public class Led extends SubsystemBase {
         .ignoringDisable(true)
         .withName("Led.gameStateAwareLeds");
   }
-
-  
 
   /** Force a specific state for the duration the command is scheduled. */
   public Command forceState(LedState state) {

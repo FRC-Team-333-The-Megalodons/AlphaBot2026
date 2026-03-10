@@ -5,7 +5,6 @@ import com.ctre.phoenix6.controls.EmptyAnimation;
 import com.ctre.phoenix6.controls.LarsonAnimation;
 import com.ctre.phoenix6.controls.RainbowAnimation;
 import com.ctre.phoenix6.controls.SolidColor;
-import com.ctre.phoenix6.controls.StrobeAnimation;
 import com.ctre.phoenix6.hardware.CANdle;
 import com.ctre.phoenix6.signals.RGBWColor;
 
@@ -31,7 +30,7 @@ public class LedIOCANdle implements LedIO {
 
   @Override
   public void updateInputs(LedIOInputs inputs) {
-    //LEDs are only output, so no inputs need to recorded or updated.
+    // LEDs are only output, so no inputs need to recorded or updated.
   }
 
   @Override
@@ -56,8 +55,7 @@ public class LedIOCANdle implements LedIO {
 
       case HAS_PIECE:
         // Solid green
-        candle.setControl(
-            new SolidColor(0, TOTAL_LENGTH).withColor(new RGBWColor(0, 255, 0, 0)));
+        candle.setControl(new SolidColor(0, TOTAL_LENGTH).withColor(new RGBWColor(0, 255, 0, 0)));
         break;
 
       case SPINNING_UP:
@@ -70,7 +68,7 @@ public class LedIOCANdle implements LedIO {
         break;
 
       case READY_TO_FIRE:
-        // Fast blue Larson 
+        // Fast blue Larson
         candle.setControl(
             new LarsonAnimation(0, TOTAL_LENGTH)
                 .withColor(new RGBWColor(32, 40, 255, 0))
@@ -79,7 +77,7 @@ public class LedIOCANdle implements LedIO {
         break;
 
       case NEUTRAL_ZONE:
-        // Yellow Larson 
+        // Yellow Larson
         candle.setControl(
             new LarsonAnimation(0, TOTAL_LENGTH)
                 .withColor(new RGBWColor(255, 255, 0, 0))
@@ -88,7 +86,7 @@ public class LedIOCANdle implements LedIO {
         break;
 
       case DISABLED:
-        // Rainbow 
+        // Rainbow
         candle.setControl(new RainbowAnimation(TOTAL_LENGTH, 0).withFrameRate(6));
         break;
     }
