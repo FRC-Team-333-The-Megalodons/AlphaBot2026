@@ -14,7 +14,7 @@ public class IntakeIOKraken implements IntakeIO {
     var config = new TalonFXConfiguration();
     motor.getConfigurator().apply(config);
 
-    // Make sure intake revving up doesn't cause a voltage sag.
+    // Make sure intake revving up doesn't cause a voltage sag.a
     config.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.25;
     config.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.25;
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;

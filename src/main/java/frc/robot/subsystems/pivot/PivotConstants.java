@@ -2,10 +2,10 @@ package frc.robot.subsystems.pivot;
 
 public final class PivotConstants {
 
-  public static final int MOTOR_ID = 45;
+  public static final int MOTOR_ID = 4;
 
   // TODO: set proper gear ratio(Vlad knowns)
-  public static final double GEAR_RATIO = 0.0;
+  public static final double GEAR_RATIO = 13.75;
 
   // PID
   public static final double kP = 15.0;
