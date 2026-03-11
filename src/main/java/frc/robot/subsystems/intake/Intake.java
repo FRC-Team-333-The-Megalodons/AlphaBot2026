@@ -48,6 +48,10 @@ public class Intake extends SubsystemBase {
     io.setVoltage(forward ? IntakeConstants.INTAKE_VOLTS : -IntakeConstants.INTAKE_VOLTS);
   }
 
+  public double getAppliedVolts() {
+    return inputs.appliedVolts;
+  }
+
   public void stop() {
     io.setVoltage(0.0);
   }

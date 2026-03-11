@@ -302,6 +302,8 @@ public class RobotContainer {
 
     targeting.setDefaultCommand(targeting.defaultTargetingBehavior());
 
+    pivot.setDefaultCommand(pivot.coordinatedPivot(flywheel, intake));
+
     controller
         .L2()
         .whileTrue(
