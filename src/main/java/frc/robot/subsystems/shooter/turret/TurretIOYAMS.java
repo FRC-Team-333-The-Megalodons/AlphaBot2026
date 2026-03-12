@@ -1,5 +1,6 @@
 package frc.robot.subsystems.shooter.turret;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
 
 import com.ctre.phoenix6.BaseStatusSignal;
@@ -16,7 +17,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -53,12 +53,17 @@ public class TurretIOYAMS implements TurretIO {
     encoder18 = new CANcoder(TurretConstants.kEncoder18Id, rio);
 
     CANcoderConfiguration encConfig = new CANcoderConfiguration();
+    encoder17.getConfigurator().apply(encConfig);
+    encoder18.getConfigurator().apply(encConfig);
+
     encConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
     encConfig.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
     encoder17.getConfigurator().apply(encConfig);
     encoder18.getConfigurator().apply(encConfig);
 
     TalonFXConfiguration motorConfig = new TalonFXConfiguration();
+    turretMotor.getConfigurator().apply(motorConfig);
+
     motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     motorConfig.Feedback.SensorToMechanismRatio = TurretConstants.kMotorToTurretRatio;
     motorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
@@ -115,38 +120,53 @@ public class TurretIOYAMS implements TurretIO {
   }
 
   @Override
+  public boolean encodersGood() {
+    return BaseStatusSignal.isAllGood(enc17AbsPos, enc18AbsPos);
+  }
+
+  long lastRealtimeCalcCRT = 0;
+
+  @Override
   public void updateInputs(TurretIOInputs inputs) {
     BaseStatusSignal.refreshAll(
         turretPosition, turretVelocity, turretVolts, turretCurrent, enc17AbsPos, enc18AbsPos);
 
-    if (!hasSeeded && BaseStatusSignal.isAllGood(enc17AbsPos, enc18AbsPos)) {
-      seedTurretPosition();
-    }
+    inputs.turretPositionDeg = turretPosition.getValue().in(Degrees);
+    inputs.turretVelocityRPM = turretVelocity.getValueAsDouble() * 60.0;
 
-    inputs.turretPositionRad = Units.rotationsToRadians(turretPosition.getValueAsDouble());
-    inputs.turretPositionDeg = Units.radiansToDegrees(inputs.turretPositionRad);
-    inputs.turretVelocityRadPerSec = Units.rotationsToRadians(turretVelocity.getValueAsDouble());
     inputs.turretAppliedVolts = turretVolts.getValueAsDouble();
     inputs.turretCurrentAmps = turretCurrent.getValueAsDouble();
 
-    inputs.encoder17Rotations = enc17AbsPos.getValueAsDouble();
-    inputs.encoder18Rotations = enc18AbsPos.getValueAsDouble();
+    inputs.encoder17Rotations = enc17AbsPos.getValue().in(Rotations);
+    inputs.encoder18Rotations = enc18AbsPos.getValue().in(Rotations);
 
-    inputs.calculatedAbsPositionRot =
-        easyCrtSolver.getAngleOptional().map(a -> a.in(Rotations)).orElse(0.0);
+    // This isn't actually used, it's just for debugging to compare the seeded value
+    //  with the realtime value. This can be a bit expensive, so rather than doing this
+    //  every iteration, we can still get our value-add for debugging by doing this once
+    //  every 5 seconds or so.
+    long now = System.currentTimeMillis();
+    if (now - lastRealtimeCalcCRT > 5000) {
+      inputs.calculatedAbsPositionRot =
+          easyCrtSolver.getAngleOptional().map(a -> a.in(Rotations)).orElse(0.0);
+      lastRealtimeCalcCRT = now;
+    }
   }
 
   @Override
-  public void setTurretPosition(Rotation2d position, double velocityFFRadPerSec) {
-    if (Math.abs(velocityFFRadPerSec) < 0.05) {
-      turretMotor.setControl(magicRequest.withPosition(position.getRotations()));
-    }
-    // If we are orbiting on the move, use Position tracking with Dynamic Feedforward
-    else {
-      double velocityRps = velocityFFRadPerSec / (2.0 * Math.PI);
-      turretMotor.setControl(
-          trackingRequest.withPosition(position.getRotations()).withVelocity(velocityRps));
-    }
+  public boolean atTarget(double angle) {
+
+    double currentPosDeg = turretPosition.getValue().in(Degrees);
+    double currentVelRpm = turretVelocity.getValueAsDouble() * 60.0;
+
+    boolean atPosition = Math.abs(angle - currentPosDeg) < TurretConstants.positionTolerance;
+    boolean notMoving = Math.abs(currentVelRpm) < TurretConstants.velocityTolerance;
+
+    return atPosition && notMoving;
+  }
+
+  @Override
+  public void moveTo(double degrees) {
+    turretMotor.setControl(trackingRequest.withPosition(Units.degreesToRotations(degrees)));
   }
 
   @Override
@@ -156,28 +176,33 @@ public class TurretIOYAMS implements TurretIO {
 
   @Override
   public void stop() {
-    turretMotor.setControl(voltageRequest.withOutput(0));
+    setTurretVoltage(0.0);
   }
 
   @Override
   public void seedTurretPosition() {
-    if (enc17AbsPos.getValueAsDouble() == 0.0 && enc18AbsPos.getValueAsDouble() == 0.0) {
-      return;
-    }
+
+    BaseStatusSignal.refreshAll(enc17AbsPos, enc18AbsPos);
 
     easyCrtSolver
         .getAngleOptional()
         .ifPresent(
             mechAngle -> {
-              StatusCode status = turretMotor.setPosition(mechAngle.in(Rotations), 0.05);
+              StatusCode status = turretMotor.setPosition(mechAngle.in(Rotations), 0.25);
+
               if (status.isOK()) {
                 hasSeeded = true;
                 System.out.println(
-                    "[Turret] YAMS EasyCRT Successfully seeded absolute position: "
+                    "[Turret] YAMS EasyCRT successfully seeded absolute position: "
                         + mechAngle.in(Rotations)
-                        + " rotations.");
+                        + " rotations ("
+                        + mechAngle.in(edu.wpi.first.units.Units.Degrees)
+                        + " degrees).");
               } else {
-                System.out.println("[Turret] Failed to seed turret motor: " + status.getName());
+                System.out.println(
+                    "[Turret] Failed to seed turret motor position: "
+                        + status.getName()
+                        + ". Will retry.");
               }
             });
   }

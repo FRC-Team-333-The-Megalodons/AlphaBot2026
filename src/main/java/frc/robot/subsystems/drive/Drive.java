@@ -10,6 +10,7 @@ package frc.robot.subsystems.drive;
 import static edu.wpi.first.units.Units.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathfindingCommand;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
@@ -37,11 +38,13 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
+import frc.robot.interfaces.Initializable;
 import frc.robot.util.LocalADStarAK;
 import frc.robot.util.MatchStateCalculator;
 import frc.robot.util.RobotMetrics;
@@ -50,8 +53,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public class Drive extends SubsystemBase {
-  // private final DoubleArrayPublisher posePublisher;
+public class Drive extends SubsystemBase implements Initializable {
 
   // TunerConstants doesn't include these constants, so they are declared locally
   static final double ODOMETRY_FREQUENCY = TunerConstants.kCANBus.isNetworkFD() ? 250.0 : 100.0;
@@ -125,7 +127,22 @@ public class Drive extends SubsystemBase {
     // Start odometry thread
     PhoenixOdometryThread.getInstance().start();
 
-    // Configure AutoBuilder for PathPlanner
+    // Configure SysId
+    sysId =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                null,
+                null,
+                null,
+                (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
+            new SysIdRoutine.Mechanism(
+                (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
+  }
+
+  @Override
+  public void seed() {
+
+    // Configure AutoBuilder for PathPlanner once DriverStation is connected.
     AutoBuilder.configure(
         this::getPose,
         this::setPose,
@@ -146,16 +163,8 @@ public class Drive extends SubsystemBase {
           Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
         });
 
-    // Configure SysId
-    sysId =
-        new SysIdRoutine(
-            new SysIdRoutine.Config(
-                null,
-                null,
-                null,
-                (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
-            new SysIdRoutine.Mechanism(
-                (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
+    // Warmup because why not
+    CommandScheduler.getInstance().schedule(PathfindingCommand.warmupCommand());
   }
 
   @Override
@@ -166,24 +175,28 @@ public class Drive extends SubsystemBase {
   }
 
   public void periodic_impl() {
-    Logger.recordOutput("Linear Velocity for Intake", this.getFieldVelocityX());
+    Logger.recordOutput("LinearVelocityX", robotFieldVelocity().dx);
+    Logger.recordOutput("LinearVelocityY", robotFieldVelocity().dy);
+
     RobotMetrics.start("odoLock");
     odometryLock.lock(); // Prevents odometry updates while reading data
     RobotMetrics.stop("odoLock");
 
-    RobotMetrics.start("updateGyro");
-    gyroIO.updateInputs(gyroInputs);
-    RobotMetrics.stop("updateGyro");
+    try {
+      RobotMetrics.start("updateGyro");
+      gyroIO.updateInputs(gyroInputs);
+      RobotMetrics.stop("updateGyro");
 
-    Logger.processInputs("Drive/Gyro", gyroInputs);
+      Logger.processInputs("Drive/Gyro", gyroInputs);
 
-    RobotMetrics.start("modulePeriodic");
-    for (var module : modules) {
-      module.periodic();
+      RobotMetrics.start("modulePeriodic");
+      for (var module : modules) {
+        module.periodic();
+      }
+      RobotMetrics.stop("modulePeriodic");
+    } finally {
+      odometryLock.unlock(); // Always unlocks, even if the code crashes above
     }
-    RobotMetrics.stop("modulePeriodic");
-
-    odometryLock.unlock();
 
     // Stop moving when disabled
 
@@ -204,8 +217,6 @@ public class Drive extends SubsystemBase {
         modules[0].getOdometryTimestamps(); // All signals are sampled together
     int sampleCount = sampleTimestamps.length;
     Logger.recordOutput("SwerveStates/sampleCount", sampleCount);
-
-    RobotMetrics.stat("OdometryTimestampCount", sampleCount);
 
     RobotMetrics.stop("getOdoTimestamps");
 
@@ -424,20 +435,19 @@ public class Drive extends SubsystemBase {
     };
   }
 
-  public double getFieldVelocityX() {
-    return getChassisSpeeds().vxMetersPerSecond;
-  }
-
-  private double getFieldVelocityY() {
-    return getChassisSpeeds().vyMetersPerSecond;
-  }
-
   public double getFieldAngularVelocity() {
     return getChassisSpeeds().omegaRadiansPerSecond;
   }
 
   public Twist2d robotFieldVelocity() {
-    return new Twist2d(getFieldVelocityX(), getFieldVelocityY(), getFieldAngularVelocity());
+    ChassisSpeeds robotRelative = getChassisSpeeds();
+    // Rotate from robot frame → field frame using the current odometry heading
+    ChassisSpeeds fieldRelative =
+        ChassisSpeeds.fromRobotRelativeSpeeds(robotRelative, getRotation());
+    return new Twist2d(
+        fieldRelative.vxMetersPerSecond,
+        fieldRelative.vyMetersPerSecond,
+        fieldRelative.omegaRadiansPerSecond);
   }
 
   public double getDistanceToHub() {

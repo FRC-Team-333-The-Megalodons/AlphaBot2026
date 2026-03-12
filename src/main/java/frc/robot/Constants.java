@@ -28,4 +28,26 @@ public final class Constants {
     /** Replaying from a log file. */
     REPLAY
   }
+
+  public static final double DEFAULT_EPSILON = 0.001;
+
+  public static boolean fuzzyEquals(double a, double b, double epsilon) {
+    return Math.abs(a - b) <= epsilon;
+  }
+
+  public static boolean fuzzyEqualsZero(double x, double epsilon) {
+    return fuzzyEquals(x, 0.0, epsilon);
+  }
+
+  public static boolean fuzzyEqualsZero(double x) {
+    return fuzzyEqualsZero(x, DEFAULT_EPSILON);
+  }
+
+  public static boolean allFuzzyEqualsZero(double... vals) {
+    boolean result = true;
+    for (double val : vals) {
+      result = result && fuzzyEqualsZero(val);
+    }
+    return result;
+  }
 }

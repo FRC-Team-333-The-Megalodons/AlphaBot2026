@@ -1,5 +1,7 @@
 package frc.robot.subsystems.shooter.turret;
 
+import static edu.wpi.first.units.Units.Degrees;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusCode;
@@ -13,7 +15,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -119,9 +120,8 @@ public class TurretIOKraken implements TurretIO {
     }
 
     // inputs.connected = BaseStatusSignal.isAllGood(turretPosition, enc17AbsPos);
-    inputs.turretPositionRad = Units.rotationsToRadians(turretPosition.getValueAsDouble());
-    inputs.turretPositionDeg = Units.radiansToDegrees(inputs.turretPositionRad);
-    inputs.turretVelocityRadPerSec = Units.rotationsToRadians(turretVelocity.getValueAsDouble());
+    inputs.turretPositionDeg = turretPosition.getValue().in(Degrees);
+    inputs.turretVelocityRPM = turretVelocity.getValueAsDouble() * 60.0;
     inputs.turretAppliedVolts = turretVolts.getValueAsDouble();
     inputs.turretCurrentAmps = turretCurrent.getValueAsDouble();
 
@@ -132,8 +132,8 @@ public class TurretIOKraken implements TurretIO {
   }
 
   @Override
-  public void setTurretPosition(Rotation2d position, double velocityFeedforwardRadPerSec) {
-    turretMotor.setControl(positionRequest.withPosition(position.getRotations()));
+  public void moveTo(double degrees) {
+    turretMotor.setControl(positionRequest.withPosition(Units.degreesToRotations(degrees)));
   }
 
   @Override

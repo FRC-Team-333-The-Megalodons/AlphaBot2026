@@ -14,31 +14,21 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.shooter.Targeting.Targeting;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
 import frc.robot.subsystems.shooter.turret.Turret;
 import frc.robot.subsystems.spindexer.Spindexer;
 import frc.robot.subsystems.transfer.Transfer;
 import frc.robot.util.FieldLayout;
-import frc.robot.util.MatchStateCalculator;
 
 /** Add your docs here. */
 public class AutonomousCommands {
+
   public static Command shootCommand(
       Drive drive, Flywheel flywheel, Intake intake, Spindexer spindexer, Transfer transfer) {
-    return Commands.deferredProxy(
-        () -> {
-          double targetRPM = flywheel.getRPMForDistance();
-
-          return flywheel
-              .spinUpCommand(targetRPM)
-              .alongWith(
-                  Commands.waitUntil(flywheel::isAtSpeed)
-                      .andThen(
-                          Commands.parallel(
-                              intake.runIntakeCommand(),
-                              spindexer.activeSpindexerCommand(),
-                              transfer.feedShooterCommand())));
-        });
+    return Commands.sequence(
+        flywheel.dynamicSpinUp(true),
+        Commands.parallel(intake.ingest(), spindexer.spin(), transfer.feedShooter()));
   }
 
   public static Command pathfindToTower(Drive drive) {
@@ -52,49 +42,34 @@ public class AutonomousCommands {
   public static Command movingShootCommand(
       Drive drive,
       Flywheel flywheel,
+      Targeting targeting,
       Turret turret,
       Intake intake,
       Spindexer spindexer,
       Transfer transfer) {
 
-    return Commands.parallel(
-        Commands.run(flywheel::getRPMForDistance, flywheel),
-       turret.aimAtPoint(
-                        () -> {
-                          double lookaheadTime = 0.060;
-
-                          Pose2d currentPose = drive.getPose();
-                          var currentVelocity = drive.robotFieldVelocity();
-
-                          Pose2d predictedPose =
-                              currentPose.exp(
-                                  new edu.wpi.first.math.geometry.Twist2d(
-                                      currentVelocity.dx * lookaheadTime,
-                                      currentVelocity.dy * lookaheadTime,
-                                      currentVelocity.dtheta * lookaheadTime));
-
-                          return MatchStateCalculator.getMovingHub(
-                              predictedPose,
-                              currentVelocity.dx,
-                              currentVelocity.dy);
-                        }),
+    return Commands.deadline(
         Commands.sequence(
-            Commands.waitUntil(flywheel::isAtSpeed),
-            Commands.parallel(spindexer.activeSpindexerCommand(), transfer.feedShooterCommand())));
+            Commands.deadline(flywheel.dynamicSpinUp(true), turret.autoAim()),
+            Commands.parallel(spindexer.spin(), transfer.feedShooter())),
+        targeting.simpleTargeting());
   }
 
   public static Command outpostToHubSequence(
       Drive drive,
       Flywheel flywheel,
+      Targeting targeting,
       Turret turret,
       Intake intake,
       Spindexer spindexer,
       Transfer transfer) {
 
     return Commands.sequence(
-        movingShootCommand(drive, flywheel, turret, intake, spindexer, transfer).withTimeout(2.0),
+        movingShootCommand(drive, flywheel, targeting, turret, intake, spindexer, transfer)
+            .withTimeout(2.0),
         PathfindCommands.precisionPathfindTo(FieldLayout.Outpost.OUTPOST_POSE, drive),
-        movingShootCommand(drive, flywheel, turret, intake, spindexer, transfer).withTimeout(3.5),
+        movingShootCommand(drive, flywheel, targeting, turret, intake, spindexer, transfer)
+            .withTimeout(3.5),
         PathfindCommands.precisionPathfindTo(FieldLayout.Hub.NEAR_FACE, drive));
   }
 }

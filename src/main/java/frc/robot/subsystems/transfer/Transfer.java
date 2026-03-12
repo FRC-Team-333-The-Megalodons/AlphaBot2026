@@ -18,15 +18,8 @@ public class Transfer extends SubsystemBase {
     Logger.processInputs("Transfer", inputs);
   }
 
-  public Command feedShooterCommand() {
-    return runEnd(this::run, this::stop);
-  }
+  public Command feedShooter() {
 
-  public void run() {
-    io.setVoltage(-11);
-  }
-
-  public void stop() {
-    io.setVoltage(0.0);
+    return runEnd(() -> io.setVoltage(TransferConstants.FEED_VOLTAGE), () -> io.setVoltage(0.0));
   }
 }

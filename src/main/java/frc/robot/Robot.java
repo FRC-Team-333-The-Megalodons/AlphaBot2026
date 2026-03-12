@@ -99,6 +99,11 @@ public class Robot extends LoggedRobot {
     // Threads.setCurrentThreadPriority(false, 10);
   }
 
+  @Override
+  public void driverStationConnected() {
+    robotContainer.onDriverStationConnected();
+  }
+
   /** This function is called once when the robot is disabled. */
   @Override
   public void disabledInit() {}
@@ -116,6 +121,8 @@ public class Robot extends LoggedRobot {
     if (autonomousCommand != null) {
       CommandScheduler.getInstance().schedule(autonomousCommand);
     }
+
+    robotContainer.seedTurret();
   }
 
   /** This function is called periodically during autonomous. */
@@ -132,6 +139,8 @@ public class Robot extends LoggedRobot {
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
     }
+
+    robotContainer.seedTurret();
   }
 
   /** This function is called periodically during operator control. */

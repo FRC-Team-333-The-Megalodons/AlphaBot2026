@@ -1,15 +1,14 @@
 package frc.robot.subsystems.shooter.turret;
 
-import edu.wpi.first.math.geometry.Rotation2d;
+import frc.robot.interfaces.Automatable;
 import org.littletonrobotics.junction.AutoLog;
 
-public interface TurretIO {
+public interface TurretIO extends Automatable {
   @AutoLog
   public static class TurretIOInputs {
     public boolean connected = false;
-    public double turretPositionRad = 0.0;
     public double turretPositionDeg = 0.0;
-    public double turretVelocityRadPerSec = 0.0;
+    public double turretVelocityRPM = 0.0;
     public double turretAppliedVolts = 0.0;
     public double turretCurrentAmps = 0.0;
 
@@ -18,13 +17,20 @@ public interface TurretIO {
     public double calculatedAbsPositionRot = 0.0;
   }
 
-  public default void updateInputs(TurretIOInputs inputs) {}
+  public default boolean encodersGood() {
+    return true;
+  }
+  ;
 
-  public default void setTurretPosition(Rotation2d position, double velocityFeedforwardRadPerSec) {}
+  public default void updateInputs(TurretIOInputs inputs) {}
 
   public default void setTurretVoltage(double volts) {}
 
   public default void seedTurretPosition() {}
 
   public default void stop() {}
+
+  public default boolean atTarget(double angle) {
+    return false;
+  }
 }

@@ -195,18 +195,6 @@ public class ModuleIOTalonFX implements ModuleIO {
     // Refresh all signals
 
     RobotMetrics.start("refreshAll");
-    /*
-    BaseStatusSignal.refreshAll(
-        drivePosition,
-        driveVelocity,
-        driveAppliedVolts,
-        driveCurrent,
-        turnPosition,
-        turnVelocity,
-        turnAppliedVolts,
-        turnCurrent,
-        turnAbsolutePosition);
-        */
     var driveStatus =
         BaseStatusSignal.refreshAll(drivePosition, driveVelocity, driveAppliedVolts, driveCurrent);
     var turnStatus =
@@ -215,8 +203,11 @@ public class ModuleIOTalonFX implements ModuleIO {
     RobotMetrics.stop("refreshAll");
 
     // Update drive inputs
+    // inputs.driveConnected = driveConnectedDebounce.calculate(driveStatus.isOK());
+
     RobotMetrics.start("calcDriveInputs");
-    inputs.driveConnected = driveConnectedDebounce.calculate(driveStatus.isOK());
+    inputs.driveConnected = driveConnectedDebounce.calculate(true);
+
     inputs.drivePositionRad = Units.rotationsToRadians(drivePosition.getValueAsDouble());
     inputs.driveVelocityRadPerSec = Units.rotationsToRadians(driveVelocity.getValueAsDouble());
     inputs.driveAppliedVolts = driveAppliedVolts.getValueAsDouble();
@@ -224,8 +215,10 @@ public class ModuleIOTalonFX implements ModuleIO {
     RobotMetrics.stop("calcDriveInputs");
 
     // Update turn inputs
+    // inputs.turnConnected = turnConnectedDebounce.calculate(turnStatus.isOK());
+
     RobotMetrics.start("calcTurnInputs");
-    inputs.turnConnected = turnConnectedDebounce.calculate(turnStatus.isOK());
+    inputs.turnConnected = turnConnectedDebounce.calculate(true);
     inputs.turnEncoderConnected = turnEncoderConnectedDebounce.calculate(turnEncoderStatus.isOK());
     inputs.turnAbsolutePosition = Rotation2d.fromRotations(turnAbsolutePosition.getValueAsDouble());
     inputs.turnPosition = Rotation2d.fromRotations(turnPosition.getValueAsDouble());
@@ -248,6 +241,7 @@ public class ModuleIOTalonFX implements ModuleIO {
             .map((Double value) -> Rotation2d.fromRotations(value))
             .toArray(Rotation2d[]::new);
     RobotMetrics.stop("calcOdoInputs");
+
     timestampQueue.clear();
     drivePositionQueue.clear();
     turnPositionQueue.clear();

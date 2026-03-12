@@ -6,6 +6,10 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
 
+/**
+ * @deprecated Use <code>ShooterCommands.dashboardRPMControl()</code>.
+ */
+@Deprecated
 public class TuneShooterRPM extends Command {
   private final Flywheel flywheel;
   private final GenericEntry rpmEntry;
@@ -23,7 +27,7 @@ public class TuneShooterRPM extends Command {
   public void execute() {
     double targetRPM = rpmEntry.getDouble(0.0);
 
-    flywheel.setRPM(targetRPM);
+    flywheel.spinAt(targetRPM, false);
   }
 
   @Override

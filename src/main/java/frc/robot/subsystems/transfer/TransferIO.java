@@ -1,15 +1,23 @@
 package frc.robot.subsystems.transfer;
 
+import frc.robot.interfaces.Automatable;
 import org.littletonrobotics.junction.AutoLog;
 
-public interface TransferIO {
+public interface TransferIO extends Automatable {
   @AutoLog
   public static class TransferIOInputs {
     public double appliedVolts = 0.0;
     public double currentAmps = 0.0;
+    public double velocityRpm = 0.0;
   }
 
   public default void updateInputs(TransferIOInputs inputs) {}
 
   public default void setVoltage(double volts) {}
+
+  public default void moveTo(double rpm) {}
+
+  public default boolean atTarget(double rpm) {
+    return true;
+  }
 }

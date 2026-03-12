@@ -4,8 +4,8 @@ public class TurretConstants {
 
   public static final double kTurretZeroOffset = 0.262;
 
-  public static final double kEncoder17ZeroOffset = -0.620;
-  public static final double kEncoder18ZeroOffset = -0.383;
+  public static final double kEncoder17ZeroOffset = -0.205;
+  public static final double kEncoder18ZeroOffset = -0.793;
 
   public static final boolean kEncoder17Inverted = true;
   public static final boolean kEncoder18Inverted = true;
@@ -34,4 +34,7 @@ public class TurretConstants {
   public static final double kCruiseVelocity = 4.0;
   public static final double kAcceleration = 8.0;
   public static final double kJerk = 80.0;
+
+  public static final double positionTolerance = 2.5;
+  public static final double velocityTolerance = 5.0;
 }

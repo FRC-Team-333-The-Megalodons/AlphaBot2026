@@ -6,9 +6,9 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.math.util.Units;
 
 public class FlywheelIOKraken implements FlywheelIO {
   private final CANBus rio = CANBus.roboRIO();
@@ -19,6 +19,8 @@ public class FlywheelIOKraken implements FlywheelIO {
 
   public FlywheelIOKraken() {
     var config = new TalonFXConfiguration();
+    motor.getConfigurator().apply(config);
+    motor2.getConfigurator().apply(config);
 
     // Slot 0 Gains
     config.Slot0.kS = FlywheelConstants.kS;
@@ -30,27 +32,40 @@ public class FlywheelIOKraken implements FlywheelIO {
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
+    // FIX (Bug 2): Invert motor2 so that a positive RPM command (matching the
+    // distance-to-RPM map) spins in the correct shooting direction. Previously
+    // Flywheel.dynamicSpinUp() was negating the RPM to compensate, which was fragile.
+    // Now direction is owned here at the hardware layer, and all callers pass positive RPM.
+    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+
     motor.getConfigurator().apply(config);
     motor2.getConfigurator().apply(config);
 
-    // Motor 2 follows Motor 1
-    motor2.setControl(new Follower(motor.getDeviceID(), MotorAlignmentValue.Opposed));
+    // Motor 1 follows Motor 2 in the opposite direction (counter-rotation for shooting)
+    motor.setControl(new Follower(motor2.getDeviceID(), MotorAlignmentValue.Opposed));
   }
 
   @Override
   public void updateInputs(FlywheelIOInputs inputs) {
-    inputs.velocityRadPerSec = Units.rotationsToRadians(motor.getVelocity().getValueAsDouble());
-    inputs.appliedVolts = motor.getMotorVoltage().getValueAsDouble();
+    inputs.velocityRPM = rpsToRPM(motor2.getVelocity().getValue());
+    inputs.appliedVolts = motor2.getMotorVoltage().getValueAsDouble();
   }
 
   @Override
-  public void setVelocity(double radPerSec) {
-    double rps = Units.radiansToRotations(radPerSec);
-    motor.setControl(mmVelocity.withVelocity(rps));
+  public boolean atTarget(double targetRPM) {
+    double currentRPM = rpsToRPM(motor.getVelocity().getValue());
+    return Math.abs(targetRPM) > 0
+        && Math.abs(Math.abs(currentRPM) - Math.abs(targetRPM))
+            < FlywheelConstants.VELOCITY_TOLERANCE_RPM;
+  }
+
+  @Override
+  public void moveTo(double rpm) {
+    motor2.setControl(mmVelocity.withVelocity(rpmToRPS(rpm)));
   }
 
   @Override
   public void setVoltage(double volts) {
-    motor.setControl(new VoltageOut(volts));
+    motor2.setControl(new VoltageOut(volts));
   }
 }

@@ -7,6 +7,11 @@
 
 package frc.robot.commands;
 
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static frc.robot.AutopilotConstants.*;
+
+import com.therekrab.autopilot.APTarget;
+import com.therekrab.autopilot.Autopilot.APResult;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -17,6 +22,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
@@ -43,6 +49,12 @@ public class DriveCommands {
   private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
 
   private DriveCommands() {}
+
+  private static class WheelRadiusCharacterizationState {
+    double[] positions = new double[4];
+    Rotation2d lastAngle = Rotation2d.kZero;
+    double gyroDelta = 0.0;
+  }
 
   private static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
     // Apply deadband
@@ -343,9 +355,44 @@ public class DriveCommands {
                     })));
   }
 
-  private static class WheelRadiusCharacterizationState {
-    double[] positions = new double[4];
-    Rotation2d lastAngle = Rotation2d.kZero;
-    double gyroDelta = 0.0;
+  public static Command driveToPose(Drive drive, Pose2d targetPose) {
+
+    APTarget target = new APTarget(targetPose);
+
+    ProfiledPIDController thetaController =
+        new ProfiledPIDController(
+            5.0,
+            0.0,
+            0.0,
+            new TrapezoidProfile.Constraints(
+                drive.getMaxAngularSpeedRadPerSec(), drive.getMaxAngularSpeedRadPerSec() * 2.0));
+
+    thetaController.enableContinuousInput(-Math.PI, Math.PI);
+
+    return drive
+        .startRun(
+            () -> thetaController.reset(drive.getPose().getRotation().getRadians()),
+            () -> {
+              Pose2d currentPose = drive.getPose();
+
+              ChassisSpeeds currentSpeeds = drive.getChassisSpeeds();
+
+              APResult result = kAutopilot.calculate(currentPose, currentSpeeds, target);
+
+              double omega =
+                  thetaController.calculate(
+                      currentPose.getRotation().getRadians(), result.targetAngle().getRadians());
+
+              ChassisSpeeds commandSpeeds =
+                  ChassisSpeeds.fromFieldRelativeSpeeds(
+                      result.vx(),
+                      result.vy(),
+                      AngularVelocity.ofBaseUnits(omega, RadiansPerSecond),
+                      currentPose.getRotation());
+
+              drive.runVelocity(commandSpeeds);
+            })
+        .until(() -> kAutopilot.atTarget(drive.getPose(), target))
+        .finallyDo(drive::stop);
   }
 }

@@ -1,55 +1,42 @@
 package frc.robot.subsystems.shooter.flywheel;
 
-import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
-import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.subsystems.drive.Drive;
-import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 public class Flywheel extends SubsystemBase {
   private final FlywheelIO io;
   private final FlywheelIOInputsAutoLogged inputs = new FlywheelIOInputsAutoLogged();
-  private double targetRPM = 0;
-  private DoubleSupplier distanceSupplier;
 
-  private final InterpolatingDoubleTreeMap distanceToRPM = new InterpolatingDoubleTreeMap();
+  private Supplier<Distance> distanceSupplier;
 
-  private final InterpolatingDoubleTreeMap distanceToVelocityScalar =
-      new InterpolatingDoubleTreeMap();
   private final SysIdRoutine sysIdRoutine;
 
-  public Flywheel(FlywheelIO io, DoubleSupplier distanceSupplier) {
+  private enum PreSpinState {
+    IDLE,
+
+    SPINNING,
+
+    COASTING
+  }
+
+  private PreSpinState preSpinState = PreSpinState.IDLE;
+
+  private boolean spinRequested = false;
+
+  private final Timer coastDownTimer = new Timer();
+
+  private static final double COAST_DOWN_SECONDS = 3.0;
+
+  public Flywheel(FlywheelIO io, Supplier<Distance> distanceSupplier) {
     this.io = io;
     this.distanceSupplier = distanceSupplier;
-
-    distanceToVelocityScalar.put(1.57, 0.4);
-    distanceToVelocityScalar.put(2.0, 0.30);
-    distanceToVelocityScalar.put(2.5, 0.25);
-    distanceToVelocityScalar.put(3.00, 0.15);
-    distanceToVelocityScalar.put(3.50, 0.1);
-    distanceToVelocityScalar.put(4.00, 0.07);
-    // Distance to RPM
-    distanceToRPM.put(1.57, 2100.0);
-    distanceToRPM.put(1.7, 2180.0);
-    distanceToRPM.put(1.9, 2220.0);
-    distanceToRPM.put(2.1, 2250.0);
-    distanceToRPM.put(2.3, 2280.0);
-    distanceToRPM.put(2.67, 2300.0);
-    distanceToRPM.put(2.82, 2350.0);
-    distanceToRPM.put(3.15, 2390.0);
-    distanceToRPM.put(3.5, 2530.0);
-    distanceToRPM.put(3.7, 2610.0);
-    distanceToRPM.put(4.0, 2660.0);
-
-    distanceToRPM.put(4.2, 2850.0);
-
-    distanceToRPM.put(4.4, 3050.0);
-    // distanceToRPM.put(4.6, -2340.0);
 
     sysIdRoutine =
         new SysIdRoutine(
@@ -59,70 +46,119 @@ public class Flywheel extends SubsystemBase {
                 (log) -> {
                   log.motor("flywheel-sysid")
                       .voltage(Volts.of(inputs.appliedVolts))
-                      .angularVelocity(RadiansPerSecond.of(inputs.velocityRadPerSec));
+                      .angularVelocity(io.rpmToRPS(inputs.velocityRPM));
                 },
                 this));
   }
 
-  public double getVelocityScalar(double distanceMeters) {
-    return distanceToVelocityScalar.get(distanceMeters);
-  }
-
-  public double getRPMForDistance() {
-    return distanceToRPM.get(distanceSupplier.getAsDouble());
+  private double dynamicRPM() {
+    double target = io.getRPMFromDistance(distanceSupplier.get());
+    Logger.recordOutput("Flywheel/TargetRPM", target);
+    return target;
   }
 
   @Override
   public void periodic() {
     io.updateInputs(inputs);
-    double currentRPM = inputs.velocityRadPerSec * (30.0 / Math.PI);
-    Logger.recordOutput("Shooter/CurrentRPM", currentRPM);
-    Logger.recordOutput("Shooter/TargetRPM", targetRPM);
+    Logger.processInputs("Flywheel", inputs);
 
-    Logger.processInputs("Shooter", inputs);
+    switch (preSpinState) {
+      case IDLE:
+        if (spinRequested) {
+          preSpinState = PreSpinState.SPINNING;
+          coastDownTimer.stop();
+          coastDownTimer.reset();
+        }
+
+        break;
+
+      case SPINNING:
+        if (spinRequested) {
+
+          io.moveTo(dynamicRPM());
+          coastDownTimer.stop();
+          coastDownTimer.reset();
+        } else {
+          preSpinState = PreSpinState.COASTING;
+          coastDownTimer.restart();
+        }
+        break;
+
+      case COASTING:
+        if (spinRequested) {
+
+          preSpinState = PreSpinState.SPINNING;
+          coastDownTimer.stop();
+          coastDownTimer.reset();
+        } else if (coastDownTimer.hasElapsed(COAST_DOWN_SECONDS)) {
+          preSpinState = PreSpinState.IDLE;
+          coastDownTimer.stop();
+          coastDownTimer.reset();
+          io.setVoltage(0.0);
+        } else {
+
+          io.moveTo(dynamicRPM());
+        }
+        break;
+    }
+
+    Logger.recordOutput("Flywheel/PreSpinState", preSpinState.toString());
+    Logger.recordOutput("Flywheel/CoastDownTimer", coastDownTimer.get());
+    Logger.recordOutput("Flywheel/VelocityRPM", inputs.velocityRPM);
   }
 
-  public boolean isAtSpeed() {
-    double currentRPM = inputs.velocityRadPerSec * (30.0 / Math.PI);
-    return Math.abs(targetRPM) > 0
-        && Math.abs(Math.abs(currentRPM) - Math.abs(targetRPM))
-            < FlywheelConstants.VELOCITY_TOLERANCE_RPM;
+  private void requestPreSpin() {
+    spinRequested = true;
   }
 
-  public double calculateRPM(Drive drive) {
-    return targetRPM = this.getRPMForDistance();
+  private void stopPreSpin() {
+    spinRequested = false;
+  }
+
+  public boolean ready() {
+    return isAt(dynamicRPM());
+  }
+
+  public boolean isAt(double rpm) {
+    return io.atTarget(rpm);
+  }
+
+  public boolean isPreSpunUp() {
+    return preSpinState == PreSpinState.SPINNING || preSpinState == PreSpinState.COASTING;
+  }
+
+  public Command shootOnMoveSpinUp() {
+    return runEnd(this::requestPreSpin, this::stopPreSpin);
   }
 
   public Command dynamicSpinUp(boolean waitUntilCompletion) {
-    Command com = runEnd(() -> this.setRPM(this.getRPMForDistance()), this::stop);
+    Command com =
+        waitUntilCompletion
+            ? run(() -> io.moveTo(dynamicRPM())).until(this::ready)
+            : run(() -> io.moveTo(dynamicRPM()));
 
-    return waitUntilCompletion ? com.until(() -> this.isAtSpeed()) : com;
+    return com.handleInterrupt(() -> io.setVoltage(0.0));
   }
 
-  public Command spinUpCommand(double rpm) {
-    return runEnd(() -> this.setRPM(rpm), this::stop);
+  public Command spinAt(double rpm, boolean waitUntilCompletion) {
+    Command com =
+        waitUntilCompletion
+            ? run(() -> io.moveTo(rpm)).until(() -> isAt(rpm))
+            : run(() -> io.moveTo(rpm));
+
+    return com.handleInterrupt(() -> io.setVoltage(0.0));
   }
 
-  public void runVelocity(double rpm) {
-    this.setRPM(rpm);
+  public void setRPMDirect(double rpm) {
+    io.moveTo(rpm);
   }
 
-  public void runMotionMagic(double rpm) {
-    this.setRPM(rpm);
-  }
-
-  public Command runMotionMagicTest(double rpm) {
-    return runEnd(() -> this.runMotionMagic(rpm), this::stop).withName("MotionMagicTest");
-  }
-
-  public void setRPM(double rpm) {
-    this.targetRPM = rpm;
-    io.setVelocity(rpm * (Math.PI / 30.0));
-  }
-
-  public void stop() {
-    this.targetRPM = 0;
+  public void stopMotor() {
     io.setVoltage(0.0);
+  }
+
+  public Command stop() {
+    return runOnce(() -> io.setVoltage(0.0));
   }
 
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {

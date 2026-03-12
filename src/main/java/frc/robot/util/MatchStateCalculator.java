@@ -9,6 +9,13 @@ import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
+/**
+ * @deprecated Use The new Targeting Subsystem.
+ *     <p>This code can be found, scattered amongst the following files: - <code>Targeting.java
+ *     </code> - <code>TargetingIOImpl.java</code> - <code>Targets.java</code> - <code>Zones.java
+ *     </code>
+ */
+@Deprecated
 public class MatchStateCalculator {
   public static AprilTagFieldLayout tagLayout =
       AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
@@ -109,12 +116,32 @@ public class MatchStateCalculator {
     Translation2d fieldVelocity = new Translation2d(robotVx, robotVy);
     Translation2d goalRelativeVelocity = fieldVelocity.rotateBy(robotToGoalAngle.unaryMinus());
 
+    double radialVelocity = goalRelativeVelocity.getX();
     double tangentialVelocity = goalRelativeVelocity.getY();
-    
-    // Update the static variable for the turret to use
+
     lastTargetYawVelocityRadPerSec = -(tangentialVelocity / uncompensatedRange);
 
-    return predictedHub;
+    double dragConstant = 1.65;
+    double velocityScalar =
+        (timeOfFlight <= 0.01)
+            ? 1.0
+            : (1.0 - Math.exp(-dragConstant * timeOfFlight)) / (dragConstant * timeOfFlight);
+
+    double scaledRadial = radialVelocity * velocityScalar;
+    double scaledTangential = tangentialVelocity * velocityScalar;
+
+    double baseShotSpeed = uncompensatedRange / timeOfFlight;
+    double effectiveShotSpeed = baseShotSpeed - scaledRadial;
+    if (effectiveShotSpeed <= 0.0) effectiveShotSpeed = 0.001;
+
+    double angularOffsetRad = Math.atan2(-scaledTangential, effectiveShotSpeed);
+
+    double effectiveRange = timeOfFlight * Math.hypot(scaledTangential, effectiveShotSpeed);
+
+    Rotation2d finalHeading = robotToGoalAngle.plus(Rotation2d.fromRadians(angularOffsetRad));
+    Translation2d virtualOffset = new Translation2d(effectiveRange, finalHeading);
+
+    return robotPose.getTranslation().plus(virtualOffset);
   }
   public static boolean isInAllianceZone(Pose2d robotPose) {
     var alliance = DriverStation.getAlliance().orElse(Alliance.Blue);

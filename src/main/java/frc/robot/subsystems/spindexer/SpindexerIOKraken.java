@@ -1,43 +1,48 @@
 package frc.robot.subsystems.spindexer;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicVelocityDutyCycle;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
-import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Voltage;
 
 public class SpindexerIOKraken implements SpindexerIO {
-  CANBus rio = CANBus.roboRIO();
-  private final TalonFX motor = new TalonFX(SpindexerConstants.MOTOR_ID, rio);
-  private final MotionMagicVelocityDutyCycle magicRequest =
-      new MotionMagicVelocityDutyCycle(0).withSlot(0);
+  private final TalonFX motor;
+
+  private final StatusSignal<AngularVelocity> velocitySignal;
+  private final StatusSignal<Voltage> voltageSignal;
+  private final StatusSignal<Current> currentSignal;
 
   public SpindexerIOKraken() {
-    var config = new TalonFXConfiguration();
+    CANBus rio = CANBus.roboRIO();
+    motor = new TalonFX(SpindexerConstants.MOTOR_ID, rio);
+
+    TalonFXConfiguration config = new TalonFXConfiguration();
     config.Feedback.SensorToMechanismRatio = SpindexerConstants.GEAR_RATIO;
     config.Slot0.kP = SpindexerConstants.kP;
     config.Slot0.kS = SpindexerConstants.kS;
     config.Slot0.kV = SpindexerConstants.kV;
 
     motor.getConfigurator().apply(config);
+
+    velocitySignal = motor.getVelocity();
+    voltageSignal = motor.getMotorVoltage();
+    currentSignal = motor.getStatorCurrent();
+
+    BaseStatusSignal.setUpdateFrequencyForAll(50.0, velocitySignal, voltageSignal, currentSignal);
   }
 
   @Override
   public void updateInputs(SpindexerIOInputs inputs) {
-    // Commenting out un-needed stats for logging to improve 20ms cycle overrun issues.
-    // inputs.velocityRps = motor.getVelocity().getValueAsDouble();
-    inputs.appliedVolts =
-        motor
-            .getMotorVoltage()
-            .getValueAsDouble(); // Keeping applied volts, because we really need to know when a
-    // motor is powered for debugging
-    // inputs.currentAmps = motor.getStatorCurrent().getValueAsDouble();
-  }
+    BaseStatusSignal.refreshAll(velocitySignal, voltageSignal, currentSignal);
 
-  @Override
-  public void setVelocity(double rps) {
-    motor.setControl(magicRequest.withVelocity(Units.radiansToRotations(rps)));
+    inputs.velocityRps = velocitySignal.getValueAsDouble();
+    inputs.appliedVolts = voltageSignal.getValueAsDouble();
+    inputs.currentAmps = currentSignal.getValueAsDouble();
   }
 
   @Override
