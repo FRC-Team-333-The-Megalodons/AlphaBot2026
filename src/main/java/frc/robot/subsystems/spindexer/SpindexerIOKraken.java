@@ -23,6 +23,10 @@ public class SpindexerIOKraken implements SpindexerIO {
 
     TalonFXConfiguration config = new TalonFXConfiguration();
     config.Feedback.SensorToMechanismRatio = SpindexerConstants.GEAR_RATIO;
+    config.Slot0.kP = SpindexerConstants.kP;
+    config.Slot0.kS = SpindexerConstants.kS;
+    config.Slot0.kV = SpindexerConstants.kV;
+
     motor.getConfigurator().apply(config);
 
     velocitySignal = motor.getVelocity();

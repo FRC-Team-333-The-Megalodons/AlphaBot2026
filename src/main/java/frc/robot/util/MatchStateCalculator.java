@@ -81,13 +81,34 @@ public class MatchStateCalculator {
 
   //   return new Translation2d(virtualX, virtualY);
   // }
+  
+  //TODO: Refactor getMovingHub to handle the 3-iterations might cause severe loop overruns, so we need to experiment with number of itterations.
 
   public static double lastTargetYawVelocityRadPerSec = 0;
 
-  public static Translation2d getMovingHub(
-      Pose2d robotPose, double robotVx, double robotVy, double timeOfFlight) {
+  public static Translation2d getMovingHub(Pose2d robotPose, double robotVx, double robotVy) {
     Translation2d staticHub = getHub();
+    Translation2d predictedHub = staticHub;
 
+    //  Initial stationary calculation to get base Time of Flight
+    double distance = robotPose.getTranslation().getDistance(staticHub);
+    double timeOfFlight = getTimeOfFlight(distance);
+
+    //  The 3-Iteration Lookahead Loop(Hammer Heads Method)
+    for (int i = 0; i < 3; i++) {
+        // Shift the target backwards relative to robot's movement over the Time of Flight
+        double predictedX = staticHub.getX() - (robotVx * timeOfFlight);
+        double predictedY = staticHub.getY() - (robotVy * timeOfFlight);
+        predictedHub = new Translation2d(predictedX, predictedY);
+
+        // Recalculate distance to this new virtual target
+        distance = robotPose.getTranslation().getDistance(predictedHub);
+        
+        // Fetch updated Time of Flight based on the new distance
+        timeOfFlight = getTimeOfFlight(distance);
+    }
+
+    // Calculate the yaw velocity needed to track the actual hub based on robot velocity
     Translation2d toHub = staticHub.minus(robotPose.getTranslation());
     double uncompensatedRange = toHub.getNorm();
     Rotation2d robotToGoalAngle = toHub.getAngle();
@@ -122,7 +143,6 @@ public class MatchStateCalculator {
 
     return robotPose.getTranslation().plus(virtualOffset);
   }
-
   public static boolean isInAllianceZone(Pose2d robotPose) {
     var alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
     double x = robotPose.getX();

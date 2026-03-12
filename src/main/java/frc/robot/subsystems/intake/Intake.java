@@ -1,5 +1,6 @@
 package frc.robot.subsystems.intake;
 
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.DoubleSupplier;
@@ -8,9 +9,21 @@ import org.littletonrobotics.junction.Logger;
 public class Intake extends SubsystemBase {
   private final IntakeIO io;
   private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
+  private final InterpolatingDoubleTreeMap dynamicIntake = new InterpolatingDoubleTreeMap();
 
   public Intake(IntakeIO io) {
     this.io = io;
+    dynamicIntake.put(0.2, 7.2);
+    dynamicIntake.put(0.4, 7.0);
+    dynamicIntake.put(0.5, 6.8);
+    dynamicIntake.put(0.7, 6.5);
+    dynamicIntake.put(0.9, 6.2);
+    dynamicIntake.put(1.1, 5.6);
+    dynamicIntake.put(1.5, 5.5);
+    dynamicIntake.put(1.8, 5.35);
+    dynamicIntake.put(2.0, 5.3);
+    dynamicIntake.put(2.5, 5.2);
+    dynamicIntake.put(5.0, 5.0);
   }
 
   @Override

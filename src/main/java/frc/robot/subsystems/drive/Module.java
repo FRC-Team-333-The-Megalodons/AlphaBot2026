@@ -16,6 +16,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import frc.robot.util.RobotMetrics;
 import org.littletonrobotics.junction.Logger;
 
 public class Module {
@@ -56,22 +57,52 @@ public class Module {
   }
 
   public void periodic() {
+    RobotMetrics.start("DriveModulePeriodic");
+    periodic_impl();
+    RobotMetrics.stop("DriveModulePeriodic");
+  }
+
+  public void periodic_impl() {
+    RobotMetrics.start("1-UpdateInputs");
     io.updateInputs(inputs);
-    Logger.processInputs("Drive/Module" + Integer.toString(index), inputs);
+    RobotMetrics.stop("1-UpdateInputs");
+
+    RobotMetrics.start("2-OtherStuff");
+    // RobotMetrics.start("2-OtherStuff.A");
+    // It turns out this is pretty expensive, roubly 0.3-0.5 milliseconds.
+    // Logger.processInputs("Drive/Module" + Integer.toString(index), inputs);
+    // RobotMetrics.stop("2-OtherStuff.A");
 
     // Calculate positions for odometry
+    // RobotMetrics.start("2-OtherStuff.B");
     int sampleCount = inputs.odometryTimestamps.length; // All signals are sampled together
+    // RobotMetrics.stop("2-OtherStuff.B");
+
+    // RobotMetrics.start("2-OtherStuff.C");
     odometryPositions = new SwerveModulePosition[sampleCount];
+    // RobotMetrics.stop("2-OtherStuff.C");
+
+    // RobotMetrics.start("2-OtherStuff.D");
+    Logger.recordOutput("NumberOdoSamples", sampleCount);
+    // RobotMetrics.stop("2-OtherStuff.D");
+
+    RobotMetrics.stop("2-OtherStuff");
+
+    RobotMetrics.start("3-OdoSampleLoop");
     for (int i = 0; i < sampleCount; i++) {
       double positionMeters = inputs.odometryDrivePositionsRad[i] * constants.WheelRadius;
       Rotation2d angle = inputs.odometryTurnPositions[i];
       odometryPositions[i] = new SwerveModulePosition(positionMeters, angle);
     }
+    RobotMetrics.stop("3-OdoSampleLoop");
 
     // Update alerts
+
+    RobotMetrics.start("4-SetAlerts");
     driveDisconnectedAlert.set(!inputs.driveConnected);
     turnDisconnectedAlert.set(!inputs.turnConnected);
     turnEncoderDisconnectedAlert.set(!inputs.turnEncoderConnected);
+    RobotMetrics.stop("4-SetAlerts");
   }
 
   /** Runs the module with the specified setpoint state. Mutates the state to optimize it. */

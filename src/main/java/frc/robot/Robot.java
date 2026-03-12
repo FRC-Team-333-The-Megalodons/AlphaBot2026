@@ -69,6 +69,16 @@ public class Robot extends LoggedRobot {
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our autonomous chooser on the dashboard.
     robotContainer = new RobotContainer();
+
+    // Modify this to log to AdvantageKit if needed.
+    CommandScheduler.getInstance()
+        .onCommandInitialize(
+            (command) -> System.out.println("Starting Command: " + command.getName()));
+    CommandScheduler.getInstance()
+        .onCommandInterrupt(
+            (command) -> System.out.println("Interrupted Command: " + command.getName()));
+    CommandScheduler.getInstance()
+        .onCommandFinish((command) -> System.out.println("Finished Command: " + command.getName()));
   }
 
   /** This function is called periodically during all modes. */

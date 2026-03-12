@@ -7,8 +7,8 @@ public class TurretConstants {
   public static final double kEncoder17ZeroOffset = -0.205;
   public static final double kEncoder18ZeroOffset = -0.793;
 
-  public static final boolean kEncoder17Inverted = false;
-  public static final boolean kEncoder18Inverted = false;
+  public static final boolean kEncoder17Inverted = true;
+  public static final boolean kEncoder18Inverted = true;
 
   public static final int kTurretMotorId = 7;
   public static final int kEncoder17Id = 44;
