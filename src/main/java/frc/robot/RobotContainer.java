@@ -27,6 +27,10 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.commands.PathfindCommands;
 import frc.robot.commands.ShootingCommands;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.climber.Climber;
+import frc.robot.subsystems.climber.ClimberIO;
+import frc.robot.subsystems.climber.ClimberIOKraken;
+import frc.robot.subsystems.climber.ClimberIOKrakenSim;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -89,6 +93,7 @@ public class RobotContainer {
   private final Pivot pivot;
   private final Turret turret;
   private final Led leds;
+  private final Climber climber;
 
   // Controller
   private final CommandPS5Controller controller = new CommandPS5Controller(0);
@@ -121,6 +126,7 @@ public class RobotContainer {
         pivot = new Pivot(new PivotIOKraken());
         turret = new Turret(new TurretIOYAMS(), targeting::getTargetAngle, drive::getRotation);
         leds = new Led(new LedIOCANdle());
+        climber = new Climber(new ClimberIOKraken());
 
         // Note:
 
@@ -164,6 +170,7 @@ public class RobotContainer {
         pivot = new Pivot(new PivotIOKrakenSim());
         turret = new Turret(new TurretIOKrakenSim(), targeting::getTargetAngle, drive::getRotation);
         leds = new Led(new LedIOSim());
+        climber = new Climber(new ClimberIOKrakenSim());
         break;
 
       default:
@@ -184,6 +191,7 @@ public class RobotContainer {
         pivot = new Pivot(new PivotIO() {});
         turret = new Turret(new TurretIO() {}, targeting::getTargetAngle, drive::getRotation);
         leds = new Led(new LedIO() {});
+        climber = new Climber(new ClimberIO() {});
         break;
     }
     drive.seed();
