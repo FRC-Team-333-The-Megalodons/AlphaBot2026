@@ -64,6 +64,7 @@ import frc.robot.subsystems.spindexer.Spindexer;
 import frc.robot.subsystems.spindexer.SpindexerIO;
 import frc.robot.subsystems.spindexer.SpindexerIOKraken;
 import frc.robot.subsystems.spindexer.SpindexerIOKrakenSim;
+import frc.robot.subsystems.tracker.RobotStateTracker;
 import frc.robot.subsystems.transfer.Transfer;
 import frc.robot.subsystems.transfer.TransferIO;
 import frc.robot.subsystems.transfer.TransferIOKraken;
@@ -94,6 +95,7 @@ public class RobotContainer {
   private final Turret turret;
   private final Led leds;
   private final Climber climber;
+  private final RobotStateTracker stateTracker;
 
   // Controller
   private final CommandPS5Controller controller = new CommandPS5Controller(0);
@@ -195,6 +197,10 @@ public class RobotContainer {
         break;
     }
     drive.seed();
+    stateTracker =
+        new RobotStateTracker(
+            drive::getPose, flywheel::ready, flywheel::isPreSpunUp, intake::getAppliedVolts);
+
     registerNamedCommands();
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -299,7 +305,7 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    leds.setDefaultCommand(leds.gameStateAwareLeds(flywheel));
+    leds.setDefaultCommand(leds.gameStateAwareLeds(stateTracker));
 
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
