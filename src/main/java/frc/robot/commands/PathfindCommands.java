@@ -70,50 +70,21 @@ public class PathfindCommands {
         0.0);
   }
 
-  /**
-   * Three-stage climbing alignment command.
-   *
-   * <p>Stage 1 — PathPlanner drives the robot from anywhere on the field to the staging pose at
-   * full speed. PathPlanner automatically flips the blue staging pose for red alliance via the
-   * shouldFlipPath lambda configured in Drive.seed().
-   *
-   * <p>Stage 2 — A 0.3-second pause lets the robot settle and gives PhotonVision time to lock onto
-   * tower AprilTags 15 and 16 so odometry is corrected before the final approach.
-   *
-   * <p>Stage 3 — Autopilot drives the robot at 0.8 m/s max to the exact climbing pose. The target
-   * pose is flipped for red alliance manually inside Commands.defer because Autopilot does not know
-   * about the PathPlanner alliance setting. Commands.defer ensures the alliance check happens at
-   * scheduling time rather than at robot init time (before DriverStation connects).
-   *
-   * <p>To complete the full climb from a PathPlanner auto, call ClimbSequence then ClimbingPosition
-   * then Climb as separate named commands in your .auto file.
-   */
+  
   public static Command climbSequence(Drive drive) {
     PathConstraints stagingConstraints =
         new PathConstraints(3.0, 3.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
 
     return Commands.sequence(
-            // Stage 1: PathPlanner fast approach to staging pose.
-            // PathPlanner flips CLIMBING_STAGING_POSE for red alliance automatically.
+           
             AutoBuilder.pathfindToPose(
                 FieldLayout.Tower.CLIMBING_STAGING_POSE, stagingConstraints, 0.0),
-
-            // Stage 2: Pause for vision correction on tower tags 15/16.
             Commands.waitSeconds(0.3),
-
-            // Stage 3: Slow Autopilot final approach to the exact climbing pose.
-            // Commands.defer creates the inner command fresh at scheduling time so the
-            // alliance flip is evaluated after DriverStation has connected.
             Commands.defer(
                 () -> DriveCommands.driveToPose(drive, allianceClimbingPose(), kClimbingAutopilot),
                 Set.of(drive)))
         .withName("PathfindCommands.climbSequence");
   }
-
-  /**
-   * Returns CLIMBING_POSE flipped for the current alliance. Called at scheduling time, not at init
-   * time, so DriverStation alliance data is always available.
-   */
   private static Pose2d allianceClimbingPose() {
     return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red
         ? FlippingUtil.flipFieldPose(FieldLayout.Tower.CLIMBING_POSE)
