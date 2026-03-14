@@ -11,6 +11,7 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static frc.robot.AutopilotConstants.*;
 
 import com.therekrab.autopilot.APTarget;
+import com.therekrab.autopilot.Autopilot;
 import com.therekrab.autopilot.Autopilot.APResult;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -393,6 +394,50 @@ public class DriveCommands {
               drive.runVelocity(commandSpeeds);
             })
         .until(() -> kAutopilot.atTarget(drive.getPose(), target))
+        .finallyDo(drive::stop);
+  }
+  /**
+   * Drives to a pose using the provided Autopilot instance. Allows callers to pass a slower or
+   * differently tuned autopilot (e.g., kClimbingAutopilot).
+   */
+  public static Command driveToPose(Drive drive, Pose2d targetPose, Autopilot autopilot) {
+
+    APTarget target = new APTarget(targetPose);
+
+    ProfiledPIDController thetaController =
+        new ProfiledPIDController(
+            5.0,
+            0.0,
+            0.0,
+            new TrapezoidProfile.Constraints(
+                drive.getMaxAngularSpeedRadPerSec(), drive.getMaxAngularSpeedRadPerSec() * 2.0));
+
+    thetaController.enableContinuousInput(-Math.PI, Math.PI);
+
+    return drive
+        .startRun(
+            () -> thetaController.reset(drive.getPose().getRotation().getRadians()),
+            () -> {
+              Pose2d currentPose = drive.getPose();
+
+              ChassisSpeeds currentSpeeds = drive.getChassisSpeeds();
+
+              APResult result = autopilot.calculate(currentPose, currentSpeeds, target);
+
+              double omega =
+                  thetaController.calculate(
+                      currentPose.getRotation().getRadians(), result.targetAngle().getRadians());
+
+              ChassisSpeeds commandSpeeds =
+                  ChassisSpeeds.fromFieldRelativeSpeeds(
+                      result.vx(),
+                      result.vy(),
+                      AngularVelocity.ofBaseUnits(omega, RadiansPerSecond),
+                      currentPose.getRotation());
+
+              drive.runVelocity(commandSpeeds);
+            })
+        .until(() -> autopilot.atTarget(drive.getPose(), target))
         .finallyDo(drive::stop);
   }
 }

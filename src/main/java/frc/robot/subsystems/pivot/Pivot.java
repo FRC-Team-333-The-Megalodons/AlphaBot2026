@@ -50,7 +50,7 @@ public class Pivot extends SubsystemBase {
     return run(
         () -> {
           boolean intakeActive = Math.abs(intake.getAppliedVolts()) > 0.1;
-          boolean shooterActive = flywheel.isPreSpunUp();
+          boolean shooterActive = flywheel.isPreSpunUp() || flywheel.ready();
 
           // Intake active + shooter active - pivot down
           if (intakeActive && shooterActive) {

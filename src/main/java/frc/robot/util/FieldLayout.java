@@ -18,6 +18,8 @@ public class FieldLayout {
 
   public static class Tower {
     public static final Pose2d CLIMBING_POSE = new Pose2d(1.416, 4.083, Rotation2d.kCCW_90deg);
+    public static final Pose2d CLIMBING_STAGING_POSE =
+        new Pose2d(1.416, 2.583, Rotation2d.kCCW_90deg);
   }
 
   public static class Hub {

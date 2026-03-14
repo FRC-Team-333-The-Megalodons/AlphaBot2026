@@ -22,7 +22,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.commands.AutonomousCommands;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.PathfindCommands;
 import frc.robot.commands.ShootingCommands;
@@ -73,7 +72,6 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
-import frc.robot.util.FieldLayout;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -270,28 +268,21 @@ public class RobotContainer {
   }
 
   private void registerNamedCommands() {
+    NamedCommands.registerCommand("ClimbSequence", PathfindCommands.climbSequence(drive));
+    NamedCommands.registerCommand("ClimbingPosition", climber.extend());
+    NamedCommands.registerCommand("Climb", climber.retract());
     NamedCommands.registerCommand(
-        "Shoot", ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, intake));
-    NamedCommands.registerCommand("DriveToTower", AutonomousCommands.pathfindToTower(drive));
+        "ShootOnMove",
+        ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, intake, drive));
     NamedCommands.registerCommand(
-        "OutpostAndShoot",
-        Commands.deadline(
-            PathfindCommands.precisionPathfindTo(FieldLayout.Outpost.OUTPOST_POSE, drive),
-            AutonomousCommands.movingShootCommand(
-                drive, flywheel, targeting, turret, intake, spindexer, transfer)));
-    NamedCommands.registerCommand(
-        "WaitTowerAndShoot",
-        Commands.deadline(
-            Commands.sequence(
-                Commands.waitSeconds(1.5),
-                PathfindCommands.precisionPathfindTo(FieldLayout.Tower.CLIMBING_POSE, drive),
-                Commands.waitSeconds(3.0)),
-            AutonomousCommands.movingShootCommand(
-                drive, flywheel, targeting, turret, intake, spindexer, transfer)));
-    NamedCommands.registerCommand(
-        "OutpostToHubSequence",
-        AutonomousCommands.outpostToHubSequence(
-            drive, flywheel, targeting, turret, intake, spindexer, transfer));
+        "Intake",
+        intake.dynamicIngest(
+            () -> {
+              var fieldVelocity = drive.robotFieldVelocity();
+              double absX = Math.abs(fieldVelocity.dx);
+              double absY = Math.abs(fieldVelocity.dy);
+              return Math.max(absX, absY);
+            }));
   }
 
   public void onDriverStationConnected() {
@@ -336,7 +327,8 @@ public class RobotContainer {
 
     controller
         .R2()
-        .whileTrue(ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, intake));
+        .whileTrue(
+            ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, intake, drive));
 
     controller.R1().whileTrue(pivot.motionMagicUp());
 
@@ -399,9 +391,7 @@ public class RobotContainer {
 
     controller.povUp().whileTrue(PathfindCommands.pathfindToDepot(drive));
 
-    controller
-        .povRight()
-        .whileTrue(PathfindCommands.precisionPathfindTo(FieldLayout.Tower.CLIMBING_POSE, drive));
+    controller.povRight().onTrue(PathfindCommands.climbSequence(drive));
   }
 
   /**
