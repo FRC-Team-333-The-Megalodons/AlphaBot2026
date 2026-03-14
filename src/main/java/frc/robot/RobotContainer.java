@@ -347,7 +347,8 @@ public class RobotContainer {
                 drive,
                 () -> -controller.getLeftY(),
                 () -> -controller.getLeftX(),
-                () -> -controller.getRightX()));
+                () -> -controller.getRightX(),
+                true /*Face Backwards, because the Turret can only face left/back/right */));
 
     controller
         .triangle()
