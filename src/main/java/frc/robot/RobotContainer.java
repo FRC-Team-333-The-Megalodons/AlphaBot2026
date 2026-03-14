@@ -328,7 +328,8 @@ public class RobotContainer {
     controller
         .R2()
         .whileTrue(
-            ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, intake, drive));
+            ShootingCommands.shootOnMove(
+                flywheel, turret, spindexer, transfer, intake, pivot, drive));
 
     controller.R1().whileTrue(pivot.motionMagicUp());
 

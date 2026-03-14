@@ -1,7 +1,9 @@
 package frc.robot.subsystems.pivot;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
 import frc.robot.util.RobotMetrics;
@@ -44,6 +46,10 @@ public class Pivot extends SubsystemBase {
 
   public Command goDown() {
     return rotateTo(PivotConstants.kDownAngleDeg, true).withName("Pivot.goDown");
+  }
+
+  public Command goUpOrDownBasedOnMovement(Drive drive) {
+    return Commands.either(goUp(), goDown(), drive.isStationarySupplier());
   }
 
   public Command coordinatedPivot(Flywheel flywheel, Intake intake) {
