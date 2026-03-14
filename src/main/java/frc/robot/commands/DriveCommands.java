@@ -158,8 +158,7 @@ public class DriveCommands {
       Drive drive,
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
-      DoubleSupplier omegaSupplier)
-  {
+      DoubleSupplier omegaSupplier) {
     // By default, assume we're trying to face forwards toward the hub (i.e. faceBackwards is false)
     return faceHubAlternative(drive, xSupplier, ySupplier, omegaSupplier, false);
   }
@@ -168,22 +167,20 @@ public class DriveCommands {
       Drive drive,
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
-      DoubleSupplier omegaSupplier, boolean faceBackwards)
-  {
+      DoubleSupplier omegaSupplier,
+      boolean faceBackwards) {
     return Commands.either(
         joystickDriveAtAngle(
-            drive,
-            xSupplier,
-            ySupplier,
-            () -> getAngleToHub(drive, faceBackwards)),
+            drive, xSupplier, ySupplier, () -> getAngleToHub(drive, faceBackwards)),
         joystickDrive(drive, xSupplier, ySupplier, omegaSupplier),
         () -> MatchStateCalculator.isInAllianceZone(drive.getPose()));
   }
 
   public static Rotation2d getAngleToHub(Drive drive, boolean faceBackwards) {
-    Rotation2d angle = MatchStateCalculator.getHub().minus(drive.getPose().getTranslation()).getAngle();
+    Rotation2d angle =
+        MatchStateCalculator.getHub().minus(drive.getPose().getTranslation()).getAngle();
     if (faceBackwards) {
-      return angle.unaryMinus();
+      return angle.rotateBy(Rotation2d.fromDegrees(180));
     }
     return angle;
   }

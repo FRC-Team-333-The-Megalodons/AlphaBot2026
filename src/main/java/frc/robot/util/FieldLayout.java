@@ -17,9 +17,8 @@ public class FieldLayout {
   // ALWAYS provide the Blue Alliance coordinates below.
 
   public static class Tower {
-    public static final Pose2d CLIMBING_POSE = new Pose2d(1.416, 4.083, Rotation2d.kCCW_90deg);
-    public static final Pose2d CLIMBING_STAGING_POSE =
-        new Pose2d(1.416, 2.583, Rotation2d.kCCW_90deg);
+    public static final Pose2d CLIMBING_POSE = new Pose2d(1.243, 4.642, Rotation2d.kPi);
+    public static final Pose2d CLIMBING_STAGING_POSE = new Pose2d(1.243, 5.642, Rotation2d.kPi);
   }
 
   public static class Hub {

@@ -36,6 +36,7 @@ public class TurretIOKraken implements TurretIO {
   private final StatusSignal<Angle> enc18AbsPos;
   private final MotionMagicVoltage positionRequest = new MotionMagicVoltage(0);
   private final VoltageOut voltageRequest = new VoltageOut(0);
+  private boolean hasSeeded = false;
 
   public TurretIOKraken() {
     CANBus rio = CANBus.roboRIO();

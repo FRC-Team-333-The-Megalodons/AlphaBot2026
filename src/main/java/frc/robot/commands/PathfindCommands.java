@@ -70,24 +70,28 @@ public class PathfindCommands {
         0.0);
   }
 
-  
   public static Command climbSequence(Drive drive) {
     PathConstraints stagingConstraints =
         new PathConstraints(3.0, 3.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
 
     return Commands.sequence(
-           
-            AutoBuilder.pathfindToPose(
-                FieldLayout.Tower.CLIMBING_STAGING_POSE, stagingConstraints, 0.0),
+            AutoBuilder.pathfindToPose(allianceClimbingStagePose(), stagingConstraints, 0.0),
             Commands.waitSeconds(0.3),
             Commands.defer(
                 () -> DriveCommands.driveToPose(drive, allianceClimbingPose(), kClimbingAutopilot),
                 Set.of(drive)))
         .withName("PathfindCommands.climbSequence");
   }
+
   private static Pose2d allianceClimbingPose() {
     return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red
         ? FlippingUtil.flipFieldPose(FieldLayout.Tower.CLIMBING_POSE)
         : FieldLayout.Tower.CLIMBING_POSE;
+  }
+
+  private static Pose2d allianceClimbingStagePose() {
+    return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red
+        ? FlippingUtil.flipFieldPose(FieldLayout.Tower.CLIMBING_STAGING_POSE)
+        : FieldLayout.Tower.CLIMBING_STAGING_POSE;
   }
 }
