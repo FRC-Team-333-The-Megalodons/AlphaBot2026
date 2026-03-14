@@ -112,6 +112,7 @@ public class TurretIOKraken implements TurretIO {
 
         StatusCode motorStatus = turretMotor.setPosition(absPos, 0.01);
         if (motorStatus == StatusCode.OK) {
+          hasSeeded = true;
           lastSeededTime = now;
           System.out.println("[Turret] Successfully seeded absolute position: " + absPos);
         }

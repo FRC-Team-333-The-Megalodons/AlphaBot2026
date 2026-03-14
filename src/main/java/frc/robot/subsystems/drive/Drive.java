@@ -104,6 +104,8 @@ public class Drive extends SubsystemBase implements Initializable {
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, Pose2d.kZero);
 
+  long timeLastMoved = 0;
+
   public Drive(
       GyroIO gyroIO,
       ModuleIO flModuleIO,
@@ -167,6 +169,12 @@ public class Drive extends SubsystemBase implements Initializable {
     CommandScheduler.getInstance().schedule(PathfindingCommand.warmupCommand());
   }
 
+  final long STATIONARY_THRESHOLD_MS = 1000;
+
+  public boolean isStationary() {
+    return (timeLastMoved - System.currentTimeMillis() >= 1000);
+  }
+
   @Override
   public void periodic() {
     RobotMetrics.start("DrivePeriodic");
@@ -175,8 +183,13 @@ public class Drive extends SubsystemBase implements Initializable {
   }
 
   public void periodic_impl() {
-    Logger.recordOutput("LinearVelocityX", robotFieldVelocity().dx);
-    Logger.recordOutput("LinearVelocityY", robotFieldVelocity().dy);
+    Twist2d robotVelocity = robotFieldVelocity();
+    Logger.recordOutput("LinearVelocityX", robotVelocity.dx);
+    Logger.recordOutput("LinearVelocityY", robotVelocity.dy);
+
+    if (!Constants.allFuzzyEqualsZero(robotVelocity.dx, robotVelocity.dy)) {
+      timeLastMoved = System.currentTimeMillis();
+    }
 
     RobotMetrics.start("odoLock");
     odometryLock.lock(); // Prevents odometry updates while reading data
