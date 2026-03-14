@@ -23,9 +23,10 @@ public class TurretConstants {
   // Limits(Might Change)
 
   // TEMPORARY (HOPEFULLY): The turret only has 180 degrees of freedom right now (big sad)
-  //  due to wiring issues. So we'll have to limit the motion appropriately here. 
-  // TODO: Figure out what these actual numbers are from physically moving the robot and monitoring AdvantageKit.
-  public static final double kMinAngle = 0.0; //-179.99999;
+  //  due to wiring issues. So we'll have to limit the motion appropriately here.
+  // TODO: Figure out what these actual numbers are from physically moving the robot and monitoring
+  // AdvantageKit.
+  public static final double kMinAngle = 0.0; // -179.99999;
   public static final double kMaxAngle = 180.0;
 
   public static final double kP = 20;

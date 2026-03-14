@@ -9,6 +9,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
+import org.littletonrobotics.junction.Logger;
 
 public class SpindexerIOKraken implements SpindexerIO {
   private final TalonFX motor;
@@ -48,5 +49,6 @@ public class SpindexerIOKraken implements SpindexerIO {
   @Override
   public void setVoltage(double volts) {
     motor.setControl(new VoltageOut(volts));
+    Logger.recordOutput("Spindexer/Voltage", volts);
   }
 }

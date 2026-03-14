@@ -105,6 +105,7 @@ public class Drive extends SubsystemBase implements Initializable {
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, Pose2d.kZero);
 
   long timeLastMoved = 0;
+
   public Drive(
       GyroIO gyroIO,
       ModuleIO flModuleIO,
@@ -169,8 +170,8 @@ public class Drive extends SubsystemBase implements Initializable {
   }
 
   final long STATIONARY_THRESHOLD_MS = 1000;
-  public boolean isStationary()
-  {
+
+  public boolean isStationary() {
     return (timeLastMoved - System.currentTimeMillis() >= 1000);
   }
 
@@ -187,7 +188,7 @@ public class Drive extends SubsystemBase implements Initializable {
     Logger.recordOutput("LinearVelocityY", robotVelocity.dy);
 
     if (!Constants.allFuzzyEqualsZero(robotVelocity.dx, robotVelocity.dy)) {
-       timeLastMoved = System.currentTimeMillis();
+      timeLastMoved = System.currentTimeMillis();
     }
 
     RobotMetrics.start("odoLock");
