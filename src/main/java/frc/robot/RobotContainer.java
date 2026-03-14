@@ -273,7 +273,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("Climb", climber.retract());
     NamedCommands.registerCommand(
         "ShootOnMove",
-        ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, intake, drive));
+        ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, intake, pivot, drive));
     NamedCommands.registerCommand(
         "Intake",
         intake.dynamicIngest(

@@ -55,7 +55,8 @@ public class ShootingCommands {
     return Commands.parallel(
         turret.autoAim(),
         flywheel.shootOnMoveSpinUp(),
-        //pivot.goUpOrDownBasedOnMovement(drive), // TODO: uncomment this to do "stationary pull up, driving put down"
+        // pivot.goUpOrDownBasedOnMovement(drive), // TODO: uncomment this to do "stationary pull
+        // up, driving put down"
         intake.dynamicIngest(
             () -> {
               var fieldVelocity = drive.robotFieldVelocity();

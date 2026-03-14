@@ -171,6 +171,7 @@ public class Drive extends SubsystemBase implements Initializable {
   }
 
   final long STATIONARY_THRESHOLD_MS = 1000;
+
   public boolean isStationary() {
     return (timeLastMoved - System.currentTimeMillis() >= 1000);
   }
