@@ -19,8 +19,7 @@ public class SpindexerIOKraken implements SpindexerIO {
   private final StatusSignal<Current> currentSignal;
 
   public SpindexerIOKraken() {
-    CANBus rio = CANBus.roboRIO();
-    motor = new TalonFX(SpindexerConstants.MOTOR_ID, rio);
+    motor = new TalonFX(SpindexerConstants.MOTOR_ID, "canivore");
 
     TalonFXConfiguration config = new TalonFXConfiguration();
     config.Feedback.SensorToMechanismRatio = SpindexerConstants.GEAR_RATIO;
