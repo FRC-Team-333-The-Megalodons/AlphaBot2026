@@ -50,6 +50,7 @@ import frc.robot.util.MatchStateCalculator;
 import frc.robot.util.RobotMetrics;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -173,6 +174,12 @@ public class Drive extends SubsystemBase implements Initializable {
 
   public boolean isStationary() {
     return (timeLastMoved - System.currentTimeMillis() >= 1000);
+  }
+
+  public BooleanSupplier isStationarySupplier() {
+    // If we need to disable the "smart up and down" motion for the pivot, just uncomment this line:
+    // return () -> false;
+    return () -> isStationary();
   }
 
   @Override
