@@ -10,8 +10,8 @@ public final class SpindexerConstants {
 
   // Normal spin voltage (forward)
   public static final double SPIN_VOLTAGE_STOPPED = 0.0;
-  public static final double SPIN_VOLTAGE = 9.0;
-  public static final double SPIN_VOLTAGE_SLOW = 5.0;
+  public static final double SPIN_VOLTAGE = -9.0;
+  public static final double SPIN_VOLTAGE_SLOW = -5.0;
 
   public static final double JAM_VELOCITY_THRESHOLD_RPS = 15.0;
 
