@@ -42,7 +42,6 @@ public class Turret extends SubsystemBase implements Initializable {
   @Override
   public void seed() {
     CommandScheduler.getInstance().schedule(seedPosition());
-    // setDefaultCommand(autoAim());
   }
 
   @Override
@@ -90,20 +89,31 @@ public class Turret extends SubsystemBase implements Initializable {
         () -> {
           Rotation2d targetFieldAngle = new Rotation2d(targetAngleSupplier.get());
           Rotation2d targetRobotAngle = targetFieldAngle.minus(robotRotationSupplier.get());
+          // convert from robot frame to turret frame.
+          // The turret's mechanical zero is the BACK of the robot, not the front.
+          // Adding TURRET_MOUNTING_OFFSET_DEG (180°) shifts the command from
+          // "front of robot = 0" into "back of robot = 0"(I F HATED THIS SO MUCH).
+          Rotation2d turretTargetAngle =
+              targetRobotAngle.plus(
+                  Rotation2d.fromDegrees(TurretConstants.TURRET_MOUNTING_OFFSET_DEG));
 
           double currentDeg = inputs.turretPositionDeg;
-          double targetDeg = targetRobotAngle.getDegrees();
+          double targetDeg = turretTargetAngle.getDegrees();
 
           double diff = targetDeg - currentDeg;
 
           diff = MathUtil.inputModulus(diff, -180, 180);
           double optimalTargetDeg = currentDeg + diff;
 
-          if (optimalTargetDeg > TurretConstants.kMaxAngle) {
-            optimalTargetDeg -= 360.0;
-          } else if (optimalTargetDeg < TurretConstants.kMinAngle) {
-            optimalTargetDeg += 360.0;
-          }
+          // TODO:When we figure out how to make the turret 360 again -> uncomment this and remove
+          // the clamping. We want to be able to rotate the turret more than 180 degrees if needed,
+          // we just have to make sure to take the shortest path there.
+
+          // if (optimalTargetDeg > TurretConstants.kMaxAngle) {
+          //   optimalTargetDeg -= 360.0;
+          // } else if (optimalTargetDeg < TurretConstants.kMinAngle) {
+          //   optimalTargetDeg += 360.0;
+          // }
 
           optimalTargetDeg =
               MathUtil.clamp(
@@ -143,12 +153,12 @@ public class Turret extends SubsystemBase implements Initializable {
   public boolean atTarget() {
     double currentAngle = inputs.turretPositionDeg;
 
-    // Convert field-relative target angle → robot-relative, matching autoAim()'s frame
     Rotation2d targetFieldAngle = new Rotation2d(targetAngleSupplier.get());
     Rotation2d targetRobotAngle = targetFieldAngle.minus(robotRotationSupplier.get());
-    double targetDeg = targetRobotAngle.getDegrees();
+    Rotation2d turretTargetAngle =
+        targetRobotAngle.minus(Rotation2d.fromDegrees(TurretConstants.TURRET_MOUNTING_OFFSET_DEG));
 
-    // Use inputModulus to get the shortest angular difference and handle wrap-around
+    double targetDeg = turretTargetAngle.getDegrees();
     double diff = MathUtil.inputModulus(targetDeg - currentAngle, -180, 180);
 
     return Math.abs(diff) < 4.0;

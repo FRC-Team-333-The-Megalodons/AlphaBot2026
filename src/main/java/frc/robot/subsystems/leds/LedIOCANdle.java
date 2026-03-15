@@ -10,10 +10,11 @@ import com.ctre.phoenix6.signals.RGBWColor;
 
 public class LedIOCANdle implements LedIO {
 
-  private static final int CANDLE_ID = 37;
+  private static final int CANDLE_ID = 46;
 
-  private static final int STRIP_LENGTH = 48;
-  private static final int TOTAL_LENGTH = STRIP_LENGTH + 8;
+  private static final int STRIP_LENGTH = 32;
+  private static final int CANDLE_LENGTH = 8;
+  private static final int TOTAL_LENGTH = STRIP_LENGTH + CANDLE_LENGTH;
 
   private final CANdle candle;
 

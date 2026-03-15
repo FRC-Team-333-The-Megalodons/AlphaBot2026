@@ -102,11 +102,14 @@ public class Robot extends LoggedRobot {
   @Override
   public void driverStationConnected() {
     robotContainer.onDriverStationConnected();
+    robotContainer.seedTurret();
   }
 
   /** This function is called once when the robot is disabled. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    robotContainer.seedTurret();
+  }
 
   /** This function is called periodically when disabled. */
   @Override

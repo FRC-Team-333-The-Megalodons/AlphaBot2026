@@ -2,10 +2,9 @@ package frc.robot.subsystems.shooter.turret;
 
 public class TurretConstants {
 
-  public static final double kTurretZeroOffset = 0.262;
-
-  public static final double kEncoder17ZeroOffset = -0.205;
-  public static final double kEncoder18ZeroOffset = -0.793;
+  public static final double kTurretZeroOffset = 0.0; // TODO: fill in after calibration
+  public static final double kEncoder17ZeroOffset = 0.73828125; // TODO: fill in after calibration
+  public static final double kEncoder18ZeroOffset = 0.56103515625; // TODO: fill in after calibration
 
   public static final boolean kEncoder17Inverted = true;
   public static final boolean kEncoder18Inverted = true;
@@ -20,14 +19,16 @@ public class TurretConstants {
 
   public static final double kMotorToTurretRatio = 19.6875;
 
+  public static final double TURRET_MOUNTING_OFFSET_DEG = -90.0;
+
   // Limits(Might Change)
 
   // TEMPORARY (HOPEFULLY): The turret only has 180 degrees of freedom right now (big sad)
   //  due to wiring issues. So we'll have to limit the motion appropriately here.
   // TODO: Figure out what these actual numbers are from physically moving the robot and monitoring
   // AdvantageKit.
-  public static final double kMinAngle = 0.0; // -179.99999;
-  public static final double kMaxAngle = 180.0;
+  public static final double kMinAngle = -90.0; // -179.99999;
+  public static final double kMaxAngle = 90.0;
 
   public static final double kP = 20;
   public static final double kI = 0.0;
