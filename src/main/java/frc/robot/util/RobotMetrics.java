@@ -1,5 +1,9 @@
 package frc.robot.util;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import java.util.ArrayList;
 import java.util.HashMap;
 import org.littletonrobotics.junction.Logger;
@@ -12,14 +16,15 @@ public class RobotMetrics {
   protected ArrayList<String> callstack;
 
   static String prefix = "Metrics/";
-  public static final RobotMetrics instance = new RobotMetrics();
+  private static final RobotMetrics instance = new RobotMetrics();
+  private static final boolean ENABLED = false;
 
   private RobotMetrics() {
     metrics = new HashMap<>();
     callstack = new ArrayList<>();
   }
 
-  public static String getCallStack() {
+  private static String getCallStack() {
     ArrayList<String> callstack = instance.callstack;
     StringBuilder fullName = new StringBuilder();
     for (int i = 0; i < callstack.size(); ++i) {
@@ -31,7 +36,7 @@ public class RobotMetrics {
     return fullName.toString();
   }
 
-  public static String updateCallstack(String name, boolean remove) {
+  private static String updateCallstack(String name, boolean remove) {
     ArrayList<String> callstack = instance.callstack;
     String output;
 
@@ -54,6 +59,9 @@ public class RobotMetrics {
   }
 
   public static void start(String _name) {
+    if (!ENABLED) {
+      return;
+    }
     HashMap<String, Metric> metrics = instance.metrics;
 
     String name = updateCallstack(_name, false);
@@ -66,6 +74,9 @@ public class RobotMetrics {
   }
 
   public static void stop(String _name) {
+    if (!ENABLED) {
+      return;
+    }
     HashMap<String, Metric> metrics = instance.metrics;
 
     String name = updateCallstack(_name, true);
@@ -76,8 +87,104 @@ public class RobotMetrics {
     Metric metric = metrics.get(name);
     metric.stop();
 
-    Logger.recordOutput(name + "_avg", metric.average());
-    Logger.recordOutput(name + "_max", metric.max());
+    RobotMetrics.recordOutput(name + "_avg", metric.average());
+    RobotMetrics.recordOutput(name + "_max", metric.max());
+  }
+
+  // Its a little weird to put this here, but we are out of time, and this is fast.
+  static HashMap<String, Long> lastLogged = new HashMap<>();
+  static final long ADVKIT_UPDATE_DELAY_MS = 1000;
+
+  private static boolean okToUpdate(String key) {
+    long lastUpdateTime = lastLogged.getOrDefault(key, 0l);
+
+    long elapsed = System.currentTimeMillis() - lastUpdateTime;
+
+    return (elapsed > ADVKIT_UPDATE_DELAY_MS);
+  }
+
+  public static void recordUpdate(String key) {
+    lastLogged.put(key, System.currentTimeMillis());
+  }
+
+  public static void recordOutput(String key, double value) {
+    if (!okToUpdate(key)) {
+      return;
+    }
+    Logger./**/ recordOutput(key, value);
+    recordUpdate(key);
+  }
+
+  public static void recordOutput(String key, boolean value) {
+    if (!okToUpdate(key)) {
+      return;
+    }
+    Logger./**/ recordOutput(key, value);
+    recordUpdate(key);
+  }
+
+  public static void recordOutput(String key, int value) {
+    if (!okToUpdate(key)) {
+      return;
+    }
+    Logger./**/ recordOutput(key, value);
+    recordUpdate(key);
+  }
+
+  public static void recordOutput(String key, long value) {
+    if (!okToUpdate(key)) {
+      return;
+    }
+    Logger./**/ recordOutput(key, value);
+    recordUpdate(key);
+  }
+
+  public static void recordOutput(String key, String value) {
+    if (!okToUpdate(key)) {
+      return;
+    }
+    Logger./**/ recordOutput(key, value);
+    recordUpdate(key);
+  }
+
+  public static void recordOutput(String key, SwerveModuleState[] value) {
+    if (!okToUpdate(key)) {
+      return;
+    }
+    Logger./**/ recordOutput(key, value);
+    recordUpdate(key);
+  }
+
+  public static void recordOutput(String key, ChassisSpeeds value) {
+    if (!okToUpdate(key)) {
+      return;
+    }
+    Logger./**/ recordOutput(key, value);
+    recordUpdate(key);
+  }
+
+  public static void recordOutput(String key, Pose2d[] value) {
+    if (!okToUpdate(key)) {
+      return;
+    }
+    Logger./**/ recordOutput(key, value);
+    recordUpdate(key);
+  }
+
+  public static void recordOutput(String key, Pose2d value) {
+    if (!okToUpdate(key)) {
+      return;
+    }
+    Logger./**/ recordOutput(key, value);
+    recordUpdate(key);
+  }
+
+  public static void recordOutput(String key, Pose3d[] value) {
+    if (!okToUpdate(key)) {
+      return;
+    }
+    Logger./**/ recordOutput(key, value);
+    recordUpdate(key);
   }
 }
 

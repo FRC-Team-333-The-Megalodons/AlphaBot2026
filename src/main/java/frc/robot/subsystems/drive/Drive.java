@@ -137,7 +137,7 @@ public class Drive extends SubsystemBase implements Initializable {
                 null,
                 null,
                 null,
-                (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
+                (state) -> RobotMetrics.recordOutput("Drive/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
   }
@@ -159,11 +159,11 @@ public class Drive extends SubsystemBase implements Initializable {
     Pathfinding.setPathfinder(new LocalADStarAK());
     PathPlannerLogging.setLogActivePathCallback(
         (activePath) -> {
-          Logger.recordOutput("Odometry/Trajectory", activePath.toArray(new Pose2d[0]));
+          RobotMetrics.recordOutput("Odometry/Trajectory", activePath.toArray(new Pose2d[0]));
         });
     PathPlannerLogging.setLogTargetPoseCallback(
         (targetPose) -> {
-          Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
+          RobotMetrics.recordOutput("Odometry/TrajectorySetpoint", targetPose);
         });
 
     // Warmup because why not
@@ -191,8 +191,8 @@ public class Drive extends SubsystemBase implements Initializable {
 
   public void periodic_impl() {
     Twist2d robotVelocity = robotFieldVelocity();
-    Logger.recordOutput("LinearVelocityX", robotVelocity.dx);
-    Logger.recordOutput("LinearVelocityY", robotVelocity.dy);
+    RobotMetrics.recordOutput("LinearVelocityX", robotVelocity.dx);
+    RobotMetrics.recordOutput("LinearVelocityY", robotVelocity.dy);
 
     if (!Constants.allFuzzyEqualsZero(robotVelocity.dx, robotVelocity.dy)) {
       timeLastMoved = System.currentTimeMillis();
@@ -226,8 +226,8 @@ public class Drive extends SubsystemBase implements Initializable {
         module.stop();
       }
       // Log empty setpoint states when disabled
-      Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
-      Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
+      RobotMetrics.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
+      RobotMetrics.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
     }
     RobotMetrics.stop("checkDisabled");
 
@@ -236,7 +236,7 @@ public class Drive extends SubsystemBase implements Initializable {
     double[] sampleTimestamps =
         modules[0].getOdometryTimestamps(); // All signals are sampled together
     int sampleCount = sampleTimestamps.length;
-    Logger.recordOutput("SwerveStates/sampleCount", sampleCount);
+    RobotMetrics.recordOutput("SwerveStates/sampleCount", sampleCount);
 
     RobotMetrics.stop("getOdoTimestamps");
 
@@ -303,7 +303,7 @@ public class Drive extends SubsystemBase implements Initializable {
     RobotMetrics.stop("getDistanceToHub");
 
     edu.wpi.first.wpilibj.smartdashboard.SmartDashboard.putNumber("Distance to Hub (m)", distance);
-    Logger.recordOutput("Drive/DistanceToHub", distance);
+    RobotMetrics.recordOutput("Drive/DistanceToHub", distance);
   }
 
   /**
@@ -318,8 +318,8 @@ public class Drive extends SubsystemBase implements Initializable {
     SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, TunerConstants.kSpeedAt12Volts);
 
     // Log unoptimized setpoints and setpoint speeds
-    Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
-    Logger.recordOutput("SwerveChassisSpeeds/Setpoints", discreteSpeeds);
+    RobotMetrics.recordOutput("SwerveStates/Setpoints", setpointStates);
+    RobotMetrics.recordOutput("SwerveChassisSpeeds/Setpoints", discreteSpeeds);
 
     // Send setpoints to modules
     for (int i = 0; i < 4; i++) {
@@ -327,7 +327,7 @@ public class Drive extends SubsystemBase implements Initializable {
     }
 
     // Log optimized setpoints (runSetpoint mutates each state)
-    Logger.recordOutput("SwerveStates/SetpointsOptimized", setpointStates);
+    RobotMetrics.recordOutput("SwerveStates/SetpointsOptimized", setpointStates);
   }
 
   /** Runs the drive in a straight line with the specified drive output. */

@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.util.RobotMetrics;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
@@ -53,7 +54,7 @@ public class Flywheel extends SubsystemBase {
 
   private double dynamicRPM() {
     double target = io.getRPMFromDistance(distanceSupplier.get());
-    Logger.recordOutput("Flywheel/TargetRPM", target);
+    RobotMetrics.recordOutput("Flywheel/TargetRPM", target);
     return target;
   }
 
@@ -102,9 +103,9 @@ public class Flywheel extends SubsystemBase {
         break;
     }
 
-    Logger.recordOutput("Flywheel/PreSpinState", preSpinState.toString());
-    Logger.recordOutput("Flywheel/CoastDownTimer", coastDownTimer.get());
-    Logger.recordOutput("Flywheel/VelocityRPM", inputs.velocityRPM);
+    RobotMetrics.recordOutput("Flywheel/PreSpinState", preSpinState.toString());
+    RobotMetrics.recordOutput("Flywheel/CoastDownTimer", coastDownTimer.get());
+    RobotMetrics.recordOutput("Flywheel/VelocityRPM", inputs.velocityRPM);
   }
 
   private void requestPreSpin() {

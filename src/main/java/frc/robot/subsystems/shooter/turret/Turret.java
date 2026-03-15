@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.interfaces.Initializable;
+import frc.robot.util.RobotMetrics;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
@@ -34,7 +35,7 @@ public class Turret extends SubsystemBase implements Initializable {
                 null,
                 null,
                 null,
-                (state) -> Logger.recordOutput("Turret/SysIdState", state.toString())),
+                (state) -> RobotMetrics.recordOutput("Turret/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
                 (voltage) -> io.setTurretVoltage(voltage.in(Volts)), null, this));
   }
@@ -76,9 +77,8 @@ public class Turret extends SubsystemBase implements Initializable {
     return Commands.runOnce(() -> io.seedTurretPosition());
   }
 
-  
   private double mapToTurretRange(double targetDeg) {
-   
+
     if (targetDeg < TurretConstants.kMinAngle) {
       targetDeg += 360.0;
     }
@@ -90,15 +90,13 @@ public class Turret extends SubsystemBase implements Initializable {
         () -> {
           Rotation2d targetFieldAngle = new Rotation2d(targetAngleSupplier.get());
 
-          
           Rotation2d targetRobotAngle = targetFieldAngle.minus(robotRotationSupplier.get());
 
-          
           double targetDeg = mapToTurretRange(targetRobotAngle.getDegrees());
 
-          Logger.recordOutput("Turret/TargetFieldAngleDeg", targetFieldAngle.getDegrees());
-          Logger.recordOutput("Turret/TargetRobotAngleDeg", targetRobotAngle.getDegrees());
-          Logger.recordOutput("Turret/MappedTargetDeg", targetDeg);
+          RobotMetrics.recordOutput("Turret/TargetFieldAngleDeg", targetFieldAngle.getDegrees());
+          RobotMetrics.recordOutput("Turret/TargetRobotAngleDeg", targetRobotAngle.getDegrees());
+          RobotMetrics.recordOutput("Turret/MappedTargetDeg", targetDeg);
 
           io.moveTo(targetDeg);
         },
@@ -114,7 +112,6 @@ public class Turret extends SubsystemBase implements Initializable {
         this);
   }
 
-  
   public boolean atTarget() {
     double currentAngle = inputs.turretPositionDeg;
 
@@ -122,7 +119,6 @@ public class Turret extends SubsystemBase implements Initializable {
     Rotation2d targetRobotAngle = targetFieldAngle.minus(robotRotationSupplier.get());
     double targetDeg = mapToTurretRange(targetRobotAngle.getDegrees());
 
-    
     double diff = MathUtil.inputModulus(targetDeg - currentAngle, -180, 180);
 
     return Math.abs(diff) < 4.0;

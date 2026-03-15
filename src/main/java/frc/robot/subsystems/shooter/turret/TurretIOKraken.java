@@ -20,7 +20,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
-import org.littletonrobotics.junction.Logger;
+import frc.robot.util.RobotMetrics;
 
 public class TurretIOKraken implements TurretIO {
   private final TalonFX turretMotor;
@@ -150,7 +150,7 @@ public class TurretIOKraken implements TurretIO {
   private double calculateAbsolutePosition(double p17, double p18) {
     long start = System.currentTimeMillis();
     double result = calculateAbsolutePosition_impl(p17, p18);
-    Logger.recordOutput("CRT_Calc_Time", System.currentTimeMillis() - start);
+    RobotMetrics.recordOutput("CRT_Calc_Time", System.currentTimeMillis() - start);
     return result;
   }
 
@@ -174,6 +174,7 @@ public class TurretIOKraken implements TurretIO {
     return offsetPosition;
   }
 
+  @Override
   public void seedTurretPosition() {
     hasSeeded = false;
   }
