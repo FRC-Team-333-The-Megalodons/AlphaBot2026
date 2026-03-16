@@ -3,8 +3,9 @@ package frc.robot.subsystems.shooter.turret;
 public class TurretConstants {
 
   public static final double kTurretZeroOffset = 0.0;
-  public static final double kEncoder17ZeroOffset = 0.757568359375;
-  public static final double kEncoder18ZeroOffset = 0.59619140625;
+  //Must be negative values 
+  public static final double kEncoder17ZeroOffset = -0.757568359375;
+  public static final double kEncoder18ZeroOffset = -0.59619140625;
 
   public static final boolean kEncoder17Inverted = true;
   public static final boolean kEncoder18Inverted = true;
