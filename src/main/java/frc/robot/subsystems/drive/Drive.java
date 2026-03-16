@@ -45,6 +45,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
 import frc.robot.interfaces.Initializable;
+import frc.robot.util.LiveTuning;
 import frc.robot.util.LocalADStarAK;
 import frc.robot.util.MatchStateCalculator;
 import frc.robot.util.RobotMetrics;
@@ -302,8 +303,14 @@ public class Drive extends SubsystemBase implements Initializable {
     double distance = getDistanceToHub();
     RobotMetrics.stop("getDistanceToHub");
 
-    edu.wpi.first.wpilibj.smartdashboard.SmartDashboard.putNumber("Distance to Hub (m)", distance);
     RobotMetrics.recordOutput("Drive/DistanceToHub", distance);
+    Pose2d pose = getPose();
+    LiveTuning.publish("Drive/Pose", pose);
+    LiveTuning.publish("Drive/DistanceToHub", getDistanceToHub());
+
+    ChassisSpeeds speeds = getChassisSpeeds();
+    LiveTuning.publish(
+        "Drive/SpeedMPS", Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond));
   }
 
   /**

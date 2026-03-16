@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
+import frc.robot.util.LiveTuning;
 import frc.robot.util.RobotMetrics;
 import java.util.LinkedList;
 import java.util.List;
@@ -172,6 +173,11 @@ public class Vision extends SubsystemBase {
         "Vision/Summary/RobotPosesAccepted", allRobotPosesAccepted.toArray(new Pose3d[0]));
     RobotMetrics.recordOutput(
         "Vision/Summary/RobotPosesRejected", allRobotPosesRejected.toArray(new Pose3d[0]));
+    for (int i = 0; i < io.length; i++) {
+      LiveTuning.publish("Vision/Camera" + i + "/Connected", inputs[i].connected);
+      LiveTuning.publish("Vision/Camera" + i + "/TagCount", inputs[i].tagIds.length);
+    }
+    LiveTuning.publish("Vision/AcceptedPosesThisLoop", allRobotPosesAccepted.size());
   }
 
   @FunctionalInterface

@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.interfaces.Initializable;
+import frc.robot.util.LiveTuning;
 import frc.robot.util.RobotMetrics;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
@@ -49,6 +50,13 @@ public class Turret extends SubsystemBase implements Initializable {
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Turret", inputs);
+    // Live values for real-time turret monitoring
+    LiveTuning.publish("Turret/PositionDeg", inputs.turretPositionDeg);
+    LiveTuning.publish("Turret/VelocityRPM", inputs.turretVelocityRPM);
+    LiveTuning.publish("Turret/AtTarget", atTarget());
+    LiveTuning.publish("Turret/AbsPositionRot", inputs.calculatedAbsPositionRot);
+    LiveTuning.publish("Turret/Encoder17", inputs.encoder17Rotations);
+    LiveTuning.publish("Turret/Encoder18", inputs.encoder18Rotations);
   }
 
   public Command setVoltage(double volts) {
