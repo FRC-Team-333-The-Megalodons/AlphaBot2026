@@ -3,14 +3,18 @@ package frc.robot.subsystems.climber;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.CANdiConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANdi;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.ForwardLimitSourceValue;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.S1CloseStateValue;
+import com.ctre.phoenix6.signals.S1FloatStateValue;
 import com.ctre.phoenix6.signals.S1StateValue;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -45,6 +49,14 @@ public class ClimberIOKraken implements ClimberIO {
   private boolean lastLimitSwitch = false;
 
   public ClimberIOKraken() {
+    var candiConfig = new CANdiConfiguration();
+
+    // Rev Magnetic Limit switch is Active Low.
+    candiConfig.DigitalInputs.S1CloseState = S1CloseStateValue.CloseWhenLow;
+    candiConfig.DigitalInputs.S1FloatState = S1FloatStateValue.PullHigh;
+
+    candi.getConfigurator().apply(candiConfig);
+
     var config = new TalonFXConfiguration();
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -71,6 +83,8 @@ public class ClimberIOKraken implements ClimberIO {
     config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
     config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = ClimberConstants.kMinPositionRot;
     config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
+    
+    config.HardwareLimitSwitch.withReverseLimitRemoteCANdiS1(candi); 
 
     motor.getConfigurator().apply(config);
 
@@ -80,7 +94,7 @@ public class ClimberIOKraken implements ClimberIO {
     currentAmps = motor.getStatorCurrent();
     s1State = candi.getS1State();
 
-    BaseStatusSignal.setUpdateFrequencyForAll(50.0, position, velocity, appliedVolts, currentAmps);
+    BaseStatusSignal.setUpdateFrequencyForAll(50.0, position, velocity, appliedVolts, currentAmps, s1State);
   }
 
   @Override
