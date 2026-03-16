@@ -15,6 +15,8 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -331,7 +333,7 @@ public class RobotContainer {
             ShootingCommands.shootOnMove(
                 flywheel, turret, spindexer, transfer, intake, pivot, drive));
 
-    controller.R1().whileTrue(pivot.motionMagicUp());
+    // controller.R1().whileTrue(pivot.motionMagicUp());
 
     controller
         .R3()
@@ -350,7 +352,10 @@ public class RobotContainer {
                 drive,
                 () -> -controller.getLeftY(),
                 () -> -controller.getLeftX(),
-                () -> Rotation2d.fromDegrees(0)));
+                () ->
+                    DriverStation.getAlliance().get() == Alliance.Blue
+                        ? Rotation2d.fromDegrees(0)
+                        : Rotation2d.fromDegrees(180)));
 
     controller
         .cross()
@@ -359,7 +364,10 @@ public class RobotContainer {
                 drive,
                 () -> -controller.getLeftY(),
                 () -> -controller.getLeftX(),
-                () -> Rotation2d.fromDegrees(180)));
+                () ->
+                    DriverStation.getAlliance().get() == Alliance.Blue
+                        ? Rotation2d.fromDegrees(180)
+                        : Rotation2d.fromDegrees(0)));
 
     controller
         .square()
@@ -368,7 +376,10 @@ public class RobotContainer {
                 drive,
                 () -> -controller.getLeftY(),
                 () -> -controller.getLeftX(),
-                () -> Rotation2d.fromDegrees(90)));
+                () ->
+                    DriverStation.getAlliance().get() == Alliance.Blue
+                        ? Rotation2d.fromDegrees(90)
+                        : Rotation2d.fromDegrees(-90)));
 
     controller
         .circle()
@@ -377,7 +388,10 @@ public class RobotContainer {
                 drive,
                 () -> -controller.getLeftY(),
                 () -> -controller.getLeftX(),
-                () -> Rotation2d.fromDegrees(-90)));
+                () ->
+                    DriverStation.getAlliance().get() == Alliance.Blue
+                        ? Rotation2d.fromDegrees(-90)
+                        : Rotation2d.fromDegrees(90)));
 
     controller
         .touchpad()
@@ -390,6 +404,7 @@ public class RobotContainer {
                 .ignoringDisable(true));
 
     controller.PS().whileTrue(ShootingCommands.dashboardRPMControl(flywheel));
+    controller.R1().whileTrue(Commands.parallel(spindexer.spin(), transfer.feedShooter()));
 
     controller.povUp().whileTrue(PathfindCommands.pathfindToDepot(drive));
 

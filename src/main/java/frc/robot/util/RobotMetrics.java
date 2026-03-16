@@ -92,6 +92,9 @@ public class RobotMetrics {
   }
 
   // Its a little weird to put this here, but we are out of time, and this is fast.
+
+  // The sole purpose of this is to throttle the calls to recordOutput, which weve found
+  // in metrics in visualvm to be the cause of significant slowness
   static HashMap<String, Long> lastLogged = new HashMap<>();
   static final long ADVKIT_UPDATE_DELAY_MS = 1000;
 
