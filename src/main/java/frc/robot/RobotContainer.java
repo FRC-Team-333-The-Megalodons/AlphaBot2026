@@ -298,6 +298,8 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
+    //pivot.setDefaultCommand(pivot.runPercent(() -> -controller.getRightY()));
+
     leds.setDefaultCommand(leds.gameStateAwareLeds(stateTracker));
 
     drive.setDefaultCommand(

@@ -16,12 +16,14 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.DigitalInput;
 
 public class ClimberIOKraken implements ClimberIO {
 
   private final CANBus rio = CANBus.roboRIO();
   private final TalonFX motor = new TalonFX(ClimberConstants.MOTOR_ID, rio);
   private final CANdi candi = new CANdi(ClimberConstants.CANDI_ID, rio);
+  private final DigitalInput magneticSensor = new DigitalInput(ClimberConstants.LIMIT_SWITCH_CHANNEL); 
 
   private final StatusSignal<S1StateValue> s1State;
   private final StatusSignal<Angle> position;
@@ -101,6 +103,11 @@ public class ClimberIOKraken implements ClimberIO {
     inputs.currentAmps = currentAmps.getValueAsDouble();
     inputs.limitSwitchTriggered = limitTriggered;
     inputs.hasZeroed = hasZeroed;
+  }
+
+  @Override
+  public boolean isAttached() {
+    return magneticSensor.get();
   }
 
   @Override

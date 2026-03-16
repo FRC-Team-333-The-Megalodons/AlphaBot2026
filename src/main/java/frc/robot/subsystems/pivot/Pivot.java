@@ -6,7 +6,11 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
+import frc.robot.util.LiveTuning;
 import frc.robot.util.RobotMetrics;
+
+import java.util.function.DoubleSupplier;
+
 import org.littletonrobotics.junction.Logger;
 
 public class Pivot extends SubsystemBase {
@@ -24,10 +28,12 @@ public class Pivot extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Pivot", inputs);
     RobotMetrics.stop("PivotPeriodic");
+    LiveTuning.publish("Pivot/AngleDegrees", getPositionDeg());
+    LiveTuning.publish("Pivot/AppliedVoltage", io.getAppliedVoltage());
   }
 
   public double getPositionDeg() {
-    return inputs.positionDeg;
+    return io.getPositionDeg();
   }
 
   public boolean atTarget(double degrees) {
@@ -102,7 +108,7 @@ public class Pivot extends SubsystemBase {
     return motionMagicTo(PivotConstants.kDownAngleDeg, true).withName("Pivot.motionMagicDown");
   }
 
-  public Command runPercent(double percent) {
-    return runEnd(() -> io.setVoltage(percent * 12.0), () -> io.setVoltage(0.0));
+  public Command runPercent(DoubleSupplier percentSupplier) {
+    return runEnd(() -> io.setVoltage(percentSupplier.getAsDouble() * 12.0), () -> io.setVoltage(0.0));
   }
 }

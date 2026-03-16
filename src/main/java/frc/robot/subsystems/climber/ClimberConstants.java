@@ -4,7 +4,7 @@ public final class ClimberConstants {
 
   public static final int MOTOR_ID = 15;
 
-  public static final int LIMIT_SWITCH_CHANNEL = 0;
+  public static final int LIMIT_SWITCH_CHANNEL = 9;
   public static final int CANDI_ID = 45;
 
   public static final double GEAR_RATIO = 45.0;
