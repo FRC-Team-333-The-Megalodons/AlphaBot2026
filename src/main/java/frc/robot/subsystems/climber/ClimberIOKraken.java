@@ -10,7 +10,6 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANdi;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.ForwardLimitSourceValue;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.S1CloseStateValue;
@@ -27,7 +26,8 @@ public class ClimberIOKraken implements ClimberIO {
   private final CANBus rio = CANBus.roboRIO();
   private final TalonFX motor = new TalonFX(ClimberConstants.MOTOR_ID, rio);
   private final CANdi candi = new CANdi(ClimberConstants.CANDI_ID, rio);
-  private final DigitalInput magneticSensor = new DigitalInput(ClimberConstants.LIMIT_SWITCH_CHANNEL); 
+  private final DigitalInput magneticSensor =
+      new DigitalInput(ClimberConstants.LIMIT_SWITCH_CHANNEL);
 
   private final StatusSignal<S1StateValue> s1State;
   private final StatusSignal<Angle> position;
@@ -83,8 +83,8 @@ public class ClimberIOKraken implements ClimberIO {
     config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
     config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = ClimberConstants.kMinPositionRot;
     config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
-    
-    config.HardwareLimitSwitch.withReverseLimitRemoteCANdiS1(candi); 
+
+    config.HardwareLimitSwitch.withReverseLimitRemoteCANdiS1(candi);
 
     motor.getConfigurator().apply(config);
 
@@ -94,7 +94,8 @@ public class ClimberIOKraken implements ClimberIO {
     currentAmps = motor.getStatorCurrent();
     s1State = candi.getS1State();
 
-    BaseStatusSignal.setUpdateFrequencyForAll(50.0, position, velocity, appliedVolts, currentAmps, s1State);
+    BaseStatusSignal.setUpdateFrequencyForAll(
+        50.0, position, velocity, appliedVolts, currentAmps, s1State);
   }
 
   @Override

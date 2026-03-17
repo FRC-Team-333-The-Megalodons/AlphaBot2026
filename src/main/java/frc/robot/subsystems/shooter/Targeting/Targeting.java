@@ -65,23 +65,28 @@ public class Targeting extends SubsystemBase implements Initializable {
 
           inputs.targetDistance = predictedPose.getTranslation().getDistance(rawTarget);
           inputs.targetYaw = io.getAngleTo(predictedPose, rawTarget).getDegrees();
-          double tof = io.getTOFFromDistance(inputs.targetDistance);
 
+          double tofSeed = io.getTOFFromDistance(inputs.targetDistance);
           Translation2d velocityCompensatedTarget =
               io.velocityCompensatedCoordinates(
-                  predictedPose, new Translation2d(vel.dx, vel.dy), tof, rawTarget);
+                  predictedPose, new Translation2d(vel.dx, vel.dy), tofSeed, rawTarget);
+
+          double refinedTof =
+              io.getTOFFromDistance(io.getDistanceFrom(predictedPose, velocityCompensatedTarget));
+          velocityCompensatedTarget =
+              io.velocityCompensatedCoordinates(
+                  predictedPose, new Translation2d(vel.dx, vel.dy), refinedTof, rawTarget);
 
           inputs.augmentedTargetDistance =
               io.getDistanceFrom(predictedPose, velocityCompensatedTarget);
           inputs.augmentedTargetYaw =
               io.getAngleTo(predictedPose, velocityCompensatedTarget).getDegrees();
 
-          // Log the raw and compensated targets for AdvantageScope debugging
           RobotMetrics.recordOutput("Targeting/RawTarget", new Pose2d(rawTarget, Rotation2d.kZero));
           RobotMetrics.recordOutput(
               "Targeting/CompensatedTarget",
               new Pose2d(velocityCompensatedTarget, Rotation2d.kZero));
-          RobotMetrics.recordOutput("Targeting/TOF", tof);
+          RobotMetrics.recordOutput("Targeting/TOF", refinedTof);
           RobotMetrics.recordOutput("Targeting/RobotVelocityX", vel.dx);
           RobotMetrics.recordOutput("Targeting/RobotVelocityY", vel.dy);
         });

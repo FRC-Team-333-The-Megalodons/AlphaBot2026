@@ -31,5 +31,7 @@ public interface ClimberIO {
     return false;
   }
 
-  public default boolean isAttached() { return false; }
+  public default boolean isAttached() {
+    return false;
+  }
 }

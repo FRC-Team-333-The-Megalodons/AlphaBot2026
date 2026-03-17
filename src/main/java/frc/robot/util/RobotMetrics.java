@@ -96,7 +96,7 @@ public class RobotMetrics {
   // The sole purpose of this is to throttle the calls to recordOutput, which weve found
   // in metrics in visualvm to be the cause of significant slowness
   static HashMap<String, Long> lastLogged = new HashMap<>();
-  static final long ADVKIT_UPDATE_DELAY_MS = 1000;
+  static final long ADVKIT_UPDATE_DELAY_MS = 20;
 
   private static boolean okToUpdate(String key) {
     long lastUpdateTime = lastLogged.getOrDefault(key, 0l);

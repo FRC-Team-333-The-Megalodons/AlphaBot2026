@@ -29,28 +29,15 @@ public class TargetingIOReal implements TargetingIO {
   }
 
   private void configureInterpolations() {
-    // FIX (Bug C): The previous TOF values were clearly wrong placeholder numbers.
-    // The values jumped from 0.8s at 1.57m to 3.7s at 2.0m, then back to 1.1s at 3.5m —
-    // physically impossible for a projectile. Velocity compensation uses TOF to compute
-    // the lead angle, so bad TOF values produce wrong lead angles at every distance.
-    //
-    // These corrected values are estimated from typical FRC foam ball trajectory physics
-    // at the RPM values in your distance map (2100-3050 RPM → ~8-12 m/s exit velocity).
-    // TOF increases smoothly with distance as expected.
-    //
-    // IMPORTANT: These are starting estimates. You MUST tune these on your real robot
-    // by watching where shots land at each distance while moving and adjusting until
-    // the ball consistently hits the hub center. Use AdvantageScope to log
-    // Targeting/AugmentedTargetYaw vs. actual shot outcomes during practice.
-    distanceToTOF.put(1.4, 0.9);
+    distanceToTOF.put(1.4, 0.90);
     distanceToTOF.put(1.7, 0.93);
     distanceToTOF.put(2.0, 0.97);
-    distanceToTOF.put(2.2, 0.73);
-    distanceToTOF.put(2.4, 1.0);
+    distanceToTOF.put(2.2, 0.99); // was 0.73
+    distanceToTOF.put(2.4, 1.01);
     distanceToTOF.put(2.6, 1.03);
-    distanceToTOF.put(2.8, 0.9);
-    distanceToTOF.put(3.3, 1.13);
-    distanceToTOF.put(3.7, 1.1);
+    distanceToTOF.put(2.8, 1.06); // was 0.9
+    distanceToTOF.put(3.3, 1.10);
+    distanceToTOF.put(3.7, 1.13);
     distanceToTOF.put(4.3, 1.17);
 
     // These velocity scalar values looked reasonable — left unchanged.
