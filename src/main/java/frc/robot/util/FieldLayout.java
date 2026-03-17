@@ -13,11 +13,15 @@ public class FieldLayout {
   static double FIELD_WIDTH = tagLayout.getFieldWidth();
   static double FIELD_LENGTH = tagLayout.getFieldLength();
 
+  private static Translation2d midpoint(Translation2d a, Translation2d b) {
+    return a.plus(b).div(2.0);
+  }
   // REMOVED `isBlue` check. PathPlanner AutoBuilder handles flipping automatically.
   // ALWAYS provide the Blue Alliance coordinates below.
 
   public static class Tower {
-    public static final Pose2d CLIMBING_POSE = new Pose2d(1.416, 4.083, Rotation2d.kCCW_90deg);
+    public static final Pose2d CLIMBING_POSE = new Pose2d(1.243, 4.642, Rotation2d.kPi);
+    public static final Pose2d CLIMBING_STAGING_POSE = new Pose2d(1.243, 5.642, Rotation2d.kPi);
   }
 
   public static class Hub {
@@ -44,10 +48,16 @@ public class FieldLayout {
     public static final double width = Units.inchesToMeters(31.8);
     public static final double openingDistanceFromFloor = Units.inchesToMeters(28.1);
     public static final double height = Units.inchesToMeters(7.0);
+    public static final double ROBOT_CLEARANCE = Units.inchesToMeters(26);
+    public static final Pose2d LEFT_TAG = tagLayout.getTagPose(29).get().toPose2d();
 
-    public static final Translation2d centerPoint =
-        new Translation2d(0, tagLayout.getTagPose(29).get().getY());
-    public static final Pose2d OUTPOST_POSE = new Pose2d(centerPoint, Rotation2d.fromDegrees(0));
+    public static final Pose2d RIGHT_TAG = tagLayout.getTagPose(30).get().toPose2d();
+    public static final Translation2d CENTER =
+        midpoint(LEFT_TAG.getTranslation(), RIGHT_TAG.getTranslation());
+    public static final Pose2d OUTPOST_POSE =
+        new Pose2d(CENTER.getX() + ROBOT_CLEARANCE, CENTER.getY(), Rotation2d.fromDegrees(180));
+    public static final Pose2d OUTPOST_APPROACH =
+        new Pose2d(CENTER.getX() + 1.5, CENTER.getY(), Rotation2d.fromDegrees(180));
   }
 
   public static class ScoringPosition {

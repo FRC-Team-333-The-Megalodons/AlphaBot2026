@@ -45,11 +45,13 @@ import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
 import frc.robot.interfaces.Initializable;
+import frc.robot.util.LiveTuning;
 import frc.robot.util.LocalADStarAK;
 import frc.robot.util.MatchStateCalculator;
 import frc.robot.util.RobotMetrics;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -104,6 +106,8 @@ public class Drive extends SubsystemBase implements Initializable {
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, Pose2d.kZero);
 
+  long timeLastMoved = 0;
+
   public Drive(
       GyroIO gyroIO,
       ModuleIO flModuleIO,
@@ -134,7 +138,7 @@ public class Drive extends SubsystemBase implements Initializable {
                 null,
                 null,
                 null,
-                (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
+                (state) -> RobotMetrics.recordOutput("Drive/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
   }
@@ -149,22 +153,34 @@ public class Drive extends SubsystemBase implements Initializable {
         this::getChassisSpeeds,
         this::runVelocity,
         new PPHolonomicDriveController(
-            new PIDConstants(4.0, 0.0, 0.0), new PIDConstants(4.0, 0.0, 0.0)),
+            new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
         PP_CONFIG,
         () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
         this);
     Pathfinding.setPathfinder(new LocalADStarAK());
     PathPlannerLogging.setLogActivePathCallback(
         (activePath) -> {
-          Logger.recordOutput("Odometry/Trajectory", activePath.toArray(new Pose2d[0]));
+          RobotMetrics.recordOutput("Odometry/Trajectory", activePath.toArray(new Pose2d[0]));
         });
     PathPlannerLogging.setLogTargetPoseCallback(
         (targetPose) -> {
-          Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
+          RobotMetrics.recordOutput("Odometry/TrajectorySetpoint", targetPose);
         });
 
     // Warmup because why not
     CommandScheduler.getInstance().schedule(PathfindingCommand.warmupCommand());
+  }
+
+  final long STATIONARY_THRESHOLD_MS = 1000;
+
+  public boolean isStationary() {
+    return (timeLastMoved - System.currentTimeMillis() >= 1000);
+  }
+
+  public BooleanSupplier isStationarySupplier() {
+    // If we need to disable the "smart up and down" motion for the pivot, just uncomment this line:
+    // return () -> false;
+    return () -> isStationary();
   }
 
   @Override
@@ -175,8 +191,13 @@ public class Drive extends SubsystemBase implements Initializable {
   }
 
   public void periodic_impl() {
-    Logger.recordOutput("LinearVelocityX", robotFieldVelocity().dx);
-    Logger.recordOutput("LinearVelocityY", robotFieldVelocity().dy);
+    Twist2d robotVelocity = robotFieldVelocity();
+    RobotMetrics.recordOutput("LinearVelocityX", robotVelocity.dx);
+    RobotMetrics.recordOutput("LinearVelocityY", robotVelocity.dy);
+
+    if (!Constants.allFuzzyEqualsZero(robotVelocity.dx, robotVelocity.dy)) {
+      timeLastMoved = System.currentTimeMillis();
+    }
 
     RobotMetrics.start("odoLock");
     odometryLock.lock(); // Prevents odometry updates while reading data
@@ -206,8 +227,8 @@ public class Drive extends SubsystemBase implements Initializable {
         module.stop();
       }
       // Log empty setpoint states when disabled
-      Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
-      Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
+      RobotMetrics.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
+      RobotMetrics.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
     }
     RobotMetrics.stop("checkDisabled");
 
@@ -216,7 +237,7 @@ public class Drive extends SubsystemBase implements Initializable {
     double[] sampleTimestamps =
         modules[0].getOdometryTimestamps(); // All signals are sampled together
     int sampleCount = sampleTimestamps.length;
-    Logger.recordOutput("SwerveStates/sampleCount", sampleCount);
+    RobotMetrics.recordOutput("SwerveStates/sampleCount", sampleCount);
 
     RobotMetrics.stop("getOdoTimestamps");
 
@@ -282,8 +303,14 @@ public class Drive extends SubsystemBase implements Initializable {
     double distance = getDistanceToHub();
     RobotMetrics.stop("getDistanceToHub");
 
-    edu.wpi.first.wpilibj.smartdashboard.SmartDashboard.putNumber("Distance to Hub (m)", distance);
-    Logger.recordOutput("Drive/DistanceToHub", distance);
+    RobotMetrics.recordOutput("Drive/DistanceToHub", distance);
+    Pose2d pose = getPose();
+    LiveTuning.publish("Drive/Pose", pose);
+    LiveTuning.publish("Drive/DistanceToHub", getDistanceToHub());
+
+    ChassisSpeeds speeds = getChassisSpeeds();
+    LiveTuning.publish(
+        "Drive/SpeedMPS", Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond));
   }
 
   /**
@@ -298,8 +325,8 @@ public class Drive extends SubsystemBase implements Initializable {
     SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, TunerConstants.kSpeedAt12Volts);
 
     // Log unoptimized setpoints and setpoint speeds
-    Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
-    Logger.recordOutput("SwerveChassisSpeeds/Setpoints", discreteSpeeds);
+    RobotMetrics.recordOutput("SwerveStates/Setpoints", setpointStates);
+    RobotMetrics.recordOutput("SwerveChassisSpeeds/Setpoints", discreteSpeeds);
 
     // Send setpoints to modules
     for (int i = 0; i < 4; i++) {
@@ -307,7 +334,7 @@ public class Drive extends SubsystemBase implements Initializable {
     }
 
     // Log optimized setpoints (runSetpoint mutates each state)
-    Logger.recordOutput("SwerveStates/SetpointsOptimized", setpointStates);
+    RobotMetrics.recordOutput("SwerveStates/SetpointsOptimized", setpointStates);
   }
 
   /** Runs the drive in a straight line with the specified drive output. */

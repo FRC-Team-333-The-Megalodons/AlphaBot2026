@@ -17,7 +17,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.robot.util.RobotMetrics;
-import org.littletonrobotics.junction.Logger;
 
 public class Module {
   private final ModuleIO io;
@@ -83,7 +82,7 @@ public class Module {
     // RobotMetrics.stop("2-OtherStuff.C");
 
     // RobotMetrics.start("2-OtherStuff.D");
-    Logger.recordOutput("NumberOdoSamples", sampleCount);
+    RobotMetrics.recordOutput("NumberOdoSamples", sampleCount);
     // RobotMetrics.stop("2-OtherStuff.D");
 
     RobotMetrics.stop("2-OtherStuff");

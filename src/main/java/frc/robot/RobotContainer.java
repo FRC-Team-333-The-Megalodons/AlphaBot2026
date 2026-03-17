@@ -15,6 +15,8 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -22,7 +24,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.commands.AutonomousCommands;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.PathfindCommands;
 import frc.robot.commands.ShootingCommands;
@@ -73,7 +74,6 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
-import frc.robot.util.FieldLayout;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -270,28 +270,22 @@ public class RobotContainer {
   }
 
   private void registerNamedCommands() {
+    NamedCommands.registerCommand("DriveToOutpost", PathfindCommands.driveToTheOutpost(drive));
+    NamedCommands.registerCommand("ClimbSequence", PathfindCommands.climbSequence(drive));
+    NamedCommands.registerCommand("ClimbingPosition", climber.extend());
+    NamedCommands.registerCommand("Climb", climber.retract());
     NamedCommands.registerCommand(
-        "Shoot", ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, intake));
-    NamedCommands.registerCommand("DriveToTower", AutonomousCommands.pathfindToTower(drive));
+        "ShootOnMove",
+        ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, intake, pivot, drive));
     NamedCommands.registerCommand(
-        "OutpostAndShoot",
-        Commands.deadline(
-            PathfindCommands.precisionPathfindTo(FieldLayout.Outpost.OUTPOST_POSE, drive),
-            AutonomousCommands.movingShootCommand(
-                drive, flywheel, targeting, turret, intake, spindexer, transfer)));
-    NamedCommands.registerCommand(
-        "WaitTowerAndShoot",
-        Commands.deadline(
-            Commands.sequence(
-                Commands.waitSeconds(1.5),
-                PathfindCommands.precisionPathfindTo(FieldLayout.Tower.CLIMBING_POSE, drive),
-                Commands.waitSeconds(3.0)),
-            AutonomousCommands.movingShootCommand(
-                drive, flywheel, targeting, turret, intake, spindexer, transfer)));
-    NamedCommands.registerCommand(
-        "OutpostToHubSequence",
-        AutonomousCommands.outpostToHubSequence(
-            drive, flywheel, targeting, turret, intake, spindexer, transfer));
+        "Intake",
+        intake.dynamicIngest(
+            () -> {
+              var fieldVelocity = drive.robotFieldVelocity();
+              double absX = Math.abs(fieldVelocity.dx);
+              double absY = Math.abs(fieldVelocity.dy);
+              return Math.max(absX, absY);
+            }));
   }
 
   public void onDriverStationConnected() {
@@ -305,6 +299,8 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
+    // pivot.setDefaultCommand(pivot.runPercent(() -> -controller.getRightY()));
+
     leds.setDefaultCommand(leds.gameStateAwareLeds(stateTracker));
 
     drive.setDefaultCommand(
@@ -316,7 +312,7 @@ public class RobotContainer {
 
     targeting.setDefaultCommand(targeting.defaultTargetingBehavior());
 
-    pivot.setDefaultCommand(pivot.coordinatedPivot(flywheel, intake));
+    // pivot.setDefaultCommand(pivot.coordinatedPivot(flywheel, intake));
 
     controller
         .L2()
@@ -336,9 +332,11 @@ public class RobotContainer {
 
     controller
         .R2()
-        .whileTrue(ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, intake));
+        .whileTrue(
+            ShootingCommands.shootOnMove(
+                flywheel, turret, spindexer, transfer, intake, pivot, drive));
 
-    controller.R1().whileTrue(pivot.motionMagicUp());
+    // controller.R1().whileTrue(pivot.motionMagicUp());
 
     controller
         .R3()
@@ -347,7 +345,8 @@ public class RobotContainer {
                 drive,
                 () -> -controller.getLeftY(),
                 () -> -controller.getLeftX(),
-                () -> -controller.getRightX()));
+                () -> -controller.getRightX(),
+                true /*Face Backwards, because the Turret can only face left/back/right */));
 
     controller
         .triangle()
@@ -356,7 +355,10 @@ public class RobotContainer {
                 drive,
                 () -> -controller.getLeftY(),
                 () -> -controller.getLeftX(),
-                () -> Rotation2d.fromDegrees(0)));
+                () ->
+                    DriverStation.getAlliance().get() == Alliance.Blue
+                        ? Rotation2d.fromDegrees(0)
+                        : Rotation2d.fromDegrees(180)));
 
     controller
         .cross()
@@ -365,7 +367,10 @@ public class RobotContainer {
                 drive,
                 () -> -controller.getLeftY(),
                 () -> -controller.getLeftX(),
-                () -> Rotation2d.fromDegrees(180)));
+                () ->
+                    DriverStation.getAlliance().get() == Alliance.Blue
+                        ? Rotation2d.fromDegrees(180)
+                        : Rotation2d.fromDegrees(0)));
 
     controller
         .square()
@@ -374,7 +379,10 @@ public class RobotContainer {
                 drive,
                 () -> -controller.getLeftY(),
                 () -> -controller.getLeftX(),
-                () -> Rotation2d.fromDegrees(90)));
+                () ->
+                    DriverStation.getAlliance().get() == Alliance.Blue
+                        ? Rotation2d.fromDegrees(90)
+                        : Rotation2d.fromDegrees(-90)));
 
     controller
         .circle()
@@ -383,7 +391,10 @@ public class RobotContainer {
                 drive,
                 () -> -controller.getLeftY(),
                 () -> -controller.getLeftX(),
-                () -> Rotation2d.fromDegrees(-90)));
+                () ->
+                    DriverStation.getAlliance().get() == Alliance.Blue
+                        ? Rotation2d.fromDegrees(-90)
+                        : Rotation2d.fromDegrees(90)));
 
     controller
         .touchpad()
@@ -396,12 +407,11 @@ public class RobotContainer {
                 .ignoringDisable(true));
 
     controller.PS().whileTrue(ShootingCommands.dashboardRPMControl(flywheel));
+    controller.R1().whileTrue(Commands.parallel(spindexer.spin(), transfer.feedShooter()));
 
     controller.povUp().whileTrue(PathfindCommands.pathfindToDepot(drive));
 
-    controller
-        .povRight()
-        .whileTrue(PathfindCommands.precisionPathfindTo(FieldLayout.Tower.CLIMBING_POSE, drive));
+    controller.povRight().onTrue(PathfindCommands.climbSequence(drive));
   }
 
   /**

@@ -3,13 +3,18 @@ package frc.robot.subsystems.climber;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.CANdiConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
+import com.ctre.phoenix6.hardware.CANdi;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.S1CloseStateValue;
+import com.ctre.phoenix6.signals.S1FloatStateValue;
+import com.ctre.phoenix6.signals.S1StateValue;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -20,8 +25,11 @@ public class ClimberIOKraken implements ClimberIO {
 
   private final CANBus rio = CANBus.roboRIO();
   private final TalonFX motor = new TalonFX(ClimberConstants.MOTOR_ID, rio);
-  private final DigitalInput limitSwitch = new DigitalInput(ClimberConstants.LIMIT_SWITCH_CHANNEL);
+  private final CANdi candi = new CANdi(ClimberConstants.CANDI_ID, rio);
+  private final DigitalInput magneticSensor =
+      new DigitalInput(ClimberConstants.LIMIT_SWITCH_CHANNEL);
 
+  private final StatusSignal<S1StateValue> s1State;
   private final StatusSignal<Angle> position;
   private final StatusSignal<AngularVelocity> velocity;
   private final StatusSignal<Voltage> appliedVolts;
@@ -41,6 +49,14 @@ public class ClimberIOKraken implements ClimberIO {
   private boolean lastLimitSwitch = false;
 
   public ClimberIOKraken() {
+    var candiConfig = new CANdiConfiguration();
+
+    // Rev Magnetic Limit switch is Active Low.
+    candiConfig.DigitalInputs.S1CloseState = S1CloseStateValue.CloseWhenLow;
+    candiConfig.DigitalInputs.S1FloatState = S1FloatStateValue.PullHigh;
+
+    candi.getConfigurator().apply(candiConfig);
+
     var config = new TalonFXConfiguration();
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -68,14 +84,18 @@ public class ClimberIOKraken implements ClimberIO {
     config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = ClimberConstants.kMinPositionRot;
     config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
 
+    config.HardwareLimitSwitch.withReverseLimitRemoteCANdiS1(candi);
+
     motor.getConfigurator().apply(config);
 
     position = motor.getPosition();
     velocity = motor.getVelocity();
     appliedVolts = motor.getMotorVoltage();
     currentAmps = motor.getStatorCurrent();
+    s1State = candi.getS1State();
 
-    BaseStatusSignal.setUpdateFrequencyForAll(50.0, position, velocity, appliedVolts, currentAmps);
+    BaseStatusSignal.setUpdateFrequencyForAll(
+        50.0, position, velocity, appliedVolts, currentAmps, s1State);
   }
 
   @Override
@@ -85,7 +105,7 @@ public class ClimberIOKraken implements ClimberIO {
     // Magnetic limit switches are normally-closed so the DigitalInput
     // reads false when triggered. Invert here so limitSwitchTriggered
     // is true when the magnet is actually at the bottom.
-    boolean limitTriggered = !limitSwitch.get();
+    boolean limitTriggered = (s1State.getValue() == S1StateValue.Low);
 
     if (limitTriggered && !lastLimitSwitch) {
       zeroPosition();
@@ -98,6 +118,11 @@ public class ClimberIOKraken implements ClimberIO {
     inputs.currentAmps = currentAmps.getValueAsDouble();
     inputs.limitSwitchTriggered = limitTriggered;
     inputs.hasZeroed = hasZeroed;
+  }
+
+  @Override
+  public boolean isAttached() {
+    return magneticSensor.get();
   }
 
   @Override

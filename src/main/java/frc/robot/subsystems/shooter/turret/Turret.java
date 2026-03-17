@@ -11,6 +11,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.interfaces.Initializable;
+import frc.robot.util.LiveTuning;
+import frc.robot.util.RobotMetrics;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
@@ -34,7 +36,7 @@ public class Turret extends SubsystemBase implements Initializable {
                 null,
                 null,
                 null,
-                (state) -> Logger.recordOutput("Turret/SysIdState", state.toString())),
+                (state) -> RobotMetrics.recordOutput("Turret/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
                 (voltage) -> io.setTurretVoltage(voltage.in(Volts)), null, this));
   }
@@ -42,29 +44,27 @@ public class Turret extends SubsystemBase implements Initializable {
   @Override
   public void seed() {
     CommandScheduler.getInstance().schedule(seedPosition());
-    // setDefaultCommand(autoAim());
   }
 
   @Override
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Turret", inputs);
+    // Live values for real-time turret monitoring
+    LiveTuning.publish("Turret/PositionDeg", inputs.turretPositionDeg);
+    LiveTuning.publish("Turret/VelocityRPM", inputs.turretVelocityRPM);
+    LiveTuning.publish("Turret/AtTarget", atTarget());
+    LiveTuning.publish("Turret/AbsPositionRot", inputs.calculatedAbsPositionRot);
+    LiveTuning.publish("Turret/Encoder17", inputs.encoder17Rotations);
+    LiveTuning.publish("Turret/Encoder18", inputs.encoder18Rotations);
   }
 
   public Command setVoltage(double volts) {
     return Commands.runEnd(() -> io.setTurretVoltage(volts), () -> io.stop(), this);
   }
 
-  /**
-   * Debugging Command to test relative angle rotation of turret.
-   *
-   * @param targetAngleRelative The relative target angle.
-   * @return A command.
-   */
   public Command rotateToRelative(Rotation2d targetAngleRelative) {
-    return run(() -> {
-          io.moveTo(targetAngleRelative.getDegrees());
-        })
+    return run(() -> io.moveTo(targetAngleRelative.getDegrees()))
         .until(() -> io.atTarget(targetAngleRelative.getDegrees()));
   }
 
@@ -85,31 +85,28 @@ public class Turret extends SubsystemBase implements Initializable {
     return Commands.runOnce(() -> io.seedTurretPosition());
   }
 
+  private double mapToTurretRange(double targetDeg) {
+
+    if (targetDeg < TurretConstants.kMinAngle) {
+      targetDeg += 360.0;
+    }
+    return MathUtil.clamp(targetDeg, TurretConstants.kMinAngle, TurretConstants.kMaxAngle);
+  }
+
   public Command autoAim() {
     return Commands.run(
         () -> {
           Rotation2d targetFieldAngle = new Rotation2d(targetAngleSupplier.get());
+
           Rotation2d targetRobotAngle = targetFieldAngle.minus(robotRotationSupplier.get());
 
-          double currentDeg = inputs.turretPositionDeg;
-          double targetDeg = targetRobotAngle.getDegrees();
+          double targetDeg = mapToTurretRange(targetRobotAngle.getDegrees());
 
-          double diff = targetDeg - currentDeg;
+          RobotMetrics.recordOutput("Turret/TargetFieldAngleDeg", targetFieldAngle.getDegrees());
+          RobotMetrics.recordOutput("Turret/TargetRobotAngleDeg", targetRobotAngle.getDegrees());
+          RobotMetrics.recordOutput("Turret/MappedTargetDeg", targetDeg);
 
-          diff = MathUtil.inputModulus(diff, -180, 180);
-          double optimalTargetDeg = currentDeg + diff;
-
-          if (optimalTargetDeg > TurretConstants.kMaxAngle) {
-            optimalTargetDeg -= 360.0;
-          } else if (optimalTargetDeg < TurretConstants.kMinAngle) {
-            optimalTargetDeg += 360.0;
-          }
-
-          optimalTargetDeg =
-              MathUtil.clamp(
-                  optimalTargetDeg, TurretConstants.kMinAngle, TurretConstants.kMaxAngle);
-
-          io.moveTo(optimalTargetDeg);
+          io.moveTo(targetDeg);
         },
         this);
   }
@@ -117,38 +114,19 @@ public class Turret extends SubsystemBase implements Initializable {
   public Command rotateToField(Rotation2d targetAngle) {
     return Commands.run(
         () -> {
-          double currentDeg = inputs.turretPositionDeg;
-          double targetDeg = targetAngle.getDegrees();
-
-          double diff = targetDeg - currentDeg;
-          diff = MathUtil.inputModulus(diff, -180, 180);
-          double optimalTargetDeg = currentDeg + diff;
-
-          if (optimalTargetDeg > TurretConstants.kMaxAngle) {
-            optimalTargetDeg -= 360.0;
-          } else if (optimalTargetDeg < TurretConstants.kMinAngle) {
-            optimalTargetDeg += 360.0;
-          }
-
-          optimalTargetDeg =
-              MathUtil.clamp(
-                  optimalTargetDeg, TurretConstants.kMinAngle, TurretConstants.kMaxAngle);
-
-          io.moveTo(optimalTargetDeg);
+          double targetDeg = mapToTurretRange(targetAngle.getDegrees());
+          io.moveTo(targetDeg);
         },
         this);
   }
 
-  // TODO: Play around with the threshold value (currently 4.0 deg) to find the optimal one
   public boolean atTarget() {
     double currentAngle = inputs.turretPositionDeg;
 
-    // Convert field-relative target angle → robot-relative, matching autoAim()'s frame
     Rotation2d targetFieldAngle = new Rotation2d(targetAngleSupplier.get());
     Rotation2d targetRobotAngle = targetFieldAngle.minus(robotRotationSupplier.get());
-    double targetDeg = targetRobotAngle.getDegrees();
+    double targetDeg = mapToTurretRange(targetRobotAngle.getDegrees());
 
-    // Use inputModulus to get the shortest angular difference and handle wrap-around
     double diff = MathUtil.inputModulus(targetDeg - currentAngle, -180, 180);
 
     return Math.abs(diff) < 4.0;

@@ -48,7 +48,6 @@ public class RobotStateTracker extends SubsystemBase {
 
   private final RobotStateTrackerInputsAutoLogged inputs = new RobotStateTrackerInputsAutoLogged();
 
-
   private final Supplier<Pose2d> poseSupplier;
   private final BooleanSupplier flywheelReady;
   private final BooleanSupplier flywheelSpinningUp;

@@ -1,10 +1,14 @@
 package frc.robot.subsystems.pivot;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
+import frc.robot.util.LiveTuning;
 import frc.robot.util.RobotMetrics;
+import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
 public class Pivot extends SubsystemBase {
@@ -22,10 +26,12 @@ public class Pivot extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Pivot", inputs);
     RobotMetrics.stop("PivotPeriodic");
+    LiveTuning.publish("Pivot/AngleDegrees", getPositionDeg());
+    LiveTuning.publish("Pivot/AppliedVoltage", io.getAppliedVoltage());
   }
 
   public double getPositionDeg() {
-    return inputs.positionDeg;
+    return io.getPositionDeg();
   }
 
   public boolean atTarget(double degrees) {
@@ -46,11 +52,15 @@ public class Pivot extends SubsystemBase {
     return rotateTo(PivotConstants.kDownAngleDeg, true).withName("Pivot.goDown");
   }
 
+  public Command goUpOrDownBasedOnMovement(Drive drive) {
+    return Commands.either(goUp(), goDown(), drive.isStationarySupplier());
+  }
+
   public Command coordinatedPivot(Flywheel flywheel, Intake intake) {
     return run(
         () -> {
           boolean intakeActive = Math.abs(intake.getAppliedVolts()) > 0.1;
-          boolean shooterActive = flywheel.isPreSpunUp();
+          boolean shooterActive = flywheel.isPreSpunUp() || flywheel.ready();
 
           // Intake active + shooter active - pivot down
           if (intakeActive && shooterActive) {
@@ -96,7 +106,8 @@ public class Pivot extends SubsystemBase {
     return motionMagicTo(PivotConstants.kDownAngleDeg, true).withName("Pivot.motionMagicDown");
   }
 
-  public Command runPercent(double percent) {
-    return runEnd(() -> io.setVoltage(percent * 12.0), () -> io.setVoltage(0.0));
+  public Command runPercent(DoubleSupplier percentSupplier) {
+    return runEnd(
+        () -> io.setVoltage(percentSupplier.getAsDouble() * 12.0), () -> io.setVoltage(0.0));
   }
 }

@@ -20,4 +20,14 @@ public interface PivotIO extends Automatable {
   public default void moveTo(double degrees) {}
 
   public default void motionMagicTo(double degrees) {}
+
+  public default double getAppliedVoltage() {
+    return 0;
+  }
+
+  public default double getPositionDeg() {
+    return 0;
+  }
+
+  public default void set(double input) {}
 }

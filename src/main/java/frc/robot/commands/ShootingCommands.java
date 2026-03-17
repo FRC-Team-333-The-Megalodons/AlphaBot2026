@@ -4,7 +4,9 @@ import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.pivot.Pivot;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
 import frc.robot.subsystems.shooter.turret.Turret;
 import frc.robot.subsystems.spindexer.Spindexer;
@@ -42,12 +44,26 @@ public class ShootingCommands {
   }
 
   public static Command shootOnMove(
-      Flywheel flywheel, Turret turret, Spindexer spindexer, Transfer transfer, Intake intake) {
+      Flywheel flywheel,
+      Turret turret,
+      Spindexer spindexer,
+      Transfer transfer,
+      Intake intake,
+      Pivot pivot,
+      Drive drive) {
 
     return Commands.parallel(
         turret.autoAim(),
         flywheel.shootOnMoveSpinUp(),
-        intake.eject(),
+        // pivot.goUpOrDownBasedOnMovement(drive), // TODO: uncomment this to do "stationary pull
+        // up, driving put down"
+        intake.dynamicIngest(
+            () -> {
+              var fieldVelocity = drive.robotFieldVelocity();
+              double absX = Math.abs(fieldVelocity.dx);
+              double absY = Math.abs(fieldVelocity.dy);
+              return Math.max(absX, absY);
+            }),
         Commands.sequence(
             Commands.waitUntil(() -> flywheel.ready() && turret.atTarget()),
             Commands.parallel(spindexer.spin(), transfer.feedShooter())));

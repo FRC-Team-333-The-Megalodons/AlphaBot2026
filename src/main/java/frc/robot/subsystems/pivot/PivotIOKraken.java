@@ -9,6 +9,7 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
@@ -35,6 +36,7 @@ public class PivotIOKraken implements PivotIO {
     var config = new TalonFXConfiguration();
     motor.getConfigurator().apply(config);
 
+    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.Feedback.SensorToMechanismRatio = PivotConstants.GEAR_RATIO;
 
@@ -75,9 +77,9 @@ public class PivotIOKraken implements PivotIO {
 
     BaseStatusSignal.refreshAll(position, velocity, appliedVolts, currentAmps);
 
-    inputs.positionDeg = Units.rotationsToDegrees(position.getValueAsDouble());
+    inputs.positionDeg = getPositionDeg();
     inputs.velocityRPM = velocity.getValueAsDouble() * 60.0;
-    inputs.appliedVolts = appliedVolts.getValueAsDouble();
+    inputs.appliedVolts = getAppliedVoltage();
     inputs.currentAmps = currentAmps.getValueAsDouble();
 
     RobotMetrics.stop("PivotKrakenUpdateInputs");
@@ -95,6 +97,16 @@ public class PivotIOKraken implements PivotIO {
   }
 
   @Override
+  public double getAppliedVoltage() {
+    return appliedVolts.getValueAsDouble();
+  }
+
+  @Override
+  public double getPositionDeg() {
+    return Units.rotationsToDegrees(position.getValueAsDouble());
+  }
+
+  @Override
   public void moveTo(double degrees) {
     motor.setControl(positionRequest.withPosition(Units.degreesToRotations(degrees)));
   }
@@ -102,6 +114,11 @@ public class PivotIOKraken implements PivotIO {
   @Override
   public void motionMagicTo(double degrees) {
     motor.setControl(motionMagicRequest.withPosition(Units.degreesToRotations(degrees)));
+  }
+
+  @Override
+  public void set(double input) {
+    motor.set(input);
   }
 
   @Override
