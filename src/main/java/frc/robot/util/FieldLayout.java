@@ -48,14 +48,16 @@ public class FieldLayout {
     public static final double width = Units.inchesToMeters(31.8);
     public static final double openingDistanceFromFloor = Units.inchesToMeters(28.1);
     public static final double height = Units.inchesToMeters(7.0);
+    public static final double ROBOT_CLEARANCE = Units.inchesToMeters(26);
     public static final Pose2d LEFT_TAG = tagLayout.getTagPose(29).get().toPose2d();
 
     public static final Pose2d RIGHT_TAG = tagLayout.getTagPose(30).get().toPose2d();
     public static final Translation2d CENTER =
         midpoint(LEFT_TAG.getTranslation(), RIGHT_TAG.getTranslation());
-    public static final Pose2d OUTPOST_POSE = new Pose2d(CENTER, Rotation2d.fromDegrees(180));
+    public static final Pose2d OUTPOST_POSE =
+        new Pose2d(CENTER.getX() + ROBOT_CLEARANCE, CENTER.getY(), Rotation2d.fromDegrees(180));
     public static final Pose2d OUTPOST_APPROACH =
-        new Pose2d(CENTER.getX() + 1, CENTER.getY(), Rotation2d.fromDegrees(180));
+        new Pose2d(CENTER.getX() + 1.5, CENTER.getY(), Rotation2d.fromDegrees(180));
   }
 
   public static class ScoringPosition {
