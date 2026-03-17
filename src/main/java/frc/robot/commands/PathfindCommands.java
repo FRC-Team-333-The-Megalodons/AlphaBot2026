@@ -97,9 +97,10 @@ public class PathfindCommands {
             Commands.defer(
                 () ->
                     DriveCommands.driveToPose(
-                        drive,
-                        getAllianceSpecificPose(FieldLayout.Outpost.OUTPOST_POSE),
-                        AutopilotConstants.kAutopilot),
+                            drive,
+                            getAllianceSpecificPose(FieldLayout.Outpost.OUTPOST_POSE),
+                            AutopilotConstants.kAutopilot)
+                        .withTimeout(2.5),
                 Set.of(drive)))
         .withName("PathfindCommands.driveToTheOutpostSequence");
   }

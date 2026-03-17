@@ -4,8 +4,11 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
@@ -17,12 +20,26 @@ public class TransferIOKraken implements TransferIO {
   private final StatusSignal<Voltage> voltageSignal;
   private final StatusSignal<Current> currentSignal;
 
+  private final MotionMagicVelocityVoltage velocityRequest =
+      new MotionMagicVelocityVoltage(0).withSlot(0);
+  private final VoltageOut voltageRequest = new VoltageOut(0);
+
   public TransferIOKraken() {
     CANBus rio = CANBus.roboRIO();
     motor = new TalonFX(TransferConstants.MOTOR_ID, rio);
 
     TalonFXConfiguration config = new TalonFXConfiguration();
     config.Feedback.SensorToMechanismRatio = TransferConstants.GEAR_RATIO;
+    config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+
+    config.Slot0.kS = TransferConstants.kS;
+    config.Slot0.kV = TransferConstants.kV;
+    config.Slot0.kA = TransferConstants.kA;
+    config.Slot0.kP = TransferConstants.kP;
+
+    config.MotionMagic.MotionMagicAcceleration = TransferConstants.MAX_ACCEL;
+    config.MotionMagic.MotionMagicJerk = TransferConstants.MAX_JERK;
+
     motor.getConfigurator().apply(config);
 
     velocitySignal = motor.getVelocity();
@@ -38,12 +55,24 @@ public class TransferIOKraken implements TransferIO {
 
     inputs.appliedVolts = voltageSignal.getValueAsDouble();
     inputs.currentAmps = currentSignal.getValueAsDouble();
-
     inputs.velocityRpm = velocitySignal.getValueAsDouble() * 60.0;
   }
 
   @Override
+  public void moveTo(double rpm) {
+    // Convert RPM -> rotations/sec for Phoenix
+    double rps = Units.rotationsPerMinuteToRadiansPerSecond(rpm);
+    motor.setControl(velocityRequest.withVelocity(rps));
+  }
+
+  @Override
+  public boolean atTarget(double rpm) {
+    double currentRPM = velocitySignal.getValueAsDouble() * 60.0;
+    return Math.abs(Math.abs(currentRPM) - Math.abs(rpm)) < TransferConstants.VELOCITY_TOLERANCE;
+  }
+
+  @Override
   public void setVoltage(double volts) {
-    motor.setControl(new VoltageOut(volts));
+    motor.setControl(voltageRequest.withOutput(volts));
   }
 }

@@ -242,6 +242,16 @@ public class RobotContainer {
         "Turret SysId (Dynamic Forward)", turret.sysIdDynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
         "Turret SysId (Dynamic Reverse)", turret.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Transfer SysId (Quasistatic Forward)",
+        transfer.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Transfer SysId (Quasistatic Reverse)",
+        transfer.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Transfer SysId (Dynamic Forward)", transfer.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Transfer SysId (Dynamic Reverse)", transfer.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     SmartDashboard.putData("Pathfind to Depot", PathfindCommands.pathfindToDepot(drive));
     SmartDashboard.putData("Turret/00 Go to 45", turret.rotateToField(Rotation2d.fromDegrees(45)));
     SmartDashboard.putData("Turret/01 Go to 90", turret.rotateToField(Rotation2d.kCW_90deg));

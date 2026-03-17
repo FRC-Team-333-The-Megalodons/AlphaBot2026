@@ -9,11 +9,10 @@ public final class TransferConstants {
 
   public static final double FEED_VOLTAGE = -11.0;
 
-  // Starting Gains
-  public static final double kS = 0.2;
-  public static final double kV = 0.12;
-  public static final double kA = 0.01;
-  public static final double kP = 0.1;
+  public static final double kS = 0.3192;
+  public static final double kV = 0.12297;
+  public static final double kA = 0.0038393;
+  public static final double kP = 0.047143;
 
   public static final double MAX_ACCEL = 200.0;
   public static final double MAX_JERK = 1000.0;

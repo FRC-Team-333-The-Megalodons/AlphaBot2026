@@ -13,7 +13,7 @@ public class AutopilotConstants {
   public static final APConstraints K_CONSTRAINTS = new APConstraints(3.0, 10);
   public static final APProfile kProfile =
       new APProfile(K_CONSTRAINTS)
-          .withErrorXY(Distance.ofRelativeUnits(3, Inch))
+          .withErrorXY(Distance.ofRelativeUnits(6, Inch))
           .withErrorTheta(Angle.ofRelativeUnits(4, Degree))
           .withBeelineRadius(Distance.ofRelativeUnits(10, Inch));
 
