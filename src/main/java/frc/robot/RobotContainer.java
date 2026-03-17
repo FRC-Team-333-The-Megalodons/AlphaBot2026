@@ -312,7 +312,7 @@ public class RobotContainer {
 
     targeting.setDefaultCommand(targeting.defaultTargetingBehavior());
 
-    // pivot.setDefaultCommand(pivot.coordinatedPivot(flywheel, intake));
+    //pivot.setDefaultCommand(pivot.coordinatedPivot(flywheel, intake));
 
     controller
         .L2()
@@ -325,7 +325,9 @@ public class RobotContainer {
                   return Math.max(absX, absY);
                 }));
 
-    controller.L1().whileTrue(pivot.motionMagicDown());
+    // controller.L1().whileTrue(pivot.motionMagicDown());
+    controller.L1().whileTrue(pivot.runPercent(() -> 0.2));
+    controller.R1().whileTrue(pivot.runPercent(() -> -0.15));
 
     // Locks wheels in x shape
     controller.L3().onTrue(Commands.runOnce(drive::stopWithX, drive));
@@ -407,7 +409,7 @@ public class RobotContainer {
                 .ignoringDisable(true));
 
     controller.PS().whileTrue(ShootingCommands.dashboardRPMControl(flywheel));
-    controller.R1().whileTrue(Commands.parallel(spindexer.spin(), transfer.feedShooter()));
+    // controller.R1().whileTrue(Commands.parallel(spindexer.spin(), transfer.feedShooter()));
 
     controller.povUp().whileTrue(PathfindCommands.pathfindToDepot(drive));
 

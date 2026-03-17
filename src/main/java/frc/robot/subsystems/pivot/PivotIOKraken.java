@@ -36,7 +36,7 @@ public class PivotIOKraken implements PivotIO {
     var config = new TalonFXConfiguration();
     motor.getConfigurator().apply(config);
 
-    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.Feedback.SensorToMechanismRatio = PivotConstants.GEAR_RATIO;
 

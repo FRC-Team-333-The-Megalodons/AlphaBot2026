@@ -25,7 +25,7 @@ public final class PivotConstants {
   // Soft limits
   // TODO: set  min/max based on physical range of motion
   public static final double kMinAngleDeg = 0.0;
-  public static final double kMaxAngleDeg = 90.0;
+  public static final double kMaxAngleDeg = 120.0;
 
   // Named positions
   public static final double kUpAngleDeg = 80.0;
