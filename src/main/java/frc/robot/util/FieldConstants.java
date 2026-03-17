@@ -155,7 +155,7 @@ public class FieldConstants {
 
   public static final class Outpost {
 
-    private static final double APPROACH_CLEARANCE_M = Units.inchesToMeters(20.0);
+    private static final double APPROACH_CLEARANCE_M = Units.inchesToMeters(26.0);
 
     public static final Pose2d LEFT_TAG = TAG_LAYOUT.getTagPose(29).get().toPose2d();
 
