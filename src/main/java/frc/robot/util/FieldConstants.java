@@ -166,7 +166,11 @@ public class FieldConstants {
 
     public static final Pose2d CENTER_APPROACH =
         new Pose2d(
-            CENTER.minus(new Translation2d(APPROACH_CLEARANCE_M, Rotation2d.fromDegrees(180))),
+            CENTER.plus(new Translation2d(APPROACH_CLEARANCE_M, Rotation2d.fromDegrees(180))),
+            Rotation2d.fromDegrees(0));
+    public static final Pose2d CENTER_STAGING_APPROACH =
+        new Pose2d(
+            CENTER.plus(new Translation2d(APPROACH_CLEARANCE_M + 1, Rotation2d.fromDegrees(180))),
             Rotation2d.fromDegrees(0));
 
     public static final Pose2d LEFT_APPROACH =

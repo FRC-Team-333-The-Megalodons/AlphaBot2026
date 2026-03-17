@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.AutopilotConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.util.FieldLayout;
 import frc.robot.util.MatchStateCalculator;
@@ -83,15 +84,37 @@ public class PathfindCommands {
         .withName("PathfindCommands.climbSequence");
   }
 
+  public static Command driveToTheOutpost(Drive drive) {
+    PathConstraints stagingConstraints =
+        new PathConstraints(3.0, 3.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
+
+    return Commands.sequence(
+            AutoBuilder.pathfindToPose(
+                getAllianceSpecificPose(FieldLayout.Outpost.OUTPOST_APPROACH),
+                stagingConstraints,
+                0.7),
+            Commands.waitSeconds(0.3),
+            Commands.defer(
+                () ->
+                    DriveCommands.driveToPose(
+                        drive,
+                        getAllianceSpecificPose(FieldLayout.Outpost.OUTPOST_POSE),
+                        AutopilotConstants.kAutopilot),
+                Set.of(drive)))
+        .withName("PathfindCommands.driveToTheOutpostSequence");
+  }
+
   private static Pose2d allianceClimbingPose() {
-    return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red
-        ? FlippingUtil.flipFieldPose(FieldLayout.Tower.CLIMBING_POSE)
-        : FieldLayout.Tower.CLIMBING_POSE;
+    return getAllianceSpecificPose(FieldLayout.Tower.CLIMBING_POSE);
   }
 
   private static Pose2d allianceClimbingStagePose() {
+    return getAllianceSpecificPose(FieldLayout.Tower.CLIMBING_STAGING_POSE);
+  }
+
+  private static Pose2d getAllianceSpecificPose(Pose2d bluePose) {
     return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red
-        ? FlippingUtil.flipFieldPose(FieldLayout.Tower.CLIMBING_STAGING_POSE)
-        : FieldLayout.Tower.CLIMBING_STAGING_POSE;
+        ? FlippingUtil.flipFieldPose(bluePose)
+        : bluePose;
   }
 }

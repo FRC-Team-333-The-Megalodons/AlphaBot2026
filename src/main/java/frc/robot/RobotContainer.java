@@ -270,6 +270,7 @@ public class RobotContainer {
   }
 
   private void registerNamedCommands() {
+    NamedCommands.registerCommand("DriveToOutpost", PathfindCommands.driveToTheOutpost(drive));
     NamedCommands.registerCommand("ClimbSequence", PathfindCommands.climbSequence(drive));
     NamedCommands.registerCommand("ClimbingPosition", climber.extend());
     NamedCommands.registerCommand("Climb", climber.retract());
