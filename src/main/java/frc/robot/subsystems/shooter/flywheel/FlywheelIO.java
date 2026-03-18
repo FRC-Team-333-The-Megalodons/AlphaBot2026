@@ -37,10 +37,9 @@ public interface FlywheelIO extends Automatable {
     map.put(4.0, 2690.0);
     map.put(4.2, 2820.0);
     map.put(4.4, 2840.0);
-    map.put(4.6, 2870.0);
-    map.put(4.8, 2875.0);
-
-    map.put(5.0, 2880.0);
+    map.put(4.6, 2845.0);
+    map.put(4.8, 2850.0);
+    map.put(5.0, 2860.0);
 
     return map;
   }

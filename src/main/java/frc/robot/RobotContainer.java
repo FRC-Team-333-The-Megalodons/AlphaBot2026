@@ -349,7 +349,7 @@ public class RobotContainer {
     controller.R1().whileTrue(pivot.runPercent(() -> -0.15));
 
     // Locks wheels in x shape
-    controller.L3().onTrue(Commands.runOnce(drive::stopWithX, drive));
+    controller.R3().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
     controller
         .R2()
@@ -360,7 +360,7 @@ public class RobotContainer {
     // controller.R1().whileTrue(pivot.motionMagicUp());
 
     controller
-        .R3()
+        .L3()
         .whileTrue(
             DriveCommands.faceHubAlternative(
                 drive,
