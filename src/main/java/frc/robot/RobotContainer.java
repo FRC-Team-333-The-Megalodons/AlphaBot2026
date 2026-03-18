@@ -305,9 +305,10 @@ public class RobotContainer {
   public void resetTransfer() {
     transfer.stop();
   }
+
   public void resetFlywheel() {
     flywheel.resetPreSpin();
-}
+  }
 
   /**
    * Use this method to define your button->command mappings. Buttons can be created by

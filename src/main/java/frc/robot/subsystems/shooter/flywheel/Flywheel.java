@@ -58,13 +58,15 @@ public class Flywheel extends SubsystemBase {
     RobotMetrics.recordOutput("Flywheel/TargetRPM", target);
     return target;
   }
+
   public void resetPreSpin() {
     preSpinState = PreSpinState.IDLE;
     spinRequested = false;
+    wasReady = false;
     coastDownTimer.stop();
     coastDownTimer.reset();
     io.setVoltage(0.0);
-}
+  }
 
   @Override
   public void periodic() {
@@ -125,8 +127,25 @@ public class Flywheel extends SubsystemBase {
     spinRequested = false;
   }
 
+  private boolean wasReady = false;
+
   public boolean ready() {
-    return isAt(dynamicRPM());
+    double targetRPM = dynamicRPM();
+    double currentRPM = inputs.velocityRPM;
+
+    if (!wasReady) {
+      // Must be within tight tolerance to become ready
+      wasReady =
+          Math.abs(Math.abs(currentRPM) - Math.abs(targetRPM))
+              < FlywheelConstants.VELOCITY_TOLERANCE_RPM;
+    } else {
+      // Once ready, stay ready until significantly outside tolerance
+      wasReady =
+          Math.abs(Math.abs(currentRPM) - Math.abs(targetRPM))
+              < FlywheelConstants.VELOCITY_TOLERANCE_RPM * 2.5;
+    }
+
+    return wasReady;
   }
 
   public boolean isAt(double rpm) {

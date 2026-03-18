@@ -113,8 +113,8 @@ public class Robot extends LoggedRobot {
   @Override
   public void disabledInit() {
     robotContainer.seedTurret();
-    robotContainer.resetTransfer();
-    robotContainer.resetFlywheel();
+    // robotContainer.resetTransfer();
+    // robotContainer.resetFlywheel();
   }
 
   /** This function is called periodically when disabled. */

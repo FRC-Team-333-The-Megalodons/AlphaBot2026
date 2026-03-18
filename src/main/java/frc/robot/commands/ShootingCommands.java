@@ -63,14 +63,8 @@ public class ShootingCommands {
               return Math.max(absX, absY);
             }),
         spindexer.spin(),
-        Commands.run(
-            () -> {
-              if (flywheel.ready() && turret.atTarget()) {
-                transfer.runVelocity();
-              } else {
-                transfer.stop();
-              }
-            },
-            transfer));
+        Commands.sequence(
+            Commands.waitUntil(() -> flywheel.ready() && turret.atTarget()),
+            transfer.feedShooterVelocity()));
   }
 }
