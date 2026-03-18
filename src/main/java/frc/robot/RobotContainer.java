@@ -437,8 +437,8 @@ public class RobotContainer {
     operatorController.L1().whileTrue(intake.eject());
 
     //Pivot
-    operatorController.L1().whileTrue(pivot.runPercent(() -> 0.2)); //forward
-    operatorController.R1().whileTrue(pivot.runPercent(() -> -0.15)); //backwards
+    operatorController.R1().whileTrue(pivot.runPercent(() -> 0.2)); //forward
+    operatorController.R2().whileTrue(pivot.runPercent(() -> -0.15)); //backwards
 
     //Spindexxer
     operatorController.povRight().whileTrue(spindexer.spin());
@@ -448,7 +448,7 @@ public class RobotContainer {
     operatorController.triangle().whileTrue(transfer.feedShooterVelocity());
 
     // //Shooter
-    operatorController.L1().whileTrue(Commands.run(()->flywheel.setRPMDirect(2200), flywheel));
+    operatorController.cross().whileTrue(Commands.run(()->flywheel.setRPMDirect(2200), flywheel));
   }
 
   /**
