@@ -437,8 +437,8 @@ public class RobotContainer {
     operatorController.L1().whileTrue(intake.eject());
 
     //Pivot
-    operatorController.R1().whileTrue(pivot.runPercent(() -> 0.2)); //forward
-    operatorController.R2().whileTrue(pivot.runPercent(() -> -0.15)); //backwards
+    operatorController.R1().whileTrue(pivot.runPercent(() -> 0.2)); //forward(downwards)
+    operatorController.R2().whileTrue(pivot.runPercent(() -> -0.15)); //backwards(upwards)
 
     //Spindexxer
     operatorController.povRight().whileTrue(spindexer.spin());
