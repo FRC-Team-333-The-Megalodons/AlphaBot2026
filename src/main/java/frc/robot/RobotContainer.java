@@ -98,7 +98,8 @@ public class RobotContainer {
   private final RobotStateTracker stateTracker;
 
   // Controller
-  private final CommandPS5Controller controller = new CommandPS5Controller(0);
+  private final CommandPS5Controller driverController = new CommandPS5Controller(0);
+  private final CommandPS5Controller operatorController = new CommandPS5Controller(1);
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -325,15 +326,15 @@ public class RobotContainer {
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
             drive,
-            () -> -controller.getLeftY(),
-            () -> -controller.getLeftX(),
-            () -> -controller.getRightX()));
+            () -> -driverController.getLeftY(),
+            () -> -driverController.getLeftX(),
+            () -> -driverController.getRightX()));
 
     targeting.setDefaultCommand(targeting.defaultTargetingBehavior());
 
     // pivot.setDefaultCommand(pivot.coordinatedPivot(flywheel, intake));
 
-    controller
+    driverController
         .L2()
         .whileTrue(
             intake.dynamicIngest(
@@ -344,14 +345,11 @@ public class RobotContainer {
                   return Math.max(absX, absY);
                 }));
 
-    // controller.L1().whileTrue(pivot.motionMagicDown());
-    controller.L1().whileTrue(pivot.runPercent(() -> 0.2));
-    controller.R1().whileTrue(pivot.runPercent(() -> -0.15));
 
     // Locks wheels in x shape
-    controller.R3().onTrue(Commands.runOnce(drive::stopWithX, drive));
+    driverController.R3().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
-    controller
+    driverController
         .R2()
         .whileTrue(
             ShootingCommands.shootOnMove(
@@ -359,65 +357,65 @@ public class RobotContainer {
 
     // controller.R1().whileTrue(pivot.motionMagicUp());
 
-    controller
+    driverController
         .L3()
         .whileTrue(
             DriveCommands.faceHubAlternative(
                 drive,
-                () -> -controller.getLeftY(),
-                () -> -controller.getLeftX(),
-                () -> -controller.getRightX(),
+                () -> -driverController.getLeftY(),
+                () -> -driverController.getLeftX(),
+                () -> -driverController.getRightX(),
                 true /*Face Backwards, because the Turret can only face left/back/right */));
 
-    controller
+    driverController
         .triangle()
         .whileTrue(
             DriveCommands.joystickDriveAtAngle(
                 drive,
-                () -> -controller.getLeftY(),
-                () -> -controller.getLeftX(),
+                () -> -driverController.getLeftY(),
+                () -> -driverController.getLeftX(),
                 () ->
                     DriverStation.getAlliance().get() == Alliance.Blue
                         ? Rotation2d.fromDegrees(0)
                         : Rotation2d.fromDegrees(180)));
 
-    controller
+    driverController
         .cross()
         .whileTrue(
             DriveCommands.joystickDriveAtAngle(
                 drive,
-                () -> -controller.getLeftY(),
-                () -> -controller.getLeftX(),
+                () -> -driverController.getLeftY(),
+                () -> -driverController.getLeftX(),
                 () ->
                     DriverStation.getAlliance().get() == Alliance.Blue
                         ? Rotation2d.fromDegrees(180)
                         : Rotation2d.fromDegrees(0)));
 
-    controller
+    driverController
         .square()
         .whileTrue(
             DriveCommands.joystickDriveAtAngle(
                 drive,
-                () -> -controller.getLeftY(),
-                () -> -controller.getLeftX(),
+                () -> -driverController.getLeftY(),
+                () -> -driverController.getLeftX(),
                 () ->
                     DriverStation.getAlliance().get() == Alliance.Blue
                         ? Rotation2d.fromDegrees(90)
                         : Rotation2d.fromDegrees(-90)));
 
-    controller
+    driverController
         .circle()
         .whileTrue(
             DriveCommands.joystickDriveAtAngle(
                 drive,
-                () -> -controller.getLeftY(),
-                () -> -controller.getLeftX(),
+                () -> -driverController.getLeftY(),
+                () -> -driverController.getLeftX(),
                 () ->
                     DriverStation.getAlliance().get() == Alliance.Blue
                         ? Rotation2d.fromDegrees(-90)
                         : Rotation2d.fromDegrees(90)));
 
-    controller
+    driverController
         .touchpad()
         .onTrue(
             Commands.runOnce(
@@ -427,12 +425,30 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
-    controller.PS().whileTrue(ShootingCommands.dashboardRPMControl(flywheel));
+    driverController.PS().whileTrue(ShootingCommands.dashboardRPMControl(flywheel));
     // controller.R1().whileTrue(Commands.parallel(spindexer.spin(), transfer.feedShooter()));
 
-    controller.povUp().whileTrue(PathfindCommands.pathfindToDepot(drive));
+    driverController.povUp().whileTrue(PathfindCommands.pathfindToDepot(drive));
 
-    controller.povRight().onTrue(PathfindCommands.climbSequence(drive));
+    driverController.povRight().onTrue(PathfindCommands.climbSequence(drive));
+
+    //Intake    
+    operatorController.L2().whileTrue(intake.ingest());
+    operatorController.L1().whileTrue(intake.eject());
+
+    //Pivot
+    operatorController.L1().whileTrue(pivot.runPercent(() -> 0.2)); //forward
+    operatorController.R1().whileTrue(pivot.runPercent(() -> -0.15)); //backwards
+
+    //Spindexxer
+    operatorController.povRight().whileTrue(spindexer.spin());
+    operatorController.povLeft().whileTrue(spindexer.eject());
+
+    // //Transfer
+    operatorController.triangle().whileTrue(transfer.feedShooterVelocity());
+
+    // //Shooter
+    operatorController.L1().whileTrue(Commands.run(()->flywheel.setRPMDirect(2200), flywheel));
   }
 
   /**
