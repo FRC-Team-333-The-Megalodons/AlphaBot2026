@@ -58,6 +58,13 @@ public class Flywheel extends SubsystemBase {
     RobotMetrics.recordOutput("Flywheel/TargetRPM", target);
     return target;
   }
+  public void resetPreSpin() {
+    preSpinState = PreSpinState.IDLE;
+    spinRequested = false;
+    coastDownTimer.stop();
+    coastDownTimer.reset();
+    io.setVoltage(0.0);
+}
 
   @Override
   public void periodic() {

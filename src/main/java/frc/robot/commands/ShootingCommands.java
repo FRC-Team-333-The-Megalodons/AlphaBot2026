@@ -44,33 +44,33 @@ public class ShootingCommands {
   }
 
   public static Command shootOnMove(
-    Flywheel flywheel,
-    Turret turret,
-    Spindexer spindexer,
-    Transfer transfer,
-    Intake intake,
-    Pivot pivot,
-    Drive drive) {
+      Flywheel flywheel,
+      Turret turret,
+      Spindexer spindexer,
+      Transfer transfer,
+      Intake intake,
+      Pivot pivot,
+      Drive drive) {
 
-  return Commands.parallel(
-      turret.autoAim(),
-      flywheel.shootOnMoveSpinUp(),
-      intake.dynamicIngest(
-          () -> {
-            var fieldVelocity = drive.robotFieldVelocity();
-            double absX = Math.abs(fieldVelocity.dx);
-            double absY = Math.abs(fieldVelocity.dy);
-            return Math.max(absX, absY);
-          }),
-      spindexer.spin(),
-      Commands.run(
-          () -> {
-            if (flywheel.ready() && turret.atTarget()) {
-              transfer.runVelocity();
-            } else {
-              transfer.stop();
-            }
-          },
-          transfer));
-}
+    return Commands.parallel(
+        turret.autoAim(),
+        flywheel.shootOnMoveSpinUp(),
+        intake.dynamicIngest(
+            () -> {
+              var fieldVelocity = drive.robotFieldVelocity();
+              double absX = Math.abs(fieldVelocity.dx);
+              double absY = Math.abs(fieldVelocity.dy);
+              return Math.max(absX, absY);
+            }),
+        spindexer.spin(),
+        Commands.run(
+            () -> {
+              if (flywheel.ready() && turret.atTarget()) {
+                transfer.runVelocity();
+              } else {
+                transfer.stop();
+              }
+            },
+            transfer));
+  }
 }
