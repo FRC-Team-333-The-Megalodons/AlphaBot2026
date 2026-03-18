@@ -36,6 +36,14 @@ public class Transfer extends SubsystemBase {
     Logger.processInputs("Transfer", inputs);
   }
 
+  public void runVelocity() {
+    io.moveTo(TransferConstants.TARGET_RPM);
+  }
+
+  public void stop() {
+    io.setVoltage(0.0);
+  }
+
   public Command feedShooter() {
     return runEnd(() -> io.setVoltage(TransferConstants.FEED_VOLTAGE), () -> io.setVoltage(0.0));
   }
