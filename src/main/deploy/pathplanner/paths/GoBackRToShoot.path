@@ -1,0 +1,89 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 7.871909845788851,
+        "y": 2.9752194543297743
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 7.204839857651246,
+        "y": 3.728362989323844
+      },
+      "isLocked": false,
+      "linkedName": "RightNeutralZoneDoneIntaking"
+    },
+    {
+      "anchor": {
+        "x": 6.301067615658363,
+        "y": 0.9524911032028467
+      },
+      "prevControl": {
+        "x": 6.325157008633483,
+        "y": 1.9522009116703214
+      },
+      "nextControl": {
+        "x": 6.279549228944247,
+        "y": 0.059478054567022154
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 3.9340450771055764,
+        "y": 0.6081969157769855
+      },
+      "prevControl": {
+        "x": 4.934650059311981,
+        "y": 0.6081969157769855
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": -175.3590516634986
+    }
+  ],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 0.0,
+      "maxWaypointRelativePos": 1.15,
+      "constraints": {
+        "maxVelocity": 3.0,
+        "maxAcceleration": 3.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 178.4377750831576
+  },
+  "reversed": false,
+  "folder": "RightPaths",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 123.91743053697037
+  },
+  "useDefaultConstraints": true
+}

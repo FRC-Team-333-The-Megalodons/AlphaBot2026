@@ -9,7 +9,7 @@ public final class PivotConstants {
 
   // PID
   // public static final double kP = 15.0;
-  public static final double kP = 0.01;
+  public static final double kP = 40.0;
   public static final double kI = 0.0;
   public static final double kD = 0.0;
   public static final double kS = 0.0;
@@ -24,12 +24,13 @@ public final class PivotConstants {
 
   // Soft limits
   // TODO: set  min/max based on physical range of motion
-  public static final double kMinAngleDeg = 0.0;
+  public static final double kMinAngleDeg = -2.0;
   public static final double kMaxAngleDeg = 120.0;
 
   // Named positions
-  public static final double kUpAngleDeg = 80.0;
-  public static final double kDownAngleDeg = 5.0;
+// Named positions
+  public static final double kUpAngleDeg = 0.0;// Physical hard stop at the top
+  public static final double kDownAngleDeg = 80.0;
 
   // Tolerances
   public static final double POSITION_TOLERANCE_DEG = 1.0;

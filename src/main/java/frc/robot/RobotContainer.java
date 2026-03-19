@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.commands.AutonomousCommands;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.PathfindCommands;
 import frc.robot.commands.ShootingCommands;
@@ -282,6 +283,7 @@ public class RobotContainer {
 
   private void registerNamedCommands() {
     NamedCommands.registerCommand("DriveToOutpost", PathfindCommands.driveToTheOutpost(drive));
+    NamedCommands.registerCommand("PivotDown", AutonomousCommands.pivotDown(pivot));
     NamedCommands.registerCommand("ClimbSequence", PathfindCommands.climbSequence(drive));
     NamedCommands.registerCommand("ClimbingPosition", climber.extend());
     NamedCommands.registerCommand("Climb", climber.retract());
@@ -426,7 +428,8 @@ public class RobotContainer {
                 .ignoringDisable(true));
 
     driverController.PS().whileTrue(ShootingCommands.dashboardRPMControl(flywheel));
-    // controller.R1().whileTrue(Commands.parallel(spindexer.spin(), transfer.feedShooter()));
+    driverController.R1().whileTrue(pivot.motionMagicDown());
+    driverController.L1().whileTrue(pivot.motionMagicUp());
 
     driverController.povUp().whileTrue(PathfindCommands.pathfindToDepot(drive));
 
