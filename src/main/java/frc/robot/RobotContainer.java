@@ -445,10 +445,15 @@ public class RobotContainer {
     operatorController.povLeft().whileTrue(spindexer.eject());
 
     // //Transfer
-    operatorController.triangle().whileTrue(transfer.feedShooterVelocity());
+    operatorController.cross().whileTrue(transfer.feedShooterVelocity());
 
     // //Shooter
-    operatorController.cross().whileTrue(Commands.run(()->flywheel.setRPMDirect(2200), flywheel));
+    operatorController.triangle().whileTrue(Commands.run(()->flywheel.setRPMDirect(2200), flywheel));
+
+    //climber
+    operatorController.povUp().whileTrue(climber.driveUp(0.25)); //climber up
+    operatorController.povDown().whileTrue(climber.driveDown(-0.25)); //climber down
+
   }
 
   /**
