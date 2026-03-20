@@ -73,7 +73,8 @@ public class AutonomousCommands {
             .withTimeout(3.5),
         PathfindCommands.precisionPathfindTo(FieldLayout.Hub.NEAR_FACE, drive));
   }
-  public static Command pivotDown(Pivot pivot){
+
+  public static Command pivotDown(Pivot pivot) {
     return Commands.run(() -> pivot.motionMagicDown()).withTimeout(1.0);
   }
 }

@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.204839857651246,
-        "y": 3.728362989323844
+        "x": 6.935860023724794,
+        "y": 3.9327876631079484
       },
       "isLocked": false,
       "linkedName": "RightNeutralZoneDoneIntaking"
     },
     {
       "anchor": {
-        "x": 6.301067615658363,
-        "y": 0.9524911032028467
+        "x": 6.311826809015422,
+        "y": 1.0493238434163699
       },
       "prevControl": {
-        "x": 6.325157008633483,
-        "y": 1.9522009116703214
+        "x": 6.3979003558718865,
+        "y": 2.37270462633452
       },
       "nextControl": {
-        "x": 6.279549228944247,
-        "y": 0.059478054567022154
+        "x": 6.253850298870693,
+        "y": 0.15793499994116356
       },
       "isLocked": false,
       "linkedName": null
@@ -66,7 +66,14 @@
     }
   ],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "Intake",
+      "waypointRelativePos": 0.0,
+      "endWaypointRelativePos": 1.570303712035998,
+      "command": null
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 3.0,
     "maxAcceleration": 3.0,

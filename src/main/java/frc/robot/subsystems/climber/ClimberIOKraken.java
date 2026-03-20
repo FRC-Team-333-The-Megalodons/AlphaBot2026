@@ -79,12 +79,12 @@ public class ClimberIOKraken implements ClimberIO {
     config.MotionMagic.MotionMagicAcceleration = ClimberConstants.kAcceleration;
     config.MotionMagic.MotionMagicJerk = ClimberConstants.kJerk;
 
-    config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = ClimberConstants.kMaxPositionRot;
-    config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-    config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = ClimberConstants.kMinPositionRot;
-    config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
+    // config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = ClimberConstants.kMinPositionRot;
+    // config.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
+    // config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = ClimberConstants.kMaxPositionRot;
+    // config.SoftwareLimitSwitch.ReverseSoftLimitEnable = false;
 
-    config.HardwareLimitSwitch.withReverseLimitRemoteCANdiS1(candi);
+    // config.HardwareLimitSwitch.withReverseLimitRemoteCANdiS1(candi);
 
     motor.getConfigurator().apply(config);
 
@@ -118,6 +118,7 @@ public class ClimberIOKraken implements ClimberIO {
     inputs.currentAmps = currentAmps.getValueAsDouble();
     inputs.limitSwitchTriggered = limitTriggered;
     inputs.hasZeroed = hasZeroed;
+    inputs.rawPosition = motor.get();
   }
 
   @Override
