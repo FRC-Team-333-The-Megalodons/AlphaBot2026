@@ -35,13 +35,14 @@ public class Targets implements Localizable {
 
     addPoints("blueHub", tagCoordinates(25).plus(tagCoordinates(20)).div(2));
 
-    Translation2d ferryXOffset = xUnitVector();
-    Translation2d ferryYOffset = yUnitVector().div(4);
+    Translation2d ferryXOffset = xUnitVector(2.5);
+    // Translation2d ferryYOffset = yUnitVector().div(4);
+    Translation2d ferryYOffset = yUnitVector(1.3);
 
     addPoints(
         "redZone",
         tagCoordinates(6).plus(ferryXOffset).plus(ferryYOffset),
-        tagCoordinates(1).plus(ferryXOffset).minus(ferryYOffset.times(2)));
+        tagCoordinates(1).plus(ferryXOffset).minus(ferryYOffset));
 
     addPoints(
         "blueZone",
