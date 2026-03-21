@@ -43,4 +43,12 @@ public interface Localizable {
   public default Translation2d yUnitVector() {
     return new Translation2d(Meters.zero(), Meters.of(1.0));
   }
+
+  public default Translation2d xUnitVector(double magnitude) {
+    return new Translation2d(Meters.of(magnitude), Meters.zero());
+  }
+
+  public default Translation2d yUnitVector(double magnitude) {
+    return new Translation2d(Meters.zero(), Meters.of(magnitude));
+  }
 }

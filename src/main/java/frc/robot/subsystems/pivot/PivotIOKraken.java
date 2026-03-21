@@ -8,7 +8,6 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.util.Units;
@@ -39,6 +38,8 @@ public class PivotIOKraken implements PivotIO {
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.Feedback.SensorToMechanismRatio = PivotConstants.GEAR_RATIO;
+    // config.CurrentLimits.StatorCurrentLimit = 40.0;
+    // config.CurrentLimits.StatorCurrentLimitEnable = true;
 
     config.Slot0.kP = PivotConstants.kP;
     config.Slot0.kI = PivotConstants.kI;
@@ -46,9 +47,6 @@ public class PivotIOKraken implements PivotIO {
     config.Slot0.kS = PivotConstants.kS;
     config.Slot0.kV = PivotConstants.kV;
     config.Slot0.kA = PivotConstants.kA;
-
-    config.Slot0.kG = PivotConstants.kG;
-    config.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
 
     config.MotionMagic.MotionMagicCruiseVelocity = PivotConstants.kCruiseVelocity;
     config.MotionMagic.MotionMagicAcceleration = PivotConstants.kAcceleration;

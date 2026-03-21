@@ -23,7 +23,7 @@ public final class ClimberConstants {
   public static final double kJerk = 40.0;
 
   // Soft limits
-  public static final double kMinPositionRot = 0.0;
+  public static final double kMinPositionRot = -2.0;
   public static final double kMaxPositionRot = 20.0; // TODO: measure real max
 
   // Tolerance for atTarget check
