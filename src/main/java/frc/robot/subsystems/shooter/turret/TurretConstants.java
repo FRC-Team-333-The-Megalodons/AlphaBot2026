@@ -4,8 +4,8 @@ public class TurretConstants {
 
   public static final double kTurretZeroOffset = 0.0;
   // Must be negative values
-  public static final double kEncoder17ZeroOffset = -0.755;
-  public static final double kEncoder18ZeroOffset = -0.594;
+  public static final double kEncoder17ZeroOffset = -0.849;
+  public static final double kEncoder18ZeroOffset = -0.577;
 
   public static final boolean kEncoder17Inverted = true;
   public static final boolean kEncoder18Inverted = true;
