@@ -34,6 +34,8 @@ public class TurretIOKraken implements TurretIO {
   private final StatusSignal<Current> turretCurrent;
   private final StatusSignal<Angle> enc17AbsPos;
   private final StatusSignal<Angle> enc18AbsPos;
+  private final StatusSignal<Current> statorCurrent;
+  private final StatusSignal<Current> supplyCurrent;
   private final MotionMagicVoltage positionRequest = new MotionMagicVoltage(0);
   private final VoltageOut voltageRequest = new VoltageOut(0);
   private boolean hasSeeded = false;
@@ -73,6 +75,11 @@ public class TurretIOKraken implements TurretIO {
         Units.degreesToRotations(TurretConstants.kMinAngle);
     motorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
 
+    // motorConfig.CurrentLimits.StatorCurrentLimit = 50.0;
+    // motorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+    // motorConfig.CurrentLimits.SupplyCurrentLimit = 25.0;
+    // motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+
     turretMotor.getConfigurator().apply(motorConfig);
 
     turretPosition = turretMotor.getPosition();
@@ -81,9 +88,19 @@ public class TurretIOKraken implements TurretIO {
     turretCurrent = turretMotor.getStatorCurrent();
     enc17AbsPos = encoder17.getAbsolutePosition();
     enc18AbsPos = encoder18.getAbsolutePosition();
+    statorCurrent = turretMotor.getStatorCurrent();
+    supplyCurrent = turretMotor.getSupplyCurrent();
 
     BaseStatusSignal.setUpdateFrequencyForAll(
-        50.0, turretPosition, turretVelocity, turretVolts, turretCurrent, enc17AbsPos, enc18AbsPos);
+        50.0,
+        turretPosition,
+        turretVelocity,
+        turretVolts,
+        turretCurrent,
+        enc17AbsPos,
+        enc18AbsPos,
+        statorCurrent,
+        supplyCurrent);
   }
 
   public boolean areEncoderValuesSane(double enc17, double enc18) {
@@ -99,7 +116,14 @@ public class TurretIOKraken implements TurretIO {
   public void updateInputs(TurretIOInputs inputs) {
     // Seed Absolute Position once the Robot Boots
     BaseStatusSignal.refreshAll(
-        turretPosition, turretVelocity, turretVolts, turretCurrent, enc17AbsPos, enc18AbsPos);
+        turretPosition,
+        turretVelocity,
+        turretVolts,
+        turretCurrent,
+        enc17AbsPos,
+        enc18AbsPos,
+        supplyCurrent,
+        statorCurrent);
 
     // if (!hasSeeded || turretMotor.hasResetOccurred()) {
     long now = System.currentTimeMillis();
@@ -123,7 +147,9 @@ public class TurretIOKraken implements TurretIO {
     inputs.turretPositionDeg = turretPosition.getValue().in(Degrees);
     inputs.turretVelocityRPM = turretVelocity.getValueAsDouble() * 60.0;
     inputs.turretAppliedVolts = turretVolts.getValueAsDouble();
-    inputs.turretCurrentAmps = turretCurrent.getValueAsDouble();
+    inputs.turretStatorAmps = turretCurrent.getValueAsDouble();
+    inputs.turretSupplyAmps = supplyCurrent.getValueAsDouble();
+    inputs.turretStatorAmps = statorCurrent.getValueAsDouble();
 
     inputs.encoder17Rotations = enc17AbsPos.getValueAsDouble();
     inputs.encoder18Rotations = enc18AbsPos.getValueAsDouble();

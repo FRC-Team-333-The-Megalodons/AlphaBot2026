@@ -26,6 +26,8 @@ public class PivotIOKraken implements PivotIO {
   private final StatusSignal<AngularVelocity> velocity;
   private final StatusSignal<Voltage> appliedVolts;
   private final StatusSignal<Current> currentAmps;
+  private final StatusSignal<Current> supplyAmps;
+  ;
 
   private final PositionVoltage positionRequest = new PositionVoltage(0).withSlot(0);
   private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0).withSlot(0);
@@ -38,8 +40,10 @@ public class PivotIOKraken implements PivotIO {
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.Feedback.SensorToMechanismRatio = PivotConstants.GEAR_RATIO;
-    // config.CurrentLimits.StatorCurrentLimit = 40.0;
+    // config.CurrentLimits.StatorCurrentLimit = 50.0;
     // config.CurrentLimits.StatorCurrentLimitEnable = true;
+    // config.CurrentLimits.SupplyCurrentLimit = 25.0;
+    // config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     config.Slot0.kP = PivotConstants.kP;
     config.Slot0.kI = PivotConstants.kI;
@@ -65,20 +69,23 @@ public class PivotIOKraken implements PivotIO {
     velocity = motor.getVelocity();
     appliedVolts = motor.getMotorVoltage();
     currentAmps = motor.getStatorCurrent();
+    supplyAmps = motor.getSupplyCurrent();
 
-    BaseStatusSignal.setUpdateFrequencyForAll(50.0, position, velocity, appliedVolts, currentAmps);
+    BaseStatusSignal.setUpdateFrequencyForAll(
+        50.0, position, velocity, appliedVolts, currentAmps, supplyAmps);
   }
 
   @Override
   public void updateInputs(PivotIOInputs inputs) {
     RobotMetrics.start("PivotKrakenUpdateInputs");
 
-    BaseStatusSignal.refreshAll(position, velocity, appliedVolts, currentAmps);
+    BaseStatusSignal.refreshAll(position, velocity, appliedVolts, currentAmps, supplyAmps);
 
     inputs.positionDeg = getPositionDeg();
     inputs.velocityRPM = velocity.getValueAsDouble() * 60.0;
     inputs.appliedVolts = getAppliedVoltage();
     inputs.currentAmps = currentAmps.getValueAsDouble();
+    inputs.supplyAmps = supplyAmps.getValueAsDouble();
 
     RobotMetrics.stop("PivotKrakenUpdateInputs");
   }

@@ -18,6 +18,12 @@ public class IntakeIOKraken implements IntakeIO {
     config.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.25;
     config.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.25;
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+
+    config.CurrentLimits.StatorCurrentLimit = 60.0;
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
+    // config.CurrentLimits.SupplyCurrentLimit = 30.0;
+    // config.CurrentLimits.SupplyCurrentLimitEnable = true;
+
     motor.getConfigurator().apply(config);
   }
 
@@ -26,6 +32,7 @@ public class IntakeIOKraken implements IntakeIO {
     inputs.appliedVolts = motor.getMotorVoltage().getValueAsDouble();
     inputs.currentAmps = motor.getStatorCurrent().getValueAsDouble();
     inputs.velocityRps = motor.getVelocity().getValueAsDouble();
+    inputs.supplyAmps = motor.getSupplyCurrent().getValueAsDouble();
   }
 
   @Override

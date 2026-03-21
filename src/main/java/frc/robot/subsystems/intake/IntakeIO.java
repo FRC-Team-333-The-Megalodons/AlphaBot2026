@@ -10,6 +10,7 @@ public interface IntakeIO extends Automatable {
     public double appliedVolts = 0.0;
     public double currentAmps = 0.0;
     public double velocityRps = 0.0;
+    public double supplyAmps = 0.0;
   }
 
   public static final InterpolatingDoubleTreeMap speedToVolts = buildMap();

@@ -285,6 +285,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("ClimbSequence", PathfindCommands.climbSequence(drive));
     NamedCommands.registerCommand("ClimbingPosition", climber.extend());
     NamedCommands.registerCommand("Climb", climber.retract());
+    NamedCommands.registerCommand("PivotDown", pivot.motionMagicDown());
     NamedCommands.registerCommand(
         "ShootOnMove",
         ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, intake, pivot, drive));

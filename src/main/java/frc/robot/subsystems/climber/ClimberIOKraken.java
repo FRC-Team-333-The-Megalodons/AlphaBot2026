@@ -86,6 +86,11 @@ public class ClimberIOKraken implements ClimberIO {
 
     // config.HardwareLimitSwitch.withReverseLimitRemoteCANdiS1(candi);
 
+    config.CurrentLimits.StatorCurrentLimit = 70.0;
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
+    // config.CurrentLimits.SupplyCurrentLimit = 35.0;
+    // config.CurrentLimits.SupplyCurrentLimitEnable = true;
+
     motor.getConfigurator().apply(config);
 
     position = motor.getPosition();

@@ -36,7 +36,8 @@ public class TurretIOYAMS implements TurretIO {
   private final StatusSignal<Angle> turretPosition;
   private final StatusSignal<AngularVelocity> turretVelocity;
   private final StatusSignal<Voltage> turretVolts;
-  private final StatusSignal<Current> turretCurrent;
+  private final StatusSignal<Current> statorCurrent;
+  private final StatusSignal<Current> supplyCurrent;
   private final StatusSignal<Angle> enc17AbsPos;
   private final StatusSignal<Angle> enc18AbsPos;
 
@@ -91,12 +92,20 @@ public class TurretIOYAMS implements TurretIO {
     turretPosition = turretMotor.getPosition();
     turretVelocity = turretMotor.getVelocity();
     turretVolts = turretMotor.getMotorVoltage();
-    turretCurrent = turretMotor.getStatorCurrent();
+    statorCurrent = turretMotor.getStatorCurrent();
+    supplyCurrent = turretMotor.getSupplyCurrent();
     enc17AbsPos = encoder17.getAbsolutePosition();
     enc18AbsPos = encoder18.getAbsolutePosition();
 
     BaseStatusSignal.setUpdateFrequencyForAll(
-        50.0, turretPosition, turretVelocity, turretVolts, turretCurrent, enc17AbsPos, enc18AbsPos);
+        50.0,
+        turretPosition,
+        turretVelocity,
+        turretVolts,
+        statorCurrent,
+        supplyCurrent,
+        enc17AbsPos,
+        enc18AbsPos);
 
     EasyCRTConfig easyCrtConfig =
         new EasyCRTConfig(
@@ -129,13 +138,20 @@ public class TurretIOYAMS implements TurretIO {
   @Override
   public void updateInputs(TurretIOInputs inputs) {
     BaseStatusSignal.refreshAll(
-        turretPosition, turretVelocity, turretVolts, turretCurrent, enc17AbsPos, enc18AbsPos);
+        turretPosition,
+        turretVelocity,
+        turretVolts,
+        statorCurrent,
+        supplyCurrent,
+        enc17AbsPos,
+        enc18AbsPos);
 
     inputs.turretPositionDeg = turretPosition.getValue().in(Degrees);
     inputs.turretVelocityRPM = turretVelocity.getValueAsDouble() * 60.0;
 
     inputs.turretAppliedVolts = turretVolts.getValueAsDouble();
-    inputs.turretCurrentAmps = turretCurrent.getValueAsDouble();
+    inputs.turretStatorAmps = statorCurrent.getValueAsDouble();
+    inputs.turretSupplyAmps = supplyCurrent.getValueAsDouble();
 
     inputs.encoder17Rotations = enc17AbsPos.getValue().in(Rotations);
     inputs.encoder18Rotations = enc18AbsPos.getValue().in(Rotations);
