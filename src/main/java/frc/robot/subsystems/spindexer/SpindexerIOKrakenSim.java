@@ -4,7 +4,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
-import frc.robot.util.RobotMetrics;
 
 public class SpindexerIOKrakenSim implements SpindexerIO {
   private final FlywheelSim sim =
@@ -31,7 +30,6 @@ public class SpindexerIOKrakenSim implements SpindexerIO {
   public void setVoltage(double volts) {
     appliedVolts = volts;
     sim.setInputVoltage(volts);
-    RobotMetrics.recordOutput("Spindexer/SimVoltage", volts);
   }
 
   @Override

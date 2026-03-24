@@ -7,6 +7,7 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.subsystems.vision.VisionConstants.camera0Name;
 import static frc.robot.subsystems.vision.VisionConstants.camera1Name;
 import static frc.robot.subsystems.vision.VisionConstants.robotToCamera0;
@@ -15,9 +16,11 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -134,7 +137,7 @@ public class RobotContainer {
         // Note:
 
         // The ModuleIOTalonFXS implementation provides an example implementation for
-        // TalonFXS controller connected to a CANdi with a PWM encoder. The
+        // TalonFXS driverController connected to a CANdi with a PWM encoder. The
         // implementations
         // of ModuleIOTalonFX, ModuleIOTalonFXS, and ModuleIOSpark (from the Spark
         // swerve
@@ -206,53 +209,28 @@ public class RobotContainer {
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
-    // Set up SysId routines
+    // SysId routines
+    // Drive
     autoChooser.addOption(
         "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
     autoChooser.addOption(
         "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
     autoChooser.addOption(
         "Drive SysId (Quasistatic Forward)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        drive.characterize());
+    // Flywheel
     autoChooser.addOption(
-        "Drive SysId (Quasistatic Reverse)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        "Flywheel SysId",
+        flywheel.characterize());
+    // Turret
     autoChooser.addOption(
-        "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+        "Turret SysId",
+        turret.characterize());
+    // Transfer
     autoChooser.addOption(
-        "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-    // Flywheel SysId routine
-    autoChooser.addOption(
-        "Flywheel SysId (Quasistatic Forward)",
-        flywheel.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Flywheel SysId (Quasistatic Reverse)",
-        flywheel.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Flywheel SysId (Dynamic Forward)", flywheel.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Flywheel SysId (Dynamic Reverse)", flywheel.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-    // Turret SysId routines
-    autoChooser.addOption(
-        "Turret SysId (Quasistatic Forward)",
-        turret.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Turret SysId (Quasistatic Reverse)",
-        turret.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Turret SysId (Dynamic Forward)", turret.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Turret SysId (Dynamic Reverse)", turret.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Transfer SysId (Quasistatic Forward)",
-        transfer.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Transfer SysId (Quasistatic Reverse)",
-        transfer.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Transfer SysId (Dynamic Forward)", transfer.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Transfer SysId (Dynamic Reverse)", transfer.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+        "Transfer SysId",
+        transfer.characterize());
+    
     SmartDashboard.putData("Pathfind to Depot", PathfindCommands.pathfindToDepot(drive));
     SmartDashboard.putData("Turret/00 Go to 45", turret.rotateToField(Rotation2d.fromDegrees(45)));
     SmartDashboard.putData("Turret/01 Go to 90", turret.rotateToField(Rotation2d.kCW_90deg));
@@ -271,6 +249,8 @@ public class RobotContainer {
     SmartDashboard.putData("Turret/08 Go to 0", turret.rotateToField(Rotation2d.kZero));
     SmartDashboard.putData("Turret/Reseed Abs Position", turret.reseedPosition());
 
+    RobotController.setBrownoutVoltage(Voltage.ofBaseUnits(5.5, Volts));
+
     seedTurret();
     // Configure the button bindings
     configureButtonBindings();
@@ -286,6 +266,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("ClimbSequence", PathfindCommands.climbSequence(drive));
     NamedCommands.registerCommand("ClimbingPosition", climber.extend());
     NamedCommands.registerCommand("Climb", climber.retract());
+    NamedCommands.registerCommand("PivotDown", pivot.motionMagicDown());
     NamedCommands.registerCommand(
         "ShootOnMove",
         ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, intake, pivot, drive));
@@ -319,8 +300,7 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    // pivot.setDefaultCommand(pivot.runPercent(() -> -controller.getRightY()));
-    transfer.setDefaultCommand(Commands.run(() -> transfer.stop(), transfer));
+    // pivot.setDefaultCommand(pivot.runPercent(() -> -driverController.getRightY()));
 
     leds.setDefaultCommand(leds.gameStateAwareLeds(stateTracker));
 
@@ -449,7 +429,7 @@ public class RobotContainer {
     operatorController.povLeft().whileTrue(spindexer.eject());
 
     // //Transfer
-    operatorController.cross().whileTrue(transfer.feedShooterVelocity());
+    operatorController.cross().whileTrue(transfer.feedShooter());
 
     // //Shooter
     operatorController
@@ -457,8 +437,8 @@ public class RobotContainer {
         .whileTrue(Commands.run(() -> flywheel.setRPMDirect(2200), flywheel));
 
     // climber
-    operatorController.povDown().whileTrue(climber.driveUp(0.50)); // climber up
-    operatorController.povUp().whileTrue(climber.driveDown(-0.50)); // climber down
+    operatorController.povDown().whileTrue(climber.driveUp(0.70)); // climber up
+    operatorController.povUp().whileTrue(climber.driveDown(-0.70)); // climber down
   }
 
   /**

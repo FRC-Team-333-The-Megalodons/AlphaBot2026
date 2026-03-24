@@ -14,6 +14,8 @@ public interface FlywheelIO extends Automatable {
   public static class FlywheelIOInputs {
     public double velocityRPM = 0.0;
     public double appliedVolts = 0.0;
+    public double supplyAmps = 0.0;
+    public double statorAmps = 0.0;
   }
 
   public static final InterpolatingDoubleTreeMap distanceToRPM = buildMap();

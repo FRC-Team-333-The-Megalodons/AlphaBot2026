@@ -7,7 +7,6 @@ import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
 import frc.robot.util.LiveTuning;
-import frc.robot.util.RobotMetrics;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
@@ -22,10 +21,8 @@ public class Pivot extends SubsystemBase {
 
   @Override
   public void periodic() {
-    RobotMetrics.start("PivotPeriodic");
     io.updateInputs(inputs);
     Logger.processInputs("Pivot", inputs);
-    RobotMetrics.stop("PivotPeriodic");
     LiveTuning.publish("Pivot/AngleDegrees", getPositionDeg());
     LiveTuning.publish("Pivot/AppliedVoltage", io.getAppliedVoltage());
   }

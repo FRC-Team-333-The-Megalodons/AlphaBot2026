@@ -9,7 +9,6 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
-import frc.robot.util.RobotMetrics;
 
 public class SpindexerIOKraken implements SpindexerIO {
   private final TalonFX motor;
@@ -27,6 +26,11 @@ public class SpindexerIOKraken implements SpindexerIO {
     config.Slot0.kP = SpindexerConstants.kP;
     config.Slot0.kA = SpindexerConstants.kA;
     config.Slot0.kV = SpindexerConstants.kV;
+
+    // config.CurrentLimits.StatorCurrentLimit = 60.0;
+    // config.CurrentLimits.StatorCurrentLimitEnable = true;
+    // config.CurrentLimits.SupplyCurrentLimit = 30.0;
+    // config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     motor.getConfigurator().apply(config);
 
@@ -49,6 +53,5 @@ public class SpindexerIOKraken implements SpindexerIO {
   @Override
   public void setVoltage(double volts) {
     motor.setControl(new VoltageOut(volts));
-    RobotMetrics.recordOutput("Spindexer/Voltage", volts);
   }
 }

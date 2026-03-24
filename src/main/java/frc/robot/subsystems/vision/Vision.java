@@ -21,7 +21,6 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
 import frc.robot.util.LiveTuning;
-import frc.robot.util.RobotMetrics;
 import java.util.LinkedList;
 import java.util.List;
 import org.littletonrobotics.junction.Logger;
@@ -148,16 +147,16 @@ public class Vision extends SubsystemBase {
       }
 
       // Log camera metadata
-      RobotMetrics.recordOutput(
+      Logger.recordOutput(
           "Vision/Camera" + Integer.toString(cameraIndex) + "/TagPoses",
           tagPoses.toArray(new Pose3d[0]));
-      RobotMetrics.recordOutput(
+      Logger.recordOutput(
           "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPoses",
           robotPoses.toArray(new Pose3d[0]));
-      RobotMetrics.recordOutput(
+      Logger.recordOutput(
           "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPosesAccepted",
           robotPosesAccepted.toArray(new Pose3d[0]));
-      RobotMetrics.recordOutput(
+      Logger.recordOutput(
           "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPosesRejected",
           robotPosesRejected.toArray(new Pose3d[0]));
       allTagPoses.addAll(tagPoses);
@@ -167,11 +166,11 @@ public class Vision extends SubsystemBase {
     }
 
     // Log summary data
-    RobotMetrics.recordOutput("Vision/Summary/TagPoses", allTagPoses.toArray(new Pose3d[0]));
-    RobotMetrics.recordOutput("Vision/Summary/RobotPoses", allRobotPoses.toArray(new Pose3d[0]));
-    RobotMetrics.recordOutput(
+    Logger.recordOutput("Vision/Summary/TagPoses", allTagPoses.toArray(new Pose3d[0]));
+    Logger.recordOutput("Vision/Summary/RobotPoses", allRobotPoses.toArray(new Pose3d[0]));
+    Logger.recordOutput(
         "Vision/Summary/RobotPosesAccepted", allRobotPosesAccepted.toArray(new Pose3d[0]));
-    RobotMetrics.recordOutput(
+    Logger.recordOutput(
         "Vision/Summary/RobotPosesRejected", allRobotPosesRejected.toArray(new Pose3d[0]));
     for (int i = 0; i < io.length; i++) {
       LiveTuning.publish("Vision/Camera" + i + "/Connected", inputs[i].connected);

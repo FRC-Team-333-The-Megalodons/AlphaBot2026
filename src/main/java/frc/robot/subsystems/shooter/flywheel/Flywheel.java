@@ -5,20 +5,21 @@ import static edu.wpi.first.units.Units.Volts;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.interfaces.Characterizable;
 import frc.robot.util.LiveTuning;
-import frc.robot.util.RobotMetrics;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
-public class Flywheel extends SubsystemBase {
+public class Flywheel extends SubsystemBase implements Characterizable {
   private final FlywheelIO io;
   private final FlywheelIOInputsAutoLogged inputs = new FlywheelIOInputsAutoLogged();
 
   private Supplier<Distance> distanceSupplier;
 
-  private final SysIdRoutine sysIdRoutine;
+  
 
   private enum PreSpinState {
     IDLE,
@@ -38,24 +39,12 @@ public class Flywheel extends SubsystemBase {
 
   public Flywheel(FlywheelIO io, Supplier<Distance> distanceSupplier) {
     this.io = io;
-    this.distanceSupplier = distanceSupplier;
-
-    sysIdRoutine =
-        new SysIdRoutine(
-            new SysIdRoutine.Config(null, Volts.of(7), null, null),
-            new SysIdRoutine.Mechanism(
-                (edu.wpi.first.units.measure.Voltage volts) -> io.setVoltage(volts.in(Volts)),
-                (log) -> {
-                  log.motor("flywheel-sysid")
-                      .voltage(Volts.of(inputs.appliedVolts))
-                      .angularVelocity(io.rpmToRPS(inputs.velocityRPM));
-                },
-                this));
+    this.distanceSupplier = distanceSupplier; 
   }
 
   private double dynamicRPM() {
     double target = io.getRPMFromDistance(distanceSupplier.get());
-    RobotMetrics.recordOutput("Flywheel/TargetRPM", target);
+    Logger.recordOutput("Flywheel/TargetRPM", target);
     return target;
   }
 
@@ -113,9 +102,9 @@ public class Flywheel extends SubsystemBase {
         break;
     }
 
-    RobotMetrics.recordOutput("Flywheel/PreSpinState", preSpinState.toString());
-    RobotMetrics.recordOutput("Flywheel/CoastDownTimer", coastDownTimer.get());
-    RobotMetrics.recordOutput("Flywheel/VelocityRPM", inputs.velocityRPM);
+    Logger.recordOutput("Flywheel/PreSpinState", preSpinState.toString());
+    Logger.recordOutput("Flywheel/CoastDownTimer", coastDownTimer.get());
+    Logger.recordOutput("Flywheel/VelocityRPM", inputs.velocityRPM);
     LiveTuning.publish("Flywheel/RPM", inputs.velocityRPM);
   }
 
@@ -190,11 +179,25 @@ public class Flywheel extends SubsystemBase {
     return runOnce(() -> io.setVoltage(0.0));
   }
 
-  public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-    return sysIdRoutine.quasistatic(direction);
-  }
+  @Override
+  public Command characterize() {
+    SysIdRoutine routine = new SysIdRoutine(
+      new SysIdRoutine.Config(null, Volts.of(7), null, null),
+      new SysIdRoutine.Mechanism(
+        (edu.wpi.first.units.measure.Voltage volts) -> io.setVoltage(volts.in(Volts)),
+        (log) -> {
+          log.motor("flywheel-sysid")
+              .voltage(Volts.of(inputs.appliedVolts))
+              .angularVelocity(io.rpmToRPS(inputs.velocityRPM));
+        },
+        this
+      )
+    );
 
-  public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-    return sysIdRoutine.dynamic(direction);
+    return Commands.sequence(
+      Commands.print("Starting Flywheel SysId"),
+      runSysIdSequence(routine),
+      Commands.print("Flywheel SysId Completed")
+    );
   }
 }

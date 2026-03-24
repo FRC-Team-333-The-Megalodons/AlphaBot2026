@@ -9,6 +9,7 @@ public interface TransferIO extends Automatable {
     public double appliedVolts = 0.0;
     public double currentAmps = 0.0;
     public double velocityRpm = 0.0;
+    public double supplyAmps = 0.0;
   }
 
   public default void updateInputs(TransferIOInputs inputs) {}

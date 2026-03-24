@@ -19,6 +19,7 @@ public class TransferIOKraken implements TransferIO {
   private final StatusSignal<AngularVelocity> velocitySignal;
   private final StatusSignal<Voltage> voltageSignal;
   private final StatusSignal<Current> currentSignal;
+  private final StatusSignal<Current> supplyCurrent;
 
   private final MotionMagicVelocityVoltage velocityRequest =
       new MotionMagicVelocityVoltage(0).withSlot(0);
@@ -39,22 +40,32 @@ public class TransferIOKraken implements TransferIO {
 
     config.MotionMagic.MotionMagicAcceleration = TransferConstants.MAX_ACCEL;
     config.MotionMagic.MotionMagicJerk = TransferConstants.MAX_JERK;
+    config.CurrentLimits.SupplyCurrentLimit = 30.0;
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
+
+    // config.CurrentLimits.StatorCurrentLimit = 70.0;
+    // config.CurrentLimits.StatorCurrentLimitEnable = true;
+    // config.CurrentLimits.SupplyCurrentLimit = 35.0;
+    // config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     motor.getConfigurator().apply(config);
 
     velocitySignal = motor.getVelocity();
     voltageSignal = motor.getMotorVoltage();
     currentSignal = motor.getStatorCurrent();
+    supplyCurrent = motor.getSupplyCurrent();
 
-    BaseStatusSignal.setUpdateFrequencyForAll(50.0, velocitySignal, voltageSignal, currentSignal);
+    BaseStatusSignal.setUpdateFrequencyForAll(
+        50.0, velocitySignal, voltageSignal, currentSignal, supplyCurrent);
   }
 
   @Override
   public void updateInputs(TransferIOInputs inputs) {
-    BaseStatusSignal.refreshAll(velocitySignal, voltageSignal, currentSignal);
+    BaseStatusSignal.refreshAll(velocitySignal, voltageSignal, currentSignal, supplyCurrent);
 
     inputs.appliedVolts = voltageSignal.getValueAsDouble();
     inputs.currentAmps = currentSignal.getValueAsDouble();
+    inputs.supplyAmps = supplyCurrent.getValueAsDouble();
     inputs.velocityRpm = velocitySignal.getValueAsDouble() * 60.0;
   }
 

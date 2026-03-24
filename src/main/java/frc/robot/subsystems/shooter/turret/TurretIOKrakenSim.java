@@ -42,7 +42,7 @@ public class TurretIOKrakenSim implements TurretIO {
     inputs.turretPositionDeg = Units.radiansToDegrees(sim.getAngleRads());
     inputs.turretVelocityRPM = sim.getVelocityRadPerSec() * 60.0;
     inputs.turretAppliedVolts = appliedVolts;
-    inputs.turretCurrentAmps = sim.getCurrentDrawAmps();
+    inputs.turretStatorAmps = sim.getCurrentDrawAmps();
 
     double turretRotations = Units.degreesToRotations(inputs.turretPositionDeg);
 

@@ -34,6 +34,13 @@ public class FlywheelIOKraken implements FlywheelIO {
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    config.CurrentLimits.SupplyCurrentLimit = 15.0;
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
+
+    // config.CurrentLimits.StatorCurrentLimit = 70.0;
+    // config.CurrentLimits.StatorCurrentLimitEnable = true;
+    // config.CurrentLimits.SupplyCurrentLimit = 35.0;
+    // config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     motor.getConfigurator().apply(config);
     motor2.getConfigurator().apply(config);
@@ -46,6 +53,8 @@ public class FlywheelIOKraken implements FlywheelIO {
   public void updateInputs(FlywheelIOInputs inputs) {
     inputs.velocityRPM = rpsToRPM(motor2.getVelocity().getValue());
     inputs.appliedVolts = motor2.getMotorVoltage().getValueAsDouble();
+    inputs.statorAmps = motor2.getStatorCurrent().getValueAsDouble();
+    inputs.supplyAmps = motor2.getSupplyCurrent().getValueAsDouble();
   }
 
   @Override
