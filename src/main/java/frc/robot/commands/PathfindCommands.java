@@ -1,7 +1,5 @@
 package frc.robot.commands;
 
-import static frc.robot.AutopilotConstants.kClimbingAutopilot;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.util.FlippingUtil;
@@ -74,12 +72,16 @@ public class PathfindCommands {
   public static Command climbSequence(Drive drive) {
     PathConstraints stagingConstraints =
         new PathConstraints(3.0, 3.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
+    PathConstraints climbingConstraints =
+        new PathConstraints(0.5, 0.5, Units.degreesToRadians(540), Units.degreesToRadians(720));
 
     return Commands.sequence(
             AutoBuilder.pathfindToPose(allianceClimbingStagePose(), stagingConstraints, 0.0),
             Commands.waitSeconds(0.3),
             Commands.defer(
-                () -> DriveCommands.driveToPose(drive, allianceClimbingPose(), kClimbingAutopilot),
+                () -> AutoBuilder.pathfindToPose(allianceClimbingPose(), climbingConstraints, 0.0),
+                // () -> DriveCommands.driveToPose(drive, allianceClimbingPose(),
+                // kClimbingAutopilot),
                 Set.of(drive)))
         .withName("PathfindCommands.climbSequence");
   }

@@ -262,6 +262,7 @@ public class RobotContainer {
 
   private void registerNamedCommands() {
     NamedCommands.registerCommand("DriveToOutpost", PathfindCommands.driveToTheOutpost(drive));
+    NamedCommands.registerCommand("PivotDown", pivot.motionMagicDown());
     NamedCommands.registerCommand("ClimbSequence", PathfindCommands.climbSequence(drive));
     NamedCommands.registerCommand("ClimbingPosition", climber.extend());
     NamedCommands.registerCommand("Climb", climber.retract());
@@ -282,6 +283,14 @@ public class RobotContainer {
 
   public void onDriverStationConnected() {
     targeting.seed();
+  }
+
+  public void resetTransfer() {
+    transfer.stop();
+  }
+
+  public void resetFlywheel() {
+    flywheel.resetPreSpin();
   }
 
   /**
@@ -406,6 +415,7 @@ public class RobotContainer {
     // driverController.povUp().whileTrue(PathfindCommands.pathfindToDepot(drive));
 
     driverController.povRight().onTrue(PathfindCommands.climbSequence(drive));
+
     // Intake
     operatorController.L2().whileTrue(intake.ingest());
     operatorController.L1().whileTrue(intake.eject());

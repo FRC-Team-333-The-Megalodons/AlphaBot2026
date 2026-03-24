@@ -55,8 +55,6 @@ public class ShootingCommands {
     return Commands.parallel(
         turret.autoAim(),
         flywheel.shootOnMoveSpinUp(),
-        // pivot.goUpOrDownBasedOnMovement(drive), // TODO: uncomment this to do "stationary pull
-        // up, driving put down"
         intake.dynamicIngest(
             () -> {
               var fieldVelocity = drive.robotFieldVelocity();
@@ -64,8 +62,9 @@ public class ShootingCommands {
               double absY = Math.abs(fieldVelocity.dy);
               return Math.max(absX, absY);
             }),
+        spindexer.spin(),
         Commands.sequence(
             Commands.waitUntil(() -> flywheel.ready() && turret.atTarget()),
-            Commands.parallel(spindexer.spin(), transfer.feedShooter())));
+            transfer.feedShooter())); // feedShooterVelocity add this for more consisent shooting.
   }
 }
