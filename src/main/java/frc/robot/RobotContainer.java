@@ -209,53 +209,28 @@ public class RobotContainer {
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
-    // Set up SysId routines
+    // SysId routines
+    // Drive
     autoChooser.addOption(
         "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
     autoChooser.addOption(
         "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
     autoChooser.addOption(
         "Drive SysId (Quasistatic Forward)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        drive.characterize());
+    // Flywheel
     autoChooser.addOption(
-        "Drive SysId (Quasistatic Reverse)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        "Flywheel SysId",
+        flywheel.characterize());
+    // Turret
     autoChooser.addOption(
-        "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+        "Turret SysId",
+        turret.characterize());
+    // Transfer
     autoChooser.addOption(
-        "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-    // Flywheel SysId routine
-    autoChooser.addOption(
-        "Flywheel SysId (Quasistatic Forward)",
-        flywheel.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Flywheel SysId (Quasistatic Reverse)",
-        flywheel.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Flywheel SysId (Dynamic Forward)", flywheel.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Flywheel SysId (Dynamic Reverse)", flywheel.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-    // Turret SysId routines
-    autoChooser.addOption(
-        "Turret SysId (Quasistatic Forward)",
-        turret.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Turret SysId (Quasistatic Reverse)",
-        turret.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Turret SysId (Dynamic Forward)", turret.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Turret SysId (Dynamic Reverse)", turret.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Transfer SysId (Quasistatic Forward)",
-        transfer.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Transfer SysId (Quasistatic Reverse)",
-        transfer.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Transfer SysId (Dynamic Forward)", transfer.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Transfer SysId (Dynamic Reverse)", transfer.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+        "Transfer SysId",
+        transfer.characterize());
+    
     SmartDashboard.putData("Pathfind to Depot", PathfindCommands.pathfindToDepot(drive));
     SmartDashboard.putData("Turret/00 Go to 45", turret.rotateToField(Rotation2d.fromDegrees(45)));
     SmartDashboard.putData("Turret/01 Go to 90", turret.rotateToField(Rotation2d.kCW_90deg));

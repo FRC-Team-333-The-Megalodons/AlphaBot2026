@@ -4,30 +4,19 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.interfaces.Characterizable;
+
 import org.littletonrobotics.junction.Logger;
 
-public class Transfer extends SubsystemBase {
+public class Transfer extends SubsystemBase implements Characterizable {
   private final TransferIO io;
   private final TransferIOInputsAutoLogged inputs = new TransferIOInputsAutoLogged();
 
-  private final SysIdRoutine sysIdRoutine;
-
   public Transfer(TransferIO io) {
-    this.io = io;
-
-    sysIdRoutine =
-        new SysIdRoutine(
-            new SysIdRoutine.Config(null, Volts.of(7), null, null),
-            new SysIdRoutine.Mechanism(
-                (voltage) -> io.setVoltage(voltage.in(Volts)),
-                (log) -> {
-                  log.motor("transfer-sysid")
-                      .voltage(Volts.of(inputs.appliedVolts))
-                      .angularVelocity(RotationsPerSecond.of(inputs.velocityRpm / 60.0));
-                },
-                this));
+    this.io = io; 
   }
 
   @Override
@@ -48,11 +37,25 @@ public class Transfer extends SubsystemBase {
     return io.atTarget(TransferConstants.TARGET_RPM);
   }
 
-  public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-    return sysIdRoutine.quasistatic(direction);
-  }
+  @Override
+  public Command characterize() {
+    SysIdRoutine routine = new SysIdRoutine(
+      new SysIdRoutine.Config(null, Volts.of(7), null, null),
+      new SysIdRoutine.Mechanism(
+        (voltage) -> io.setVoltage(voltage.in(Volts)),
+        (log) -> {
+          log.motor("transfer-sysid")
+            .voltage(Volts.of(inputs.appliedVolts))
+            .angularVelocity(RotationsPerSecond.of(inputs.velocityRpm / 60.0));
+        },
+        this
+      )
+    );
 
-  public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-    return sysIdRoutine.dynamic(direction);
+    return Commands.sequence(
+      Commands.print("Starting Transfer SysId"),
+      runSysIdSequence(routine),
+      Commands.print("Transfer SysId Completed")
+    );
   }
 }

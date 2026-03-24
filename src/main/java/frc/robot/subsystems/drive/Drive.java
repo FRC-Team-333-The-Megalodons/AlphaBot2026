@@ -39,11 +39,13 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
+import frc.robot.interfaces.Characterizable;
 import frc.robot.interfaces.Initializable;
 import frc.robot.util.LiveTuning;
 import frc.robot.util.LocalADStarAK;
@@ -54,7 +56,7 @@ import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public class Drive extends SubsystemBase implements Initializable {
+public class Drive extends SubsystemBase implements Characterizable, Initializable {
 
   // TunerConstants doesn't include these constants, so they are declared locally
   static final double ODOMETRY_FREQUENCY = TunerConstants.kCANBus.isNetworkFD() ? 250.0 : 100.0;
@@ -309,16 +311,28 @@ public class Drive extends SubsystemBase implements Initializable {
     stop();
   }
 
-  /** Returns a command to run a quasistatic test in the specified direction. */
-  public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-    return run(() -> runCharacterization(0.0))
-        .withTimeout(1.0)
-        .andThen(sysId.quasistatic(direction));
-  }
+  @Override
+  public Command characterize() {
+    SysIdRoutine routine = new SysIdRoutine(
+      new SysIdRoutine.Config(
+        null,
+        null,
+        null,
+        (state) -> RobotMetrics.recordOutput("Drive/SysIdState", state.toString())
+      ),
+      new SysIdRoutine.Mechanism(
+        (voltage) -> runCharacterization(voltage.in(Volts)),
+        null,
+        this
+      )
+    );
 
-  /** Returns a command to run a dynamic test in the specified direction. */
-  public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-    return run(() -> runCharacterization(0.0)).withTimeout(1.0).andThen(sysId.dynamic(direction));
+    return Commands.sequence(
+      runOnce(() -> runCharacterization(0.0)),
+      Commands.print("Starting Drive Translation SysId"),
+      runSysIdSequence(routine),
+      Commands.print("Drive Translation SysId Completed")
+    );
   }
 
   /** Returns the module states (turn angles and drive velocities) for all of the modules. */

@@ -10,12 +10,14 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.interfaces.Characterizable;
 import frc.robot.interfaces.Initializable;
 import frc.robot.util.LiveTuning;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
-public class Turret extends SubsystemBase implements Initializable {
+public class Turret extends SubsystemBase implements Characterizable, Initializable {
   private final TurretIO io;
   private final TurretIOInputsAutoLogged inputs = new TurretIOInputsAutoLogged();
   private final Supplier<Angle> targetAngleSupplier;
@@ -131,11 +133,25 @@ public class Turret extends SubsystemBase implements Initializable {
     return Math.abs(diff) < 4.0;
   }
 
-  public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-    return sysIdRoutine.quasistatic(direction);
-  }
+  @Override
+  public Command characterize() {
+    SysIdRoutine routine = new SysIdRoutine(
+      new SysIdRoutine.Config(
+        null,
+        null,
+        null,
+        (state) -> RobotMetrics.recordOutput("Turret/SysIdState", state.toString())),
+      new SysIdRoutine.Mechanism(
+        (voltage) -> io.setTurretVoltage(voltage.in(Volts)),
+        null,
+        this
+      )
+    );
 
-  public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-    return sysIdRoutine.dynamic(direction);
+    return Commands.sequence(
+      Commands.print("Starting Turret SysId"),
+      runSysIdSequence(routine),
+      Commands.print("Turret SysId Completed")
+    );
   }
 }
