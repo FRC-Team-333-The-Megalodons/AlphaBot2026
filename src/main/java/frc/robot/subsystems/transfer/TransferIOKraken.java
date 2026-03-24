@@ -40,6 +40,8 @@ public class TransferIOKraken implements TransferIO {
 
     config.MotionMagic.MotionMagicAcceleration = TransferConstants.MAX_ACCEL;
     config.MotionMagic.MotionMagicJerk = TransferConstants.MAX_JERK;
+    config.CurrentLimits.SupplyCurrentLimit = 30.0;
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     // config.CurrentLimits.StatorCurrentLimit = 70.0;
     // config.CurrentLimits.StatorCurrentLimitEnable = true;

@@ -37,6 +37,8 @@ public class FlywheelIOKraken implements FlywheelIO {
     // Flywheel.dynamicSpinUp() was negating the RPM to compensate, which was fragile.
     // Now direction is owned here at the hardware layer, and all callers pass positive RPM.
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    config.CurrentLimits.SupplyCurrentLimit = 15.0;
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     // config.CurrentLimits.StatorCurrentLimit = 70.0;
     // config.CurrentLimits.StatorCurrentLimitEnable = true;

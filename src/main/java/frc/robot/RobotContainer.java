@@ -7,6 +7,7 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.subsystems.vision.VisionConstants.camera0Name;
 import static frc.robot.subsystems.vision.VisionConstants.camera1Name;
 import static frc.robot.subsystems.vision.VisionConstants.robotToCamera0;
@@ -15,9 +16,11 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -271,6 +274,8 @@ public class RobotContainer {
     SmartDashboard.putData("Turret/08 Go to 0", turret.rotateToField(Rotation2d.kZero));
     SmartDashboard.putData("Turret/Reseed Abs Position", turret.reseedPosition());
 
+    RobotController.setBrownoutVoltage(Voltage.ofBaseUnits(5.5, Volts));
+
     seedTurret();
     // Configure the button bindings
     configureButtonBindings();
@@ -447,8 +452,8 @@ public class RobotContainer {
         .whileTrue(Commands.run(() -> flywheel.setRPMDirect(2200), flywheel));
 
     // climber
-    operatorController.povDown().whileTrue(climber.driveUp(0.50)); // climber up
-    operatorController.povUp().whileTrue(climber.driveDown(-0.50)); // climber down
+    operatorController.povDown().whileTrue(climber.driveUp(0.70)); // climber up
+    operatorController.povUp().whileTrue(climber.driveDown(-0.70)); // climber down
   }
 
   /**
