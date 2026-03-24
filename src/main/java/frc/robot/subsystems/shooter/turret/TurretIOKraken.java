@@ -20,7 +20,6 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
-import frc.robot.util.RobotMetrics;
 
 public class TurretIOKraken implements TurretIO {
   private final TalonFX turretMotor;
@@ -174,13 +173,6 @@ public class TurretIOKraken implements TurretIO {
 
   /** Calculates the absolute turret position using the CRT */
   private double calculateAbsolutePosition(double p17, double p18) {
-    long start = System.currentTimeMillis();
-    double result = calculateAbsolutePosition_impl(p17, p18);
-    RobotMetrics.recordOutput("CRT_Calc_Time", System.currentTimeMillis() - start);
-    return result;
-  }
-
-  private double calculateAbsolutePosition_impl(double p17, double p18) {
     double n1 = 17.0;
     double n2 = 18.0;
     double N = 105.0;

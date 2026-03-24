@@ -12,7 +12,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.interfaces.Initializable;
 import frc.robot.util.LiveTuning;
-import frc.robot.util.RobotMetrics;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
@@ -36,7 +35,7 @@ public class Turret extends SubsystemBase implements Initializable {
                 null,
                 null,
                 null,
-                (state) -> RobotMetrics.recordOutput("Turret/SysIdState", state.toString())),
+                (state) -> Logger.recordOutput("Turret/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
                 (voltage) -> io.setTurretVoltage(voltage.in(Volts)), null, this));
   }
@@ -102,9 +101,9 @@ public class Turret extends SubsystemBase implements Initializable {
 
           double targetDeg = mapToTurretRange(targetRobotAngle.getDegrees());
 
-          RobotMetrics.recordOutput("Turret/TargetFieldAngleDeg", targetFieldAngle.getDegrees());
-          RobotMetrics.recordOutput("Turret/TargetRobotAngleDeg", targetRobotAngle.getDegrees());
-          RobotMetrics.recordOutput("Turret/MappedTargetDeg", targetDeg);
+          Logger.recordOutput("Turret/TargetFieldAngleDeg", targetFieldAngle.getDegrees());
+          Logger.recordOutput("Turret/TargetRobotAngleDeg", targetRobotAngle.getDegrees());
+          Logger.recordOutput("Turret/MappedTargetDeg", targetDeg);
 
           io.moveTo(targetDeg);
         },

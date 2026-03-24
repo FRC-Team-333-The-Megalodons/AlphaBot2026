@@ -15,7 +15,6 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
-import frc.robot.util.RobotMetrics;
 
 public class PivotIOKraken implements PivotIO {
 
@@ -77,8 +76,6 @@ public class PivotIOKraken implements PivotIO {
 
   @Override
   public void updateInputs(PivotIOInputs inputs) {
-    RobotMetrics.start("PivotKrakenUpdateInputs");
-
     BaseStatusSignal.refreshAll(position, velocity, appliedVolts, currentAmps, supplyAmps);
 
     inputs.positionDeg = getPositionDeg();
@@ -86,8 +83,6 @@ public class PivotIOKraken implements PivotIO {
     inputs.appliedVolts = getAppliedVoltage();
     inputs.currentAmps = currentAmps.getValueAsDouble();
     inputs.supplyAmps = supplyAmps.getValueAsDouble();
-
-    RobotMetrics.stop("PivotKrakenUpdateInputs");
   }
 
   @Override

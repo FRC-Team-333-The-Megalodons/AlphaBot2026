@@ -16,7 +16,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.interfaces.Initializable;
-import frc.robot.util.RobotMetrics;
 import frc.robot.util.Zones;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
@@ -82,13 +81,13 @@ public class Targeting extends SubsystemBase implements Initializable {
           inputs.augmentedTargetYaw =
               io.getAngleTo(predictedPose, velocityCompensatedTarget).getDegrees();
 
-          RobotMetrics.recordOutput("Targeting/RawTarget", new Pose2d(rawTarget, Rotation2d.kZero));
-          RobotMetrics.recordOutput(
+          Logger.recordOutput("Targeting/RawTarget", new Pose2d(rawTarget, Rotation2d.kZero));
+          Logger.recordOutput(
               "Targeting/CompensatedTarget",
               new Pose2d(velocityCompensatedTarget, Rotation2d.kZero));
-          RobotMetrics.recordOutput("Targeting/TOF", refinedTof);
-          RobotMetrics.recordOutput("Targeting/RobotVelocityX", vel.dx);
-          RobotMetrics.recordOutput("Targeting/RobotVelocityY", vel.dy);
+          Logger.recordOutput("Targeting/TOF", refinedTof);
+          Logger.recordOutput("Targeting/RobotVelocityX", vel.dx);
+          Logger.recordOutput("Targeting/RobotVelocityY", vel.dy);
         });
   }
 
