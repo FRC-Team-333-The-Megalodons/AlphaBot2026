@@ -6,9 +6,9 @@
 // at the root directory of this project.
 
 package frc.robot.subsystems.vision;
- 
+
 import static frc.robot.subsystems.vision.VisionConstants.*;
- 
+
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -17,23 +17,23 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.photonvision.PhotonCamera;
- 
+
 /** IO implementation for real PhotonVision hardware. */
 public class VisionIOPhotonVision implements VisionIO {
   protected final PhotonCamera camera;
   protected final Transform3d robotToCamera;
- 
+
   /**
-   * Maximum number of camera results to process per robot loop cycle. If the camera has more
-   * frames than this (during a GC pause or brownout), older frames are skipped to prevent
-   * processing backlogs from snowballing into even .
+   * Maximum number of camera results to process per robot loop cycle. If the camera has more frames
+   * than this (during a GC pause or brownout), older frames are skipped to prevent processing
+   * backlogs from snowballing into even .
    */
   private static final int MAX_RESULTS_PER_CYCLE = 3;
- 
+
   // Pre-allocated, reusable collections
   private final Set<Short> tagIds = new HashSet<>();
   private final List<PoseObservation> poseObservations = new ArrayList<>();
- 
+
   /**
    * Creates a new VisionIOPhotonVision.
    *
@@ -44,25 +44,25 @@ public class VisionIOPhotonVision implements VisionIO {
     camera = new PhotonCamera(name);
     this.robotToCamera = robotToCamera;
   }
- 
+
   @Override
   public void updateInputs(VisionIOInputs inputs) {
     inputs.connected = camera.isConnected();
- 
+
     // Clear reusable collections
     tagIds.clear();
     poseObservations.clear();
- 
+
     // Read new camera observations
     var allResults = camera.getAllUnreadResults();
- 
+
     // If camera has buffered too many frames (loop stall, GC, brownout), only process
     // the most recent ones. Older frames have usless pose data anyway.
     int startIndex = Math.max(0, allResults.size() - MAX_RESULTS_PER_CYCLE);
- 
+
     for (int resultIdx = startIndex; resultIdx < allResults.size(); resultIdx++) {
       var result = allResults.get(resultIdx);
- 
+
       // Update latest target observation
       if (result.hasTargets()) {
         inputs.latestTargetObservation =
@@ -72,25 +72,25 @@ public class VisionIOPhotonVision implements VisionIO {
       } else {
         inputs.latestTargetObservation = new TargetObservation(Rotation2d.kZero, Rotation2d.kZero);
       }
- 
+
       // Add pose observation
       if (result.multitagResult.isPresent()) { // Multitag result
         var multitagResult = result.multitagResult.get();
- 
+
         // Calculate robot pose
         Transform3d fieldToCamera = multitagResult.estimatedPose.best;
         Transform3d fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
         Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
- 
+
         // Calculate average tag distance from the camera lens
         double totalTagDistance = 0.0;
         for (var target : result.targets) {
           totalTagDistance += target.bestCameraToTarget.getTranslation().getNorm();
         }
- 
+
         // Add tag IDs
         tagIds.addAll(multitagResult.fiducialIDsUsed);
- 
+
         // Add observation
         poseObservations.add(
             new PoseObservation(
@@ -100,10 +100,10 @@ public class VisionIOPhotonVision implements VisionIO {
                 multitagResult.fiducialIDsUsed.size(), // Tag count
                 totalTagDistance / result.targets.size(), // Average tag distance
                 PoseObservationType.PHOTONVISION)); // Observation type
- 
+
       } else if (!result.targets.isEmpty()) { // Single tag result
         var target = result.targets.get(0);
- 
+
         // Calculate robot pose
         var tagPose = aprilTagLayout.getTagPose(target.fiducialId);
         if (tagPose.isPresent()) {
@@ -113,10 +113,10 @@ public class VisionIOPhotonVision implements VisionIO {
           Transform3d fieldToCamera = fieldToTarget.plus(cameraToTarget.inverse());
           Transform3d fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
           Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
- 
+
           // Add tag ID
           tagIds.add((short) target.fiducialId);
- 
+
           // Add observation
           poseObservations.add(
               new PoseObservation(
@@ -129,13 +129,13 @@ public class VisionIOPhotonVision implements VisionIO {
         }
       }
     }
- 
+
     // Save pose observations to inputs object
     inputs.poseObservations = new PoseObservation[poseObservations.size()];
     for (int i = 0; i < poseObservations.size(); i++) {
       inputs.poseObservations[i] = poseObservations.get(i);
     }
- 
+
     // Save tag IDs to inputs objects
     inputs.tagIds = new int[tagIds.size()];
     int i = 0;

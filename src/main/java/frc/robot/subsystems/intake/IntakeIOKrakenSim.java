@@ -1,5 +1,6 @@
 package frc.robot.subsystems.intake;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -17,7 +18,19 @@ public class IntakeIOKrakenSim implements IntakeIO {
   public void updateInputs(IntakeIOInputs inputs) {
     sim.update(0.02);
     inputs.appliedVolts = appliedVolts;
-    inputs.velocityRps = sim.getAngularVelocityRPM() / 60.0;
+    inputs.velocityRpm = sim.getAngularVelocityRPM();
+  }
+
+  @Override
+  public void moveTo(double rpm) {
+    double volts = (rpm / 60.0) * IntakeConstants.kV;
+    setVoltage(MathUtil.clamp(volts, -12.0, 12.0));
+  }
+
+  @Override
+  public boolean atTarget(double rpm) {
+    double currentRPM = sim.getAngularVelocityRPM();
+    return Math.abs(Math.abs(currentRPM) - Math.abs(rpm)) < IntakeConstants.VELOCITY_TOLERANCE_RPM;
   }
 
   @Override

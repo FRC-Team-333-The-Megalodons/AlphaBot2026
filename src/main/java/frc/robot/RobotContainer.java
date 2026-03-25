@@ -26,7 +26,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.PathfindCommands;
 import frc.robot.commands.ShootingCommands;
@@ -106,14 +105,13 @@ public class RobotContainer {
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
+  private final LoggedDashboardChooser<Command> sysIdChooser;
+  private static final Command NO_SYSID = Commands.none();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     switch (Constants.currentMode) {
       case REAL:
-        // Real robot, instantiate hardware IO implementations
-        // ModuleIOTalonFX is intended for modules with TalonFX drive, TalonFX turn, and
-        // a CANcoder
         drive =
             new Drive(
                 new GyroIOPigeon2(),
@@ -133,30 +131,9 @@ public class RobotContainer {
         turret = new Turret(new TurretIOYAMS(), targeting::getTargetAngle, drive::getRotation);
         leds = new Led(new LedIOCANdle());
         climber = new Climber(new ClimberIOKraken());
-
-        // Note:
-
-        // The ModuleIOTalonFXS implementation provides an example implementation for
-        // TalonFXS driverController connected to a CANdi with a PWM encoder. The
-        // implementations
-        // of ModuleIOTalonFX, ModuleIOTalonFXS, and ModuleIOSpark (from the Spark
-        // swerve
-        // template) can be freely intermixed to support alternative hardware
-        // arrangements.
-        // Please see the AdvantageKit template documentation for more information:
-        // https://docs.advantagekit.org/getting-started/template-projects/talonfx-swerve-template#custom-module-implementations
-        //
-        // drive =
-        // new Drive(
-        // new GyroIOPigeon2(),
-        // new ModuleIOTalonFXS(TunerConstants.FrontLeft),
-        // new ModuleIOTalonFXS(TunerConstants.FrontRight),
-        // new ModuleIOTalonFXS(TunerConstants.BackLeft),
-        // new ModuleIOTalonFXS(TunerConstants.BackRight));
         break;
 
       case SIM:
-        // Sim robot, instantiate physics sim IO implementations
         drive =
             new Drive(
                 new GyroIO() {},
@@ -180,7 +157,6 @@ public class RobotContainer {
         break;
 
       default:
-        // Replayed robot, disable IO implementations
         drive =
             new Drive(
                 new GyroIO() {},
@@ -206,31 +182,22 @@ public class RobotContainer {
             drive::getPose, flywheel::ready, flywheel::isPreSpunUp, intake::getAppliedVolts);
 
     registerNamedCommands();
-    // Set up auto routines
+
+    //  Auto chooser
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
-    // SysId routines
-    // Drive
-    autoChooser.addOption(
-        "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
-    autoChooser.addOption(
-        "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Forward)",
-        drive.characterize());
-    // Flywheel
-    autoChooser.addOption(
-        "Flywheel SysId",
-        flywheel.characterize());
-    // Turret
-    autoChooser.addOption(
-        "Turret SysId",
-        turret.characterize());
-    // Transfer
-    autoChooser.addOption(
-        "Transfer SysId",
-        transfer.characterize());
-    
+    // SysId chooser (separate dropdown)
+    sysIdChooser = new LoggedDashboardChooser<>("SysId Routines");
+    sysIdChooser.addDefaultOption("None", NO_SYSID);
+    sysIdChooser.addOption("Drive SysId", drive.characterize());
+    sysIdChooser.addOption("Drive Wheel Radius", DriveCommands.wheelRadiusCharacterization(drive));
+    sysIdChooser.addOption("Drive Simple FF", DriveCommands.feedforwardCharacterization(drive));
+    sysIdChooser.addOption("Flywheel SysId", flywheel.characterize());
+    sysIdChooser.addOption("Intake SysId", intake.characterize());
+    sysIdChooser.addOption("Spindexer SysId", spindexer.characterize());
+    sysIdChooser.addOption("Transfer SysId", transfer.characterize());
+    sysIdChooser.addOption("Turret SysId", turret.characterize());
+
     SmartDashboard.putData("Pathfind to Depot", PathfindCommands.pathfindToDepot(drive));
     SmartDashboard.putData("Turret/00 Go to 45", turret.rotateToField(Rotation2d.fromDegrees(45)));
     SmartDashboard.putData("Turret/01 Go to 90", turret.rotateToField(Rotation2d.kCW_90deg));
@@ -252,7 +219,6 @@ public class RobotContainer {
     RobotController.setBrownoutVoltage(Voltage.ofBaseUnits(5.5, Volts));
 
     seedTurret();
-    // Configure the button bindings
     configureButtonBindings();
   }
 
@@ -300,8 +266,6 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    // pivot.setDefaultCommand(pivot.runPercent(() -> -driverController.getRightY()));
-
     leds.setDefaultCommand(leds.gameStateAwareLeds(stateTracker));
 
     drive.setDefaultCommand(
@@ -312,8 +276,6 @@ public class RobotContainer {
             () -> -driverController.getRightX()));
 
     targeting.setDefaultCommand(targeting.defaultTargetingBehavior());
-
-    // pivot.setDefaultCommand(pivot.coordinatedPivot(flywheel, intake));
 
     driverController
         .L2()
@@ -326,7 +288,6 @@ public class RobotContainer {
                   return Math.max(absX, absY);
                 }));
 
-    // Locks wheels in x shape
     driverController.R3().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
     driverController
@@ -334,8 +295,6 @@ public class RobotContainer {
         .whileTrue(
             ShootingCommands.shootOnMove(
                 flywheel, turret, spindexer, transfer, intake, pivot, drive));
-
-    // controller.R1().whileTrue(pivot.motionMagicUp());
 
     driverController
         .L3()
@@ -345,7 +304,7 @@ public class RobotContainer {
                 () -> -driverController.getLeftY(),
                 () -> -driverController.getLeftX(),
                 () -> -driverController.getRightX(),
-                true /*Face Backwards, because the Turret can only face left/back/right */));
+                true));
 
     driverController
         .triangle()
@@ -412,8 +371,6 @@ public class RobotContainer {
         .povUp()
         .whileTrue(Commands.parallel(spindexer.spin(), transfer.feedShooter(), intake.ingest()));
 
-    // driverController.povUp().whileTrue(PathfindCommands.pathfindToDepot(drive));
-
     driverController.povRight().onTrue(PathfindCommands.climbSequence(drive));
 
     // Intake
@@ -421,24 +378,24 @@ public class RobotContainer {
     operatorController.L1().whileTrue(intake.eject());
 
     // Pivot
-    operatorController.R1().whileTrue(pivot.runPercent(() -> 0.1)); // forward(downwards)
-    operatorController.R2().whileTrue(pivot.runPercent(() -> -0.15)); // backwards(upwards)
+    operatorController.R1().whileTrue(pivot.runPercent(() -> 0.1));
+    operatorController.R2().whileTrue(pivot.runPercent(() -> -0.15));
 
-    // Spindexxer
+    // Spindexer
     operatorController.povRight().whileTrue(spindexer.spin());
     operatorController.povLeft().whileTrue(spindexer.eject());
 
-    // //Transfer
+    // Transfer
     operatorController.cross().whileTrue(transfer.feedShooter());
 
-    // //Shooter
+    // Shooter
     operatorController
         .triangle()
         .whileTrue(Commands.run(() -> flywheel.setRPMDirect(2200), flywheel));
 
-    // climber
-    operatorController.povDown().whileTrue(climber.driveUp(0.70)); // climber up
-    operatorController.povUp().whileTrue(climber.driveDown(-0.70)); // climber down
+    // Climber
+    operatorController.povDown().whileTrue(climber.driveUp(0.70));
+    operatorController.povUp().whileTrue(climber.driveDown(-0.70));
   }
 
   /**
@@ -447,6 +404,11 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
+    // If a SysId routine is selected (anything other than "None"), run that instead of the auto
+    Command sysIdCommand = sysIdChooser.get();
+    if (sysIdCommand != null && sysIdCommand != NO_SYSID) {
+      return sysIdCommand;
+    }
     return autoChooser.get();
   }
 }

@@ -313,26 +313,21 @@ public class Drive extends SubsystemBase implements Characterizable, Initializab
 
   @Override
   public Command characterize() {
-    SysIdRoutine routine = new SysIdRoutine(
-      new SysIdRoutine.Config(
-        null,
-        null,
-        null,
-        (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())
-      ),
-      new SysIdRoutine.Mechanism(
-        (voltage) -> runCharacterization(voltage.in(Volts)),
-        null,
-        this
-      )
-    );
+    SysIdRoutine routine =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                null,
+                null,
+                null,
+                (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
+            new SysIdRoutine.Mechanism(
+                (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
 
     return Commands.sequence(
-      runOnce(() -> runCharacterization(0.0)),
-      Commands.print("Starting Drive Translation SysId"),
-      runSysIdSequence(routine),
-      Commands.print("Drive Translation SysId Completed")
-    );
+        runOnce(() -> runCharacterization(0.0)),
+        Commands.print("Starting Drive Translation SysId"),
+        runSysIdSequence(routine),
+        Commands.print("Drive Translation SysId Completed"));
   }
 
   /** Returns the module states (turn angles and drive velocities) for all of the modules. */

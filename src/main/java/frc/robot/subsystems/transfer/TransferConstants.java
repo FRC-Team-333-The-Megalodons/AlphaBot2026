@@ -4,10 +4,10 @@ public final class TransferConstants {
   public static final int MOTOR_ID = 6;
   public static final double GEAR_RATIO = 1.0;
 
-  public static final double TARGET_RPM = -1500.0;
+  public static final double TARGET_RPM = 1500.0;
   public static final double VELOCITY_TOLERANCE = 50.0;
 
-  public static final double FEED_VOLTAGE = -11.0;
+  public static final double FEED_VOLTAGE = 11.0;
 
   public static final double kS = 0.3192;
   public static final double kV = 0.12297;

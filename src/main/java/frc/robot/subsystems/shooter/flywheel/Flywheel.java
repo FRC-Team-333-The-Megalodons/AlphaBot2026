@@ -19,8 +19,6 @@ public class Flywheel extends SubsystemBase implements Characterizable {
 
   private Supplier<Distance> distanceSupplier;
 
-  
-
   private enum PreSpinState {
     IDLE,
 
@@ -39,7 +37,7 @@ public class Flywheel extends SubsystemBase implements Characterizable {
 
   public Flywheel(FlywheelIO io, Supplier<Distance> distanceSupplier) {
     this.io = io;
-    this.distanceSupplier = distanceSupplier; 
+    this.distanceSupplier = distanceSupplier;
   }
 
   private double dynamicRPM() {
@@ -181,23 +179,21 @@ public class Flywheel extends SubsystemBase implements Characterizable {
 
   @Override
   public Command characterize() {
-    SysIdRoutine routine = new SysIdRoutine(
-      new SysIdRoutine.Config(null, Volts.of(7), null, null),
-      new SysIdRoutine.Mechanism(
-        (edu.wpi.first.units.measure.Voltage volts) -> io.setVoltage(volts.in(Volts)),
-        (log) -> {
-          log.motor("flywheel-sysid")
-              .voltage(Volts.of(inputs.appliedVolts))
-              .angularVelocity(io.rpmToRPS(inputs.velocityRPM));
-        },
-        this
-      )
-    );
+    SysIdRoutine routine =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(null, Volts.of(7), null, null),
+            new SysIdRoutine.Mechanism(
+                (edu.wpi.first.units.measure.Voltage volts) -> io.setVoltage(volts.in(Volts)),
+                (log) -> {
+                  log.motor("flywheel-sysid")
+                      .voltage(Volts.of(inputs.appliedVolts))
+                      .angularVelocity(io.rpmToRPS(inputs.velocityRPM));
+                },
+                this));
 
     return Commands.sequence(
-      Commands.print("Starting Flywheel SysId"),
-      runSysIdSequence(routine),
-      Commands.print("Flywheel SysId Completed")
-    );
+        Commands.print("Starting Flywheel SysId"),
+        runSysIdSequence(routine),
+        Commands.print("Flywheel SysId Completed"));
   }
 }

@@ -8,7 +8,6 @@ import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
@@ -43,8 +42,8 @@ public class TransferIOKraken implements TransferIO {
     config.CurrentLimits.SupplyCurrentLimit = 30.0;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
-    config.CurrentLimits.StatorCurrentLimit = 60.0;
-    config.CurrentLimits.StatorCurrentLimitEnable = true;
+    // config.CurrentLimits.StatorCurrentLimit = 70.0;
+    // config.CurrentLimits.StatorCurrentLimitEnable = true;
     // config.CurrentLimits.SupplyCurrentLimit = 35.0;
     // config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
@@ -71,8 +70,8 @@ public class TransferIOKraken implements TransferIO {
 
   @Override
   public void moveTo(double rpm) {
-    // Convert RPM -> rotations/sec for Phoenix
-    double rps = Units.rotationsPerMinuteToRadiansPerSecond(rpm);
+
+    double rps = rpm / 60.0;
     motor.setControl(velocityRequest.withVelocity(rps));
   }
 

@@ -10,7 +10,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.interfaces.Characterizable;
 import frc.robot.interfaces.Initializable;
 import frc.robot.util.LiveTuning;
@@ -135,23 +134,19 @@ public class Turret extends SubsystemBase implements Characterizable, Initializa
 
   @Override
   public Command characterize() {
-    SysIdRoutine routine = new SysIdRoutine(
-      new SysIdRoutine.Config(
-        null,
-        null,
-        null,
-        (state) -> Logger.recordOutput("Turret/SysIdState", state.toString())),
-      new SysIdRoutine.Mechanism(
-        (voltage) -> io.setTurretVoltage(voltage.in(Volts)),
-        null,
-        this
-      )
-    );
+    SysIdRoutine routine =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                null,
+                null,
+                null,
+                (state) -> Logger.recordOutput("Turret/SysIdState", state.toString())),
+            new SysIdRoutine.Mechanism(
+                (voltage) -> io.setTurretVoltage(voltage.in(Volts)), null, this));
 
     return Commands.sequence(
-      Commands.print("Starting Turret SysId"),
-      runSysIdSequence(routine),
-      Commands.print("Turret SysId Completed")
-    );
+        Commands.print("Starting Turret SysId"),
+        runSysIdSequence(routine),
+        Commands.print("Turret SysId Completed"));
   }
 }

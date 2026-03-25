@@ -16,9 +16,15 @@ public class SpindexerIOKrakenSim implements SpindexerIO {
 
   @Override
   public void moveTo(double rpm) {
-
     double volts = (rpm / 60.0) * SpindexerConstants.kV;
     setVoltage(MathUtil.clamp(volts, -12.0, 12.0));
+  }
+
+  @Override
+  public boolean atTarget(double rpm) {
+    double currentRPM = sim.getAngularVelocityRPM();
+    return Math.abs(Math.abs(currentRPM) - Math.abs(rpm))
+        < SpindexerConstants.VELOCITY_TOLERANCE_RPM;
   }
 
   @Override
