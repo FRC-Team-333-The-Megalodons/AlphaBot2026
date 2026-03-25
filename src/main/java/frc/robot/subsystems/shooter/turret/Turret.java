@@ -1,5 +1,8 @@
 package frc.robot.subsystems.shooter.turret;
 
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
@@ -21,7 +24,6 @@ public class Turret extends SubsystemBase implements Characterizable, Initializa
   private final TurretIOInputsAutoLogged inputs = new TurretIOInputsAutoLogged();
   private final Supplier<Angle> targetAngleSupplier;
   private final Supplier<Rotation2d> robotRotationSupplier;
-  private final SysIdRoutine sysIdRoutine;
 
   public Turret(
       TurretIO io,
@@ -30,15 +32,6 @@ public class Turret extends SubsystemBase implements Characterizable, Initializa
     this.io = io;
     this.targetAngleSupplier = targetAngleSupplier;
     this.robotRotationSupplier = robotRotationSupplier;
-    sysIdRoutine =
-        new SysIdRoutine(
-            new SysIdRoutine.Config(
-                null,
-                null,
-                null,
-                (state) -> Logger.recordOutput("Turret/SysIdState", state.toString())),
-            new SysIdRoutine.Mechanism(
-                (voltage) -> io.setTurretVoltage(voltage.in(Volts)), null, this));
   }
 
   @Override
@@ -137,12 +130,19 @@ public class Turret extends SubsystemBase implements Characterizable, Initializa
     SysIdRoutine routine =
         new SysIdRoutine(
             new SysIdRoutine.Config(
-                null,
-                null,
-                null,
+                Volts.per(Seconds).of(0.5), // Slow ramp
+                Volts.of(5),
+                Seconds.of(10), 
                 (state) -> Logger.recordOutput("Turret/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
-                (voltage) -> io.setTurretVoltage(voltage.in(Volts)), null, this));
+                (voltage) -> io.setTurretVoltage(voltage.in(Volts)),
+                (log) -> {
+                  log.motor("turret-sysid")
+                      .voltage(Volts.of(inputs.turretAppliedVolts))
+                      .angularPosition(Rotations.of(inputs.turretPositionDeg / 360.0))
+                      .angularVelocity(RotationsPerSecond.of(inputs.turretVelocityRPM / 60.0));
+                },
+                this));
 
     return Commands.sequence(
         Commands.print("Starting Turret SysId"),

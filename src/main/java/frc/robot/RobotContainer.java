@@ -197,6 +197,7 @@ public class RobotContainer {
     sysIdChooser.addOption("Spindexer SysId", spindexer.characterize());
     sysIdChooser.addOption("Transfer SysId", transfer.characterize());
     sysIdChooser.addOption("Turret SysId", turret.characterize());
+    sysIdChooser.addOption("Pivot SysId",pivot.characterize());
 
     SmartDashboard.putData("Pathfind to Depot", PathfindCommands.pathfindToDepot(drive));
     SmartDashboard.putData("Turret/00 Go to 45", turret.rotateToField(Rotation2d.fromDegrees(45)));
