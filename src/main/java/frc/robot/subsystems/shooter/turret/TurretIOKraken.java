@@ -74,10 +74,10 @@ public class TurretIOKraken implements TurretIO {
         Units.degreesToRotations(TurretConstants.kMinAngle);
     motorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
 
-    // motorConfig.CurrentLimits.StatorCurrentLimit = 50.0;
-    // motorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
-    // motorConfig.CurrentLimits.SupplyCurrentLimit = 25.0;
-    // motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+    motorConfig.CurrentLimits.StatorCurrentLimit = 40.0;
+    motorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+    motorConfig.CurrentLimits.SupplyCurrentLimit = 20.0;
+    motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     turretMotor.getConfigurator().apply(motorConfig);
 

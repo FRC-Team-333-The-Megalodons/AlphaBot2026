@@ -40,8 +40,8 @@ public class FlywheelIOKraken implements FlywheelIO {
     config.CurrentLimits.SupplyCurrentLimit = 15.0;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
-    // config.CurrentLimits.StatorCurrentLimit = 70.0;
-    // config.CurrentLimits.StatorCurrentLimitEnable = true;
+    config.CurrentLimits.StatorCurrentLimit = 60.0;
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
     // config.CurrentLimits.SupplyCurrentLimit = 35.0;
     // config.CurrentLimits.SupplyCurrentLimitEnable = true;
 

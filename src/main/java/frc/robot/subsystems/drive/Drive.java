@@ -318,7 +318,7 @@ public class Drive extends SubsystemBase implements Characterizable, Initializab
         null,
         null,
         null,
-        (state) -> RobotMetrics.recordOutput("Drive/SysIdState", state.toString())
+        (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())
       ),
       new SysIdRoutine.Mechanism(
         (voltage) -> runCharacterization(voltage.in(Volts)),

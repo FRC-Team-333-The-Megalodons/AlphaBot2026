@@ -140,7 +140,7 @@ public class Turret extends SubsystemBase implements Characterizable, Initializa
         null,
         null,
         null,
-        (state) -> RobotMetrics.recordOutput("Turret/SysIdState", state.toString())),
+        (state) -> Logger.recordOutput("Turret/SysIdState", state.toString())),
       new SysIdRoutine.Mechanism(
         (voltage) -> io.setTurretVoltage(voltage.in(Volts)),
         null,

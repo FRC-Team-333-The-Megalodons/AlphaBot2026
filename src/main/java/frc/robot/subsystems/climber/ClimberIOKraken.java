@@ -88,8 +88,8 @@ public class ClimberIOKraken implements ClimberIO {
 
     config.CurrentLimits.StatorCurrentLimit = 70.0;
     config.CurrentLimits.StatorCurrentLimitEnable = true;
-    // config.CurrentLimits.SupplyCurrentLimit = 35.0;
-    // config.CurrentLimits.SupplyCurrentLimitEnable = true;
+    config.CurrentLimits.SupplyCurrentLimit = 30.0;
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     motor.getConfigurator().apply(config);
 

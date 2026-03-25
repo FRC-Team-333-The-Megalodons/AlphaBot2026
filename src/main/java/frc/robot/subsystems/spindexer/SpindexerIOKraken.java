@@ -27,10 +27,10 @@ public class SpindexerIOKraken implements SpindexerIO {
     config.Slot0.kA = SpindexerConstants.kA;
     config.Slot0.kV = SpindexerConstants.kV;
 
-    // config.CurrentLimits.StatorCurrentLimit = 60.0;
-    // config.CurrentLimits.StatorCurrentLimitEnable = true;
-    // config.CurrentLimits.SupplyCurrentLimit = 30.0;
-    // config.CurrentLimits.SupplyCurrentLimitEnable = true;
+    config.CurrentLimits.StatorCurrentLimit = 50.0;
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
+    config.CurrentLimits.SupplyCurrentLimit = 25.0;
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     motor.getConfigurator().apply(config);
 

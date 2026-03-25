@@ -43,8 +43,8 @@ public class TransferIOKraken implements TransferIO {
     config.CurrentLimits.SupplyCurrentLimit = 30.0;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
-    // config.CurrentLimits.StatorCurrentLimit = 70.0;
-    // config.CurrentLimits.StatorCurrentLimitEnable = true;
+    config.CurrentLimits.StatorCurrentLimit = 60.0;
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
     // config.CurrentLimits.SupplyCurrentLimit = 35.0;
     // config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
