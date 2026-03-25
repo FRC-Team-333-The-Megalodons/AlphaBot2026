@@ -7,14 +7,14 @@
 // at the root directory of this project.
 
 package frc.robot.subsystems.vision;
-
+ 
 import static frc.robot.subsystems.vision.VisionConstants.*;
-
-import edu.wpi.first.math.Matrix;
+ 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
@@ -22,26 +22,42 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
 import frc.robot.util.LiveTuning;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import org.littletonrobotics.junction.Logger;
-
+ 
 public class Vision extends SubsystemBase {
   private final VisionConsumer consumer;
   private final VisionIO[] io;
   private final VisionIOInputsAutoLogged[] inputs;
   private final Alert[] disconnectedAlerts;
-
+ 
+  // ── Pre-allocated, reusable lists to avoid per-cycle heap allocations ──
+  // These are cleared at the start of each periodic() call, not re-created.
+  private final List<Pose3d> allTagPoses = new ArrayList<>();
+  private final List<Pose3d> allRobotPoses = new ArrayList<>();
+  private final List<Pose3d> allRobotPosesAccepted = new ArrayList<>();
+  private final List<Pose3d> allRobotPosesRejected = new ArrayList<>();
+ 
+  // Per-camera working lists (reused across cameras each cycle)
+  private final List<Pose3d> tagPoses = new ArrayList<>();
+  private final List<Pose3d> robotPoses = new ArrayList<>();
+  private final List<Pose3d> robotPosesAccepted = new ArrayList<>();
+  private final List<Pose3d> robotPosesRejected = new ArrayList<>();
+ 
+  // Reusable empty array to avoid allocating new Pose3d[0] every time
+  private static final Pose3d[] EMPTY_POSE3D_ARRAY = new Pose3d[0];
+ 
   public Vision(VisionConsumer consumer, VisionIO... io) {
     this.consumer = consumer;
     this.io = io;
-
+ 
     // Initialize inputs
     this.inputs = new VisionIOInputsAutoLogged[io.length];
     for (int i = 0; i < inputs.length; i++) {
       inputs[i] = new VisionIOInputsAutoLogged();
     }
-
+ 
     // Initialize disconnected alerts
     this.disconnectedAlerts = new Alert[io.length];
     for (int i = 0; i < inputs.length; i++) {
@@ -50,7 +66,7 @@ public class Vision extends SubsystemBase {
               "Vision camera " + Integer.toString(i) + " is disconnected.", AlertType.kWarning);
     }
   }
-
+ 
   /**
    * Returns the X angle to the best target, which can be used for simple servoing with vision.
    *
@@ -59,31 +75,31 @@ public class Vision extends SubsystemBase {
   public Rotation2d getTargetX(int cameraIndex) {
     return inputs[cameraIndex].latestTargetObservation.tx();
   }
-
+ 
   @Override
   public void periodic() {
     for (int i = 0; i < io.length; i++) {
       io[i].updateInputs(inputs[i]);
       Logger.processInputs("Vision/Camera" + Integer.toString(i), inputs[i]);
     }
-
-    // Initialize logging values
-    List<Pose3d> allTagPoses = new LinkedList<>();
-    List<Pose3d> allRobotPoses = new LinkedList<>();
-    List<Pose3d> allRobotPosesAccepted = new LinkedList<>();
-    List<Pose3d> allRobotPosesRejected = new LinkedList<>();
-
+ 
+    // Clear reusable summary lists
+    allTagPoses.clear();
+    allRobotPoses.clear();
+    allRobotPosesAccepted.clear();
+    allRobotPosesRejected.clear();
+ 
     // Loop over cameras
     for (int cameraIndex = 0; cameraIndex < io.length; cameraIndex++) {
       // Update disconnected alert
       disconnectedAlerts[cameraIndex].set(!inputs[cameraIndex].connected);
-
-      // Initialize logging values
-      List<Pose3d> tagPoses = new LinkedList<>();
-      List<Pose3d> robotPoses = new LinkedList<>();
-      List<Pose3d> robotPosesAccepted = new LinkedList<>();
-      List<Pose3d> robotPosesRejected = new LinkedList<>();
-
+ 
+      // Clear reusable per-camera lists
+      tagPoses.clear();
+      robotPoses.clear();
+      robotPosesAccepted.clear();
+      robotPosesRejected.clear();
+ 
       // Add tag poses
       for (int tagId : inputs[cameraIndex].tagIds) {
         var tagPose = aprilTagLayout.getTagPose(tagId);
@@ -91,7 +107,7 @@ public class Vision extends SubsystemBase {
           tagPoses.add(tagPose.get());
         }
       }
-
+ 
       // Loop over pose observations
       for (var observation : inputs[cameraIndex].poseObservations) {
         // Check whether to reject pose
@@ -101,13 +117,13 @@ public class Vision extends SubsystemBase {
                     && observation.ambiguity() > maxAmbiguity) // Cannot be high ambiguity
                 || Math.abs(observation.pose().getZ())
                     > maxZError // Must have realistic Z coordinate
-
+ 
                 // Must be within the field boundaries
                 || observation.pose().getX() < 0.0
                 || observation.pose().getX() > aprilTagLayout.getFieldLength()
                 || observation.pose().getY() < 0.0
                 || observation.pose().getY() > aprilTagLayout.getFieldWidth();
-
+ 
         // Add pose to log
         robotPoses.add(observation.pose());
         if (rejectPose) {
@@ -125,7 +141,7 @@ public class Vision extends SubsystemBase {
         if (rejectPose) {
           continue;
         }
-
+ 
         // Calculate standard deviations
         double stdDevFactor =
             Math.pow(observation.averageTagDistance(), 2.0) / observation.tagCount();
@@ -139,47 +155,49 @@ public class Vision extends SubsystemBase {
           linearStdDev *= cameraStdDevFactors[cameraIndex];
           angularStdDev *= cameraStdDevFactors[cameraIndex];
         }
-
+ 
         // Send vision observation
         consumer.accept(
             observation.pose().toPose2d(),
             observation.timestamp(),
             VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
       }
-
+ 
       // Log camera metadata
       Logger.recordOutput(
           "Vision/Camera" + Integer.toString(cameraIndex) + "/TagPoses",
-          tagPoses.toArray(new Pose3d[0]));
+          tagPoses.toArray(EMPTY_POSE3D_ARRAY));
       Logger.recordOutput(
           "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPoses",
-          robotPoses.toArray(new Pose3d[0]));
+          robotPoses.toArray(EMPTY_POSE3D_ARRAY));
       Logger.recordOutput(
           "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPosesAccepted",
-          robotPosesAccepted.toArray(new Pose3d[0]));
+          robotPosesAccepted.toArray(EMPTY_POSE3D_ARRAY));
       Logger.recordOutput(
           "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPosesRejected",
-          robotPosesRejected.toArray(new Pose3d[0]));
+          robotPosesRejected.toArray(EMPTY_POSE3D_ARRAY));
       allTagPoses.addAll(tagPoses);
       allRobotPoses.addAll(robotPoses);
       allRobotPosesAccepted.addAll(robotPosesAccepted);
       allRobotPosesRejected.addAll(robotPosesRejected);
     }
-
+ 
     // Log summary data
-    Logger.recordOutput("Vision/Summary/TagPoses", allTagPoses.toArray(new Pose3d[0]));
-    Logger.recordOutput("Vision/Summary/RobotPoses", allRobotPoses.toArray(new Pose3d[0]));
+    Logger.recordOutput("Vision/Summary/TagPoses", allTagPoses.toArray(EMPTY_POSE3D_ARRAY));
+    Logger.recordOutput("Vision/Summary/RobotPoses", allRobotPoses.toArray(EMPTY_POSE3D_ARRAY));
     Logger.recordOutput(
-        "Vision/Summary/RobotPosesAccepted", allRobotPosesAccepted.toArray(new Pose3d[0]));
+        "Vision/Summary/RobotPosesAccepted",
+        allRobotPosesAccepted.toArray(EMPTY_POSE3D_ARRAY));
     Logger.recordOutput(
-        "Vision/Summary/RobotPosesRejected", allRobotPosesRejected.toArray(new Pose3d[0]));
+        "Vision/Summary/RobotPosesRejected",
+        allRobotPosesRejected.toArray(EMPTY_POSE3D_ARRAY));
     for (int i = 0; i < io.length; i++) {
       LiveTuning.publish("Vision/Camera" + i + "/Connected", inputs[i].connected);
       LiveTuning.publish("Vision/Camera" + i + "/TagCount", inputs[i].tagIds.length);
     }
     LiveTuning.publish("Vision/AcceptedPosesThisLoop", allRobotPosesAccepted.size());
   }
-
+ 
   @FunctionalInterface
   public static interface VisionConsumer {
     public void accept(
