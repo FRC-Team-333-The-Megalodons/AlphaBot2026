@@ -24,6 +24,7 @@ public class FlywheelIOKraken implements FlywheelIO {
 
     // Slot 0 Gains
     config.Slot0.kS = FlywheelConstants.kS;
+    config.Slot0.kA = FlywheelConstants.kA;
     config.Slot0.kV = FlywheelConstants.kV;
     config.Slot0.kP = FlywheelConstants.kP;
 
@@ -32,10 +33,6 @@ public class FlywheelIOKraken implements FlywheelIO {
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
-    // FIX (Bug 2): Invert motor2 so that a positive RPM command (matching the
-    // distance-to-RPM map) spins in the correct shooting direction. Previously
-    // Flywheel.dynamicSpinUp() was negating the RPM to compensate, which was fragile.
-    // Now direction is owned here at the hardware layer, and all callers pass positive RPM.
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     config.CurrentLimits.SupplyCurrentLimit = 15.0;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;

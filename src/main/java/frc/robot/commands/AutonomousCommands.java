@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.pivot.Pivot;
 import frc.robot.subsystems.shooter.Targeting.Targeting;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
 import frc.robot.subsystems.shooter.turret.Turret;
@@ -71,5 +72,9 @@ public class AutonomousCommands {
         movingShootCommand(drive, flywheel, targeting, turret, intake, spindexer, transfer)
             .withTimeout(3.5),
         PathfindCommands.precisionPathfindTo(FieldLayout.Hub.NEAR_FACE, drive));
+  }
+
+  public static Command pivotDown(Pivot pivot) {
+    return Commands.run(() -> pivot.motionMagicDown()).withTimeout(1.0);
   }
 }
