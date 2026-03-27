@@ -123,7 +123,7 @@ public class RobotContainer {
             new Vision(
                 drive::addVisionMeasurement, new VisionIOPhotonVision(camera0Name, robotToCamera0));
         targeting = new Targeting(new TargetingIOReal(), drive::getPose, drive::robotFieldVelocity);
-        intake = new Intake(new IntakeIOKraken());
+        intake = new Intake(new IntakeIOKraken(), drive::robotFieldVelocity);
         spindexer = new Spindexer(new SpindexerIOKraken());
         transfer = new Transfer(new TransferIOKraken());
         flywheel = new Flywheel(new FlywheelIOKraken(), targeting::getTargetDistance);
@@ -146,7 +146,7 @@ public class RobotContainer {
                 drive::addVisionMeasurement,
                 new VisionIOPhotonVisionSim(camera1Name, robotToCamera0, drive::getPose));
         targeting = new Targeting(new TargetingIOReal(), drive::getPose, drive::robotFieldVelocity);
-        intake = new Intake(new IntakeIOKrakenSim());
+        intake = new Intake(new IntakeIOKrakenSim(), drive::robotFieldVelocity);
         spindexer = new Spindexer(new SpindexerIOKrakenSim());
         transfer = new Transfer(new TransferIOKrakenSim());
         flywheel = new Flywheel(new FlywheelIOKrakenSim(), targeting::getTargetDistance);
@@ -166,7 +166,7 @@ public class RobotContainer {
                 new ModuleIO() {});
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {});
         targeting = new Targeting(new TargetingIO() {}, drive::getPose, drive::robotFieldVelocity);
-        intake = new Intake(new IntakeIO() {});
+        intake = new Intake(new IntakeIO() {}, drive::robotFieldVelocity);
         spindexer = new Spindexer(new SpindexerIO() {});
         transfer = new Transfer(new TransferIO() {});
         flywheel = new Flywheel(new FlywheelIO() {}, targeting::getTargetDistance);
@@ -236,16 +236,11 @@ public class RobotContainer {
     NamedCommands.registerCommand("PivotDown", pivot.motionMagicDown());
     NamedCommands.registerCommand(
         "ShootOnMove",
-        ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, intake, pivot, drive));
+        ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, intake, pivot));
     NamedCommands.registerCommand(
         "Intake",
-        intake.dynamicIngest(
-            () -> {
-              var fieldVelocity = drive.robotFieldVelocity();
-              double absX = Math.abs(fieldVelocity.dx);
-              double absY = Math.abs(fieldVelocity.dy);
-              return Math.max(absX, absY);
-            }));
+        intake.dynamicIngest()
+    );
   }
 
   public void onDriverStationConnected() {
@@ -278,18 +273,14 @@ public class RobotContainer {
 
     targeting.setDefaultCommand(targeting.defaultTargetingBehavior());
 
-    driverController
-        .L2()
-        .whileTrue(
-            intake.dynamicIngest(
-                () -> {
-                  var fieldVelocity = drive.robotFieldVelocity();
-                  double absX = Math.abs(fieldVelocity.dx);
-                  double absY = Math.abs(fieldVelocity.dy);
-                  return Math.max(absX, absY);
-                }));
+    driverController.L2().whileTrue(intake.dynamicIngest());
 
     driverController.R3().onTrue(Commands.runOnce(drive::stopWithX, drive));
+
+    operatorController
+        .triangle()
+        .onTrue(ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, intake, pivot));
+
     driverController
         .L3()
         .whileTrue(
@@ -357,11 +348,10 @@ public class RobotContainer {
                             new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
                     drive)
                 .ignoringDisable(true));
-    driverController.R2().whileTrue(spindexer.spin().alongWith(transfer.feedShooter()));
 
     driverController.PS().whileTrue(ShootingCommands.dashboardRPMControl(flywheel));
-    // driverController.R1().whileTrue(pivot.motionMagicDown());
-    // driverController.L1().whileTrue(pivot.motionMagicUp());
+    driverController.R1().whileTrue(pivot.motionMagicDown());
+    driverController.L1().whileTrue(pivot.motionMagicUp());
     driverController
         .povUp()
         .whileTrue(Commands.parallel(spindexer.spin(), transfer.feedShooter(), intake.ingest()));
@@ -389,14 +379,8 @@ public class RobotContainer {
     //     .whileTrue(Commands.run(() -> flywheel.setRPMDirect(2200), flywheel));
 
     // Climber
-    operatorController.povDown().whileTrue(climber.driveUp(0.50));
-    operatorController.povUp().whileTrue(climber.driveDown(-0.50));
-
-    operatorController
-        .triangle()
-        .whileTrue(
-            ShootingCommands.shootOnMove(
-                flywheel, turret, spindexer, transfer, intake, pivot, drive));
+    operatorController.povDown().whileTrue(climber.driveUp(0.70));
+    operatorController.povUp().whileTrue(climber.driveDown(-0.70));
   }
 
   /**

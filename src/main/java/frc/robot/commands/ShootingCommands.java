@@ -4,7 +4,6 @@ import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.pivot.Pivot;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
@@ -49,25 +48,15 @@ public class ShootingCommands {
       Spindexer spindexer,
       Transfer transfer,
       Intake intake,
-      Pivot pivot,
-      Drive drive) {
+      Pivot pivot) {
 
     return Commands.parallel(
         turret.autoAim(),
         flywheel.shootOnMoveSpinUp(),
-        intake.dynamicIngest(
-            () -> {
-              var fieldVelocity = drive.robotFieldVelocity();
-              double absX = Math.abs(fieldVelocity.dx);
-              double absY = Math.abs(fieldVelocity.dy);
-              return Math.max(absX, absY);
-            }),
+        intake.dynamicIngest(),
+        spindexer.spin(),
         Commands.sequence(
             Commands.waitUntil(() -> flywheel.ready() && turret.atTarget()),
-            transfer
-                .feedShooter()
-                .alongWith(
-                    spindexer
-                        .spin()))); // feedShooterVelocity add this for more consisent shooting.
+            transfer.feedShooter())); // feedShooterVelocity add this for more consisent shooting.
   }
 }
