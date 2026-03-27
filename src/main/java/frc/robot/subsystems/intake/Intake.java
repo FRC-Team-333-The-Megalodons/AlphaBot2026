@@ -1,64 +1,76 @@
 package frc.robot.subsystems.intake;
 
-import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.Volts;
+
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.interfaces.Characterizable;
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
-public class Intake extends SubsystemBase {
+public class Intake extends SubsystemBase implements Characterizable {
   private final IntakeIO io;
   private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
-  private final InterpolatingDoubleTreeMap dynamicIntake = new InterpolatingDoubleTreeMap();
+  private Supplier<Twist2d> robotVelocitySupplier;
 
-  public Intake(IntakeIO io) {
+  public Intake(IntakeIO io, Supplier<Twist2d> robotVelocitySupplier) {
     this.io = io;
-    dynamicIntake.put(0.2, 7.2);
-    dynamicIntake.put(0.4, 7.0);
-    dynamicIntake.put(0.5, 6.8);
-    dynamicIntake.put(0.7, 6.5);
-    dynamicIntake.put(0.9, 6.2);
-    dynamicIntake.put(1.1, 5.6);
-    dynamicIntake.put(1.5, 5.5);
-    dynamicIntake.put(1.8, 5.35);
-    dynamicIntake.put(2.0, 5.3);
-    dynamicIntake.put(2.5, 5.2);
-    dynamicIntake.put(5.0, 5.0);
+    this.robotVelocitySupplier = robotVelocitySupplier;
   }
 
   @Override
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Intake", inputs);
+    Logger.recordOutput("Intake/VelocityRPM", inputs.velocityRpm);
+  }
+
+  public Twist2d fieldVelocity() {
+    return robotVelocitySupplier.get();
   }
 
   public Command ingest() {
-    return runEnd(() -> this.run(false), this::stop);
+    return runEnd(() -> io.moveTo(IntakeConstants.INTAKE_RPM), () -> io.setVoltage(0.0));
   }
 
   public Command eject() {
-    return runEnd(() -> this.run(true), this::stop);
+    return runEnd(() -> io.moveTo(IntakeConstants.EJECT_RPM), () -> io.setVoltage(0.0));
   }
 
-  public Command dynamicIngest(DoubleSupplier maxSpeedSupplier) {
+  public Command ingestAt(double rpm) {
+    return runEnd(() -> io.moveTo(rpm), () -> io.setVoltage(0.0));
+  }
+
+  public boolean atTarget(double rpm) {
+    return io.atTarget(rpm);
+  }
+
+  public Command ingestVoltage() {
+    return runEnd(() -> io.setVoltage(IntakeConstants.INTAKE_VOLTS), () -> io.setVoltage(0.0));
+  }
+
+  public Command ejectVoltage() {
+    return runEnd(() -> io.setVoltage(IntakeConstants.EJECT_VOLTS), () -> io.setVoltage(0.0));
+  }
+
+  public Command dynamicIngest() {
     return runEnd(
         () -> {
-          double currentRobotSpeed = maxSpeedSupplier.getAsDouble();
-
+          var fieldVelocity = robotVelocitySupplier.get();
+          double absX = Math.abs(fieldVelocity.dx);
+          double absY = Math.abs(fieldVelocity.dy);
+          double currentRobotSpeed = Math.max(absX, absY);
           double targetVolts = io.getVoltageFromSpeed(currentRobotSpeed);
-
           Logger.recordOutput("Intake/DynamicSpeedInput", currentRobotSpeed);
           Logger.recordOutput("Intake/DynamicVoltsOutput", targetVolts);
-
-          // 4. Apply the voltage
           io.setVoltage(targetVolts);
         },
-        () -> io.setVoltage(0.0) // Safely stop when the button is released
-        );
-  }
-
-  public void run(boolean forward) {
-    io.setVoltage(forward ? IntakeConstants.INTAKE_VOLTS : -IntakeConstants.INTAKE_VOLTS);
+        () -> io.setVoltage(0.0));
   }
 
   public double getAppliedVolts() {
@@ -67,5 +79,25 @@ public class Intake extends SubsystemBase {
 
   public void stop() {
     io.setVoltage(0.0);
+  }
+
+  @Override
+  public Command characterize() {
+    SysIdRoutine routine =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(null, Volts.of(7), null, null),
+            new SysIdRoutine.Mechanism(
+                (voltage) -> io.setVoltage(voltage.in(Volts)),
+                (log) -> {
+                  log.motor("intake-sysid")
+                      .voltage(Volts.of(inputs.appliedVolts))
+                      .angularVelocity(RotationsPerSecond.of(inputs.velocityRpm / 60.0));
+                },
+                this));
+
+    return Commands.sequence(
+        Commands.print("Starting Intake SysId"),
+        runSysIdSequence(routine),
+        Commands.print("Intake SysId Completed"));
   }
 }

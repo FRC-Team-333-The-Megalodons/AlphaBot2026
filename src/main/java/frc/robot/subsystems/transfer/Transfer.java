@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.interfaces.Characterizable;
-
+import frc.robot.util.LiveTuning;
 import org.littletonrobotics.junction.Logger;
 
 public class Transfer extends SubsystemBase implements Characterizable {
@@ -16,54 +16,58 @@ public class Transfer extends SubsystemBase implements Characterizable {
   private final TransferIOInputsAutoLogged inputs = new TransferIOInputsAutoLogged();
 
   public Transfer(TransferIO io) {
-    this.io = io; 
+    this.io = io;
   }
 
   @Override
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Transfer", inputs);
+    Logger.recordOutput("Transfer/VelocityRPM", inputs.velocityRpm);
+    LiveTuning.publish("Transfer/VelocityRPM", inputs.velocityRpm);
+  }
+
+  public Command feedShooter() {
+    return runEnd(() -> io.moveTo(TransferConstants.TARGET_RPM), () -> io.setVoltage(0.0));
+  }
+
+  public Command feedAt(double rpm) {
+    return runEnd(() -> io.moveTo(rpm), () -> io.setVoltage(0.0));
   }
 
   public void runVelocity() {
     io.moveTo(TransferConstants.TARGET_RPM);
   }
 
-  public void stop() {
-    io.setVoltage(0.0);
-  }
-
-  public Command feedShooter() {
-    return runEnd(() -> io.setVoltage(TransferConstants.FEED_VOLTAGE), () -> io.setVoltage(0.0));
-  }
-
-  public Command feedShooterVelocity() {
-    return runEnd(() -> io.moveTo(TransferConstants.TARGET_RPM), () -> io.setVoltage(0.0));
-  }
-
   public boolean atTarget() {
     return io.atTarget(TransferConstants.TARGET_RPM);
   }
 
+  public Command feedShooterVoltage() {
+    return runEnd(() -> io.setVoltage(TransferConstants.FEED_VOLTAGE), () -> io.setVoltage(0.0));
+  }
+
+  public void stop() {
+    io.setVoltage(0.0);
+  }
+
   @Override
   public Command characterize() {
-    SysIdRoutine routine = new SysIdRoutine(
-      new SysIdRoutine.Config(null, Volts.of(7), null, null),
-      new SysIdRoutine.Mechanism(
-        (voltage) -> io.setVoltage(voltage.in(Volts)),
-        (log) -> {
-          log.motor("transfer-sysid")
-            .voltage(Volts.of(inputs.appliedVolts))
-            .angularVelocity(RotationsPerSecond.of(inputs.velocityRpm / 60.0));
-        },
-        this
-      )
-    );
+    SysIdRoutine routine =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(null, Volts.of(7), null, null),
+            new SysIdRoutine.Mechanism(
+                (voltage) -> io.setVoltage(voltage.in(Volts)),
+                (log) -> {
+                  log.motor("transfer-sysid")
+                      .voltage(Volts.of(inputs.appliedVolts))
+                      .angularVelocity(RotationsPerSecond.of(inputs.velocityRpm / 60.0));
+                },
+                this));
 
     return Commands.sequence(
-      Commands.print("Starting Transfer SysId"),
-      runSysIdSequence(routine),
-      Commands.print("Transfer SysId Completed")
-    );
+        Commands.print("Starting Transfer SysId"),
+        runSysIdSequence(routine),
+        Commands.print("Transfer SysId Completed"));
   }
 }

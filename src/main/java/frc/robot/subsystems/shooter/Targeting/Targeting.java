@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.interfaces.Initializable;
-import frc.robot.util.Zones;
+import frc.robot.interfaces.Zonable;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
@@ -24,10 +24,9 @@ import org.littletonrobotics.junction.Logger;
  * This class depends on the robot pose from the drive. The Turret and Flywheel classes depend on
  * the target angle and distance from this class respectively.
  */
-public class Targeting extends SubsystemBase implements Initializable {
+public class Targeting extends SubsystemBase implements Initializable, Zonable {
 
   private final TargetingIOInputsAutoLogged inputs = new TargetingIOInputsAutoLogged();
-  private final Zones zones = new Zones();
   private TargetingIO io;
   private final Field2d targetVisualization = new Field2d();
 
@@ -51,7 +50,7 @@ public class Targeting extends SubsystemBase implements Initializable {
 
           double lookaheadTime = 0.060;
 
-          if (zones.alliance(pose)) rawTarget = io.getHub();
+          if (inAllianceZone(pose)) rawTarget = io.getHub();
           else rawTarget = io.getAllianceZoneTarget(pose);
 
           targetVisualization.setRobotPose(new Pose2d(rawTarget, Rotation2d.kZero));
@@ -133,7 +132,7 @@ public class Targeting extends SubsystemBase implements Initializable {
   }
 
   public boolean isInAllianceZone() {
-    return zones.alliance(robotPoseSupplier.get());
+    return inAllianceZone(robotPoseSupplier.get());
   }
 
   @Override

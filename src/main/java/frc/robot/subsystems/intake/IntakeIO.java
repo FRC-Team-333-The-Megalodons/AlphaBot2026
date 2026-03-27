@@ -9,10 +9,11 @@ public interface IntakeIO extends Automatable {
   public static class IntakeIOInputs {
     public double appliedVolts = 0.0;
     public double currentAmps = 0.0;
-    public double velocityRps = 0.0;
+    public double velocityRpm = 0.0;
     public double supplyAmps = 0.0;
   }
 
+  /** TODO: Create a speed-to-RPM map once intake PID gains are tuned. */
   public static final InterpolatingDoubleTreeMap speedToVolts = buildMap();
 
   private static InterpolatingDoubleTreeMap buildMap() {
@@ -38,4 +39,12 @@ public interface IntakeIO extends Automatable {
   public default void updateInputs(IntakeIOInputs inputs) {}
 
   public default void setVoltage(double volts) {}
+
+  @Override
+  public default void moveTo(double rpm) {}
+
+  @Override
+  public default boolean atTarget(double rpm) {
+    return true;
+  }
 }

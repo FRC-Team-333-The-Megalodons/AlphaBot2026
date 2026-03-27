@@ -28,19 +28,24 @@ public class FlywheelIOKraken implements FlywheelIO {
     config.Slot0.kV = FlywheelConstants.kV;
     config.Slot0.kP = FlywheelConstants.kP;
 
+    config.MotionMagic.MotionMagicCruiseVelocity = FlywheelConstants.MAX_VELOCITY;
     config.MotionMagic.MotionMagicAcceleration = FlywheelConstants.MAX_ACCEL;
     config.MotionMagic.MotionMagicJerk = FlywheelConstants.MAX_JERK;
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    config.Voltage.PeakForwardVoltage = 9.0;
+    config.Voltage.PeakReverseVoltage = -1.0; // Flywheel should never have to rotate backwards.
+
+    config.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 1.0;
+    config.OpenLoopRamps.VoltageOpenLoopRampPeriod = 1.0;
+
     config.CurrentLimits.SupplyCurrentLimit = 15.0;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
-    // config.CurrentLimits.StatorCurrentLimit = 70.0;
-    // config.CurrentLimits.StatorCurrentLimitEnable = true;
-    // config.CurrentLimits.SupplyCurrentLimit = 35.0;
-    // config.CurrentLimits.SupplyCurrentLimitEnable = true;
+    config.CurrentLimits.StatorCurrentLimit = 60.0;
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
 
     motor.getConfigurator().apply(config);
     motor2.getConfigurator().apply(config);

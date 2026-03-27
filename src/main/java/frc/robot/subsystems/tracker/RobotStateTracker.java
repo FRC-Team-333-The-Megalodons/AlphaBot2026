@@ -3,14 +3,14 @@ package frc.robot.subsystems.tracker;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.util.Zones;
+import frc.robot.interfaces.Zonable;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.Logger;
 
-public class RobotStateTracker extends SubsystemBase {
+public class RobotStateTracker extends SubsystemBase implements Zonable {
 
   // --- Enums ---
 
@@ -52,7 +52,6 @@ public class RobotStateTracker extends SubsystemBase {
   private final BooleanSupplier flywheelReady;
   private final BooleanSupplier flywheelSpinningUp;
   private final DoubleSupplier intakeVoltage;
-  private final Zones zones;
 
   public RobotStateTracker(
       Supplier<Pose2d> poseSupplier,
@@ -63,7 +62,6 @@ public class RobotStateTracker extends SubsystemBase {
     this.flywheelReady = flywheelReady;
     this.flywheelSpinningUp = flywheelSpinningUp;
     this.intakeVoltage = intakeVoltage;
-    this.zones = new Zones();
   }
 
   @Override
@@ -71,9 +69,9 @@ public class RobotStateTracker extends SubsystemBase {
     Pose2d pose = poseSupplier.get();
 
     // Field zone
-    if (zones.alliance(pose)) {
+    if (inAllianceZone(pose)) {
       inputs.fieldZone = FieldZone.ALLIANCE_ZONE.name();
-    } else if (zones.enemy(pose)) {
+    } else if (inEnemyZone(pose)) {
       inputs.fieldZone = FieldZone.ENEMY_ZONE.name();
     } else {
       inputs.fieldZone = FieldZone.NEUTRAL_ZONE.name();
