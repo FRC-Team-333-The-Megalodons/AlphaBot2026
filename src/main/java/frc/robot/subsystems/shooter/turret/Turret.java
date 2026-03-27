@@ -132,7 +132,7 @@ public class Turret extends SubsystemBase implements Characterizable, Initializa
             new SysIdRoutine.Config(
                 Volts.per(Seconds).of(0.5), // Slow ramp
                 Volts.of(5),
-                Seconds.of(10), 
+                Seconds.of(10),
                 (state) -> Logger.recordOutput("Turret/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
                 (voltage) -> io.setTurretVoltage(voltage.in(Volts)),

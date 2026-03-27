@@ -6,6 +6,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -28,6 +29,7 @@ public class SpindexerIOKraken implements SpindexerIO {
     TalonFXConfiguration config = new TalonFXConfiguration();
     config.Feedback.SensorToMechanismRatio = SpindexerConstants.GEAR_RATIO;
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     config.Slot0.kS = SpindexerConstants.kS;
     config.Slot0.kP = SpindexerConstants.kP;
@@ -37,10 +39,10 @@ public class SpindexerIOKraken implements SpindexerIO {
     config.MotionMagic.MotionMagicAcceleration = SpindexerConstants.MAX_ACCEL;
     config.MotionMagic.MotionMagicJerk = SpindexerConstants.MAX_JERK;
 
-    // config.CurrentLimits.StatorCurrentLimit = 60.0;
-    // config.CurrentLimits.StatorCurrentLimitEnable = true;
-    // config.CurrentLimits.SupplyCurrentLimit = 30.0;
-    // config.CurrentLimits.SupplyCurrentLimitEnable = true;
+    config.CurrentLimits.StatorCurrentLimit = 60.0;
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
+    config.CurrentLimits.SupplyCurrentLimit = 30.0;
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     motor.getConfigurator().apply(config);
 

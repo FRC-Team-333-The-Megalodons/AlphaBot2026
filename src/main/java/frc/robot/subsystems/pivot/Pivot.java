@@ -122,7 +122,7 @@ public class Pivot extends SubsystemBase implements Characterizable {
             new SysIdRoutine.Config(
                 Volts.per(Seconds).of(0.5),
                 Volts.of(4),
-                Seconds.of(8), 
+                Seconds.of(8),
                 (state) -> Logger.recordOutput("Pivot/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
                 (voltage) -> io.setVoltage(voltage.in(Volts)),

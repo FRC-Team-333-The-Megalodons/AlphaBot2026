@@ -33,7 +33,7 @@ public class Flywheel extends SubsystemBase implements Characterizable {
 
   private final Timer coastDownTimer = new Timer();
 
-  private static final double COAST_DOWN_SECONDS = 3.0;
+  private static final double COAST_DOWN_SECONDS = 0.0;
 
   public Flywheel(FlywheelIO io, Supplier<Distance> distanceSupplier) {
     this.io = io;

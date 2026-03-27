@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.interfaces.Characterizable;
+import frc.robot.util.LiveTuning;
 import org.littletonrobotics.junction.Logger;
 
 public class Transfer extends SubsystemBase implements Characterizable {
@@ -23,6 +24,7 @@ public class Transfer extends SubsystemBase implements Characterizable {
     io.updateInputs(inputs);
     Logger.processInputs("Transfer", inputs);
     Logger.recordOutput("Transfer/VelocityRPM", inputs.velocityRpm);
+    LiveTuning.publish("Transfer/VelocityRPM", inputs.velocityRpm);
   }
 
   public Command feedShooter() {

@@ -197,7 +197,7 @@ public class RobotContainer {
     sysIdChooser.addOption("Spindexer SysId", spindexer.characterize());
     sysIdChooser.addOption("Transfer SysId", transfer.characterize());
     sysIdChooser.addOption("Turret SysId", turret.characterize());
-    sysIdChooser.addOption("Pivot SysId",pivot.characterize());
+    sysIdChooser.addOption("Pivot SysId", pivot.characterize());
 
     SmartDashboard.putData("Pathfind to Depot", PathfindCommands.pathfindToDepot(drive));
     SmartDashboard.putData("Turret/00 Go to 45", turret.rotateToField(Rotation2d.fromDegrees(45)));
@@ -290,13 +290,6 @@ public class RobotContainer {
                 }));
 
     driverController.R3().onTrue(Commands.runOnce(drive::stopWithX, drive));
-
-    driverController
-        .R2()
-        .whileTrue(
-            ShootingCommands.shootOnMove(
-                flywheel, turret, spindexer, transfer, intake, pivot, drive));
-
     driverController
         .L3()
         .whileTrue(
@@ -364,10 +357,11 @@ public class RobotContainer {
                             new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
                     drive)
                 .ignoringDisable(true));
+    driverController.R2().whileTrue(spindexer.spin().alongWith(transfer.feedShooter()));
 
     driverController.PS().whileTrue(ShootingCommands.dashboardRPMControl(flywheel));
-    driverController.R1().whileTrue(pivot.motionMagicDown());
-    driverController.L1().whileTrue(pivot.motionMagicUp());
+    // driverController.R1().whileTrue(pivot.motionMagicDown());
+    // driverController.L1().whileTrue(pivot.motionMagicUp());
     driverController
         .povUp()
         .whileTrue(Commands.parallel(spindexer.spin(), transfer.feedShooter(), intake.ingest()));
@@ -375,8 +369,8 @@ public class RobotContainer {
     driverController.povRight().onTrue(PathfindCommands.climbSequence(drive));
 
     // Intake
-    operatorController.L2().whileTrue(intake.ingest());
-    operatorController.L1().whileTrue(intake.eject());
+    operatorController.L1().whileTrue(intake.ingest());
+    operatorController.L2().whileTrue(intake.eject());
 
     // Pivot
     operatorController.R1().whileTrue(pivot.runPercent(() -> 0.1));
@@ -390,13 +384,19 @@ public class RobotContainer {
     operatorController.cross().whileTrue(transfer.feedShooter());
 
     // Shooter
-    operatorController
-        .triangle()
-        .whileTrue(Commands.run(() -> flywheel.setRPMDirect(2200), flywheel));
+    // operatorController
+    //     .triangle()
+    //     .whileTrue(Commands.run(() -> flywheel.setRPMDirect(2200), flywheel));
 
     // Climber
-    operatorController.povDown().whileTrue(climber.driveUp(0.70));
-    operatorController.povUp().whileTrue(climber.driveDown(-0.70));
+    operatorController.povDown().whileTrue(climber.driveUp(0.50));
+    operatorController.povUp().whileTrue(climber.driveDown(-0.50));
+
+    operatorController
+        .triangle()
+        .whileTrue(
+            ShootingCommands.shootOnMove(
+                flywheel, turret, spindexer, transfer, intake, pivot, drive));
   }
 
   /**

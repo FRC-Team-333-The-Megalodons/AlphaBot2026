@@ -39,10 +39,12 @@ public class PivotIOKraken implements PivotIO {
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.Feedback.SensorToMechanismRatio = PivotConstants.GEAR_RATIO;
-    config.CurrentLimits.StatorCurrentLimit = 50.0;
+    config.CurrentLimits.StatorCurrentLimit = 60.0;
     config.CurrentLimits.StatorCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = 25.0;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
+    config.Voltage.PeakForwardVoltage = 8.0;
+    config.Voltage.PeakReverseVoltage = -8.0;
 
     config.Slot0.kP = PivotConstants.kP;
     config.Slot0.kI = PivotConstants.kI;

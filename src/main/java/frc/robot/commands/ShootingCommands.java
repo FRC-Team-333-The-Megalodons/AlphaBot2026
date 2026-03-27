@@ -62,9 +62,12 @@ public class ShootingCommands {
               double absY = Math.abs(fieldVelocity.dy);
               return Math.max(absX, absY);
             }),
-        spindexer.spin(),
         Commands.sequence(
             Commands.waitUntil(() -> flywheel.ready() && turret.atTarget()),
-            transfer.feedShooter())); // feedShooterVelocity add this for more consisent shooting.
+            transfer
+                .feedShooter()
+                .alongWith(
+                    spindexer
+                        .spin()))); // feedShooterVelocity add this for more consisent shooting.
   }
 }

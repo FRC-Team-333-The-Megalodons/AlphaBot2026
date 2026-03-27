@@ -7,6 +7,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -31,19 +32,26 @@ public class TransferIOKraken implements TransferIO {
     TalonFXConfiguration config = new TalonFXConfiguration();
     config.Feedback.SensorToMechanismRatio = TransferConstants.GEAR_RATIO;
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     config.Slot0.kS = TransferConstants.kS;
     config.Slot0.kV = TransferConstants.kV;
     config.Slot0.kA = TransferConstants.kA;
     config.Slot0.kP = TransferConstants.kP;
 
+    config.MotionMagic.MotionMagicCruiseVelocity = TransferConstants.MAX_VELOCITY;
     config.MotionMagic.MotionMagicAcceleration = TransferConstants.MAX_ACCEL;
     config.MotionMagic.MotionMagicJerk = TransferConstants.MAX_JERK;
-    config.CurrentLimits.SupplyCurrentLimit = 30.0;
-    config.CurrentLimits.SupplyCurrentLimitEnable = true;
+    config.Voltage.PeakForwardVoltage = 6.0;
+    config.Voltage.PeakReverseVoltage = -4.0;
 
-    // config.CurrentLimits.StatorCurrentLimit = 70.0;
-    // config.CurrentLimits.StatorCurrentLimitEnable = true;
+    config.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 1.0;
+    config.OpenLoopRamps.VoltageOpenLoopRampPeriod = 1.0;
+
+    config.CurrentLimits.SupplyCurrentLimit = 20.0;
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
+    config.CurrentLimits.StatorCurrentLimit = 60.0;
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
     // config.CurrentLimits.SupplyCurrentLimit = 35.0;
     // config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
