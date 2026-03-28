@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.1248555555555557,
-        "y": 5.94
+        "x": 7.937433333333333,
+        "y": 7.028099999999999
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.5581999999999998,
-        "y": 5.929622222222222
+        "x": 7.896333586506992,
+        "y": 6.781501519041964
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "PrepToIntakeFromNZLeftSide"
     },
     {
       "anchor": {
-        "x": 2.125,
-        "y": 5.94
+        "x": 7.796344444444443,
+        "y": 4.760599999999999
       },
       "prevControl": {
-        "x": 1.6110333333333324,
-        "y": 5.94
+        "x": 7.866888888888889,
+        "y": 5.6172111111111125
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "LeftNeutralZoneDoneIntaking"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -108.02472352123843
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -103.17255342332699
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

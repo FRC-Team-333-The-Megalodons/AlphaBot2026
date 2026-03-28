@@ -3,45 +3,38 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.038211111111112,
-        "y": 1.0519777777777768
+        "x": 4.400133333333333,
+        "y": 7.602533333333334
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.927355555555556,
-        "y": 2.0899888888888882
+        "x": 6.163744444444445,
+        "y": 7.219577777777777
       },
       "isLocked": false,
-      "linkedName": "PrepToIntakeFromNZRightSide"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.866888888888889,
-        "y": 3.0373
+        "x": 7.937433333333333,
+        "y": 7.028099999999999
       },
       "prevControl": {
-        "x": 7.927355555555556,
-        "y": 2.3721666666666668
+        "x": 7.393233333333334,
+        "y": 7.07848888888889
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "RightNeutralZoneDoneIntaking"
+      "linkedName": "PrepToIntakeFromNZLeftSide"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [
-    {
-      "name": "Intake",
-      "waypointRelativePos": 0.0,
-      "endWaypointRelativePos": 1.0,
-      "command": null
-    }
-  ],
+  "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 2.0,
+    "maxVelocity": 5.12,
+    "maxAcceleration": 4.2,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -49,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 104.67226777532638
+    "rotation": -103.17255342332699
   },
   "reversed": false,
-  "folder": "RightPaths",
+  "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 101.92190831900564
+    "rotation": -90.0
   },
   "useDefaultConstraints": false
 }

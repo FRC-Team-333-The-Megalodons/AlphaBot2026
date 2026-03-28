@@ -8,36 +8,36 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.111055555555556,
-        "y": 1.5457888888888895
+        "x": 6.871304863582444,
+        "y": 1.6410794780545666
       },
       "isLocked": false,
       "linkedName": "RightNeutralZoneDoneIntaking"
     },
     {
       "anchor": {
-        "x": 5.952111111111111,
-        "y": 0.5884000000000003
+        "x": 6.09664294187426,
+        "y": 0.823380782918149
       },
       "prevControl": {
-        "x": 7.187080997933467,
-        "y": 0.5884000000000004
+        "x": 6.5520471939749525,
+        "y": 1.0344217777940798
       },
       "nextControl": {
-        "x": 5.034811870452111,
-        "y": 0.5884000000000001
+        "x": 5.214389086595492,
+        "y": 0.4145314353499396
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.5636777777777784,
+        "x": 3.9878410438908665,
         "y": 0.5884000000000003
       },
       "prevControl": {
-        "x": 4.564282759984183,
-        "y": 0.5884000000000003
+        "x": 5.139074733096087,
+        "y": 0.6942704626334513
       },
       "nextControl": null,
       "isLocked": false,
@@ -76,7 +76,7 @@
   ],
   "globalConstraints": {
     "maxVelocity": 5.4,
-    "maxAcceleration": 8.0,
+    "maxAcceleration": 4.2,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -90,7 +90,7 @@
   "folder": "RightPaths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 123.91743053697037
+    "rotation": 104.67226777532638
   },
   "useDefaultConstraints": false
 }
