@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.871909845788851,
-        "y": 1.0385646500593122
+        "x": 8.068444444444445,
+        "y": 1.031822222222222
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.850391459074734,
-        "y": 2.1144839857651245
+        "x": 7.957588888888889,
+        "y": 2.0698333333333334
       },
       "isLocked": false,
       "linkedName": "PrepToIntakeFromNZRightSide"
     },
     {
       "anchor": {
-        "x": 7.871909845788851,
-        "y": 2.9752194543297743
+        "x": 7.866888888888889,
+        "y": 3.0373
       },
       "prevControl": {
-        "x": 7.850391459074734,
-        "y": 2.2113167259786475
+        "x": 7.927355555555556,
+        "y": 2.3721666666666668
       },
       "nextControl": null,
       "isLocked": false,
@@ -40,8 +40,8 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 0.9,
-    "maxAcceleration": 3.0,
+    "maxVelocity": 3.0,
+    "maxAcceleration": 2.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,

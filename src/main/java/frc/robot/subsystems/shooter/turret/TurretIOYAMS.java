@@ -159,9 +159,9 @@ public class TurretIOYAMS implements TurretIO {
     inputs.encoder18Rotations = enc18AbsPos.getValue().in(Rotations);
 
     // This isn't actually used, it's just for debugging to compare the seeded value
-    //  with the realtime value. This can be a bit expensive, so rather than doing this
-    //  every iteration, we can still get our value-add for debugging by doing this once
-    //  every 5 seconds or so.
+    // with the realtime value. This can be a bit expensive, so rather than doing this
+    // every iteration, we can still get our value-add for debugging by doing this once
+    // every 5 seconds or so.
     long now = System.currentTimeMillis();
     if (now - lastRealtimeCalcCRT > 5000) {
       inputs.calculatedAbsPositionRot =
@@ -172,7 +172,6 @@ public class TurretIOYAMS implements TurretIO {
 
   @Override
   public boolean atTarget(double angle) {
-
     double currentPosDeg = turretPosition.getValue().in(Degrees);
     double currentVelRpm = turretVelocity.getValueAsDouble() * 60.0;
 
@@ -188,6 +187,15 @@ public class TurretIOYAMS implements TurretIO {
   }
 
   @Override
+  public void moveToWithVelocity(double degrees, double degreesPerSecond) {
+    double positionRotations = Units.degreesToRotations(degrees);
+    double velocityRotPerSec = degreesPerSecond / 360.0;
+
+    turretMotor.setControl(
+        trackingRequest.withPosition(positionRotations).withVelocity(velocityRotPerSec));
+  }
+
+  @Override
   public void setTurretVoltage(double volts) {
     turretMotor.setControl(voltageRequest.withOutput(volts));
   }
@@ -199,7 +207,6 @@ public class TurretIOYAMS implements TurretIO {
 
   @Override
   public void seedTurretPosition() {
-
     BaseStatusSignal.refreshAll(enc17AbsPos, enc18AbsPos);
 
     easyCrtSolver

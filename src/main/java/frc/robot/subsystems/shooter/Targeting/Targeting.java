@@ -35,6 +35,13 @@ public class Targeting extends SubsystemBase implements Initializable {
   private Supplier<Pose2d> robotPoseSupplier;
   private Supplier<Twist2d> robotVelocitySupplier;
 
+  /**
+   * Total system latency compensation in seconds. This accounts for: vision processing (~30ms), CAN
+   * bus (~5ms), robot code loop (~20ms), mechanical turret response (~40ms). The pose is predicted
+   * forward by this amount before calculating the shot.
+   */
+  private static final double LOOKAHEAD_TIME_SEC = 0.100;
+
   public Targeting(
       TargetingIO io, Supplier<Pose2d> robotPoseSupplier, Supplier<Twist2d> robotVelocitySupplier) {
     this.io = io;
@@ -49,27 +56,29 @@ public class Targeting extends SubsystemBase implements Initializable {
           Twist2d vel = robotVelocitySupplier.get();
           Translation2d rawTarget;
 
-          double lookaheadTime = 0.060;
-
           if (zones.alliance(pose)) rawTarget = io.getHub();
           else rawTarget = io.getAllianceZoneTarget(pose);
 
           targetVisualization.setRobotPose(new Pose2d(rawTarget, Rotation2d.kZero));
 
+          // Predict the pose forward by the system latency to compensate for delays
           Pose2d predictedPose =
               new Pose2d(
-                  pose.getX() + vel.dx * lookaheadTime,
-                  pose.getY() + vel.dy * lookaheadTime,
-                  pose.getRotation().plus(new Rotation2d(vel.dtheta * lookaheadTime)));
+                  pose.getX() + vel.dx * LOOKAHEAD_TIME_SEC,
+                  pose.getY() + vel.dy * LOOKAHEAD_TIME_SEC,
+                  pose.getRotation().plus(new Rotation2d(vel.dtheta * LOOKAHEAD_TIME_SEC)));
 
           inputs.targetDistance = predictedPose.getTranslation().getDistance(rawTarget);
           inputs.targetYaw = io.getAngleTo(predictedPose, rawTarget).getDegrees();
 
+          //2-iteration TOF refinement with velocity compensation
+          // Iteration 1: seed TOF from raw distance
           double tofSeed = io.getTOFFromDistance(inputs.targetDistance);
           Translation2d velocityCompensatedTarget =
               io.velocityCompensatedCoordinates(
                   predictedPose, new Translation2d(vel.dx, vel.dy), tofSeed, rawTarget);
 
+          // Iteration 2: refine TOF using compensated distance
           double refinedTof =
               io.getTOFFromDistance(io.getDistanceFrom(predictedPose, velocityCompensatedTarget));
           velocityCompensatedTarget =
@@ -81,6 +90,9 @@ public class Targeting extends SubsystemBase implements Initializable {
           inputs.augmentedTargetYaw =
               io.getAngleTo(predictedPose, velocityCompensatedTarget).getDegrees();
 
+          // The angular velocity is computed inside velocityCompensatedCoordinates()
+          // and cached. It's written to inputs in updateInputs().
+
           Logger.recordOutput("Targeting/RawTarget", new Pose2d(rawTarget, Rotation2d.kZero));
           Logger.recordOutput(
               "Targeting/CompensatedTarget",
@@ -88,6 +100,8 @@ public class Targeting extends SubsystemBase implements Initializable {
           Logger.recordOutput("Targeting/TOF", refinedTof);
           Logger.recordOutput("Targeting/RobotVelocityX", vel.dx);
           Logger.recordOutput("Targeting/RobotVelocityY", vel.dy);
+          Logger.recordOutput(
+              "Targeting/TargetAngVelRadPerSec", io.getLastTargetAngularVelocityRadPerSec());
         });
   }
 
@@ -119,6 +133,7 @@ public class Targeting extends SubsystemBase implements Initializable {
             ? Rotation2d.kZero.getDegrees()
             : Rotation2d.k180deg.getDegrees();
     inputs.augmentedTargetYaw = inputs.targetYaw;
+    inputs.targetAngularVelocityRadPerSec = 0.0;
 
     targetVisualization.setRobotPose(new Pose2d(io.getHub(), Rotation2d.kZero));
     SmartDashboard.putData(targetVisualization);
@@ -130,6 +145,11 @@ public class Targeting extends SubsystemBase implements Initializable {
 
   public Distance getTargetDistance() {
     return Meters.of(inputs.augmentedTargetDistance);
+  }
+
+
+  public double getTargetAngularVelocityRadPerSec() {
+    return inputs.targetAngularVelocityRadPerSec;
   }
 
   public boolean isInAllianceZone() {

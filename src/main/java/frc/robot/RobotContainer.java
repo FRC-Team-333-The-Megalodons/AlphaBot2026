@@ -128,7 +128,13 @@ public class RobotContainer {
         transfer = new Transfer(new TransferIOKraken());
         flywheel = new Flywheel(new FlywheelIOKraken(), targeting::getTargetDistance);
         pivot = new Pivot(new PivotIOKraken());
-        turret = new Turret(new TurretIOYAMS(), targeting::getTargetAngle, drive::getRotation);
+        turret =
+            new Turret(
+                new TurretIOYAMS(),
+                targeting::getTargetAngle,
+                drive::getRotation,
+                targeting::getTargetAngularVelocityRadPerSec,
+                drive::getFieldAngularVelocity);
         leds = new Led(new LedIOCANdle());
         climber = new Climber(new ClimberIOKraken());
         break;
@@ -151,7 +157,13 @@ public class RobotContainer {
         transfer = new Transfer(new TransferIOKrakenSim());
         flywheel = new Flywheel(new FlywheelIOKrakenSim(), targeting::getTargetDistance);
         pivot = new Pivot(new PivotIOKrakenSim());
-        turret = new Turret(new TurretIOKrakenSim(), targeting::getTargetAngle, drive::getRotation);
+        turret =
+            new Turret(
+                new TurretIOKrakenSim(),
+                targeting::getTargetAngle,
+                drive::getRotation,
+                targeting::getTargetAngularVelocityRadPerSec,
+                drive::getFieldAngularVelocity);
         leds = new Led(new LedIOSim());
         climber = new Climber(new ClimberIOKrakenSim());
         break;
@@ -171,7 +183,13 @@ public class RobotContainer {
         transfer = new Transfer(new TransferIO() {});
         flywheel = new Flywheel(new FlywheelIO() {}, targeting::getTargetDistance);
         pivot = new Pivot(new PivotIO() {});
-        turret = new Turret(new TurretIO() {}, targeting::getTargetAngle, drive::getRotation);
+        turret =
+            new Turret(
+                new TurretIO() {},
+                targeting::getTargetAngle,
+                drive::getRotation,
+                targeting::getTargetAngularVelocityRadPerSec,
+                drive::getFieldAngularVelocity);
         leds = new Led(new LedIO() {});
         climber = new Climber(new ClimberIO() {});
         break;
@@ -233,7 +251,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("ClimbSequence", PathfindCommands.climbSequence(drive));
     NamedCommands.registerCommand("ClimbingPosition", climber.extend());
     NamedCommands.registerCommand("Climb", climber.retract());
-    NamedCommands.registerCommand("PivotDown", pivot.motionMagicDown());
+    NamedCommands.registerCommand("PivotDown", pivot.motionMagicDown().withTimeout(2));
     NamedCommands.registerCommand(
         "ShootOnMove",
         ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, intake, pivot, drive));

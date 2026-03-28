@@ -14,6 +14,13 @@ public interface TargetingIO {
     public double targetYaw = 0.0;
     public double augmentedTargetDistance = 0.0;
     public double augmentedTargetYaw = 0.0;
+
+    /**
+     * The angular velocity of the target in field-frame, in radians per second. This is the rate at
+     * which the field-relative angle to the (compensated) target is changing due to the robot's
+     * linear motion. The turret uses this for velocity feedforward.
+     */
+    public double targetAngularVelocityRadPerSec = 0.0;
   }
 
   public default void updateInputs(TargetingIOInputs inputs) {}
@@ -46,18 +53,14 @@ public interface TargetingIO {
     return 0.0;
   }
 
-  /**
-   * FIX (Bug B): Added {@code selectedTarget} parameter.
-   *
-   * <p>Previously the signature was {@code (Pose2d, Translation2d, double)} and the implementation
-   * hardcoded {@code getHub()} internally. This meant the compensation was always calculated
-   * relative to the hub regardless of the actual target.
-   *
-   * <p>The selected target is now passed in explicitly so the math is correct for hub shots,
-   * passing shots, and any future target types.
-   */
+
   public default Translation2d velocityCompensatedCoordinates(
       Pose2d robotPose, Translation2d fieldVelocity, double tof, Translation2d selectedTarget) {
     return new Translation2d();
+  }
+
+
+  public default double getLastTargetAngularVelocityRadPerSec() {
+    return 0.0;
   }
 }

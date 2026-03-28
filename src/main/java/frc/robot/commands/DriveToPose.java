@@ -63,7 +63,9 @@ public class DriveToPose extends Command {
             AngularVelocity.ofBaseUnits(omega, RadiansPerSecond),
             currentPose.getRotation());
 
-    drive.runVelocity(commandSpeeds);
+    // Use closed-loop velocity control,open-loop voltage is too weak
+    // at the low speeds Autopilot commands during precision approaches.
+    drive.runVelocityClosedLoop(commandSpeeds);
   }
 
   @Override

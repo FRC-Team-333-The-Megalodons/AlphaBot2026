@@ -122,10 +122,6 @@ public class Drive extends SubsystemBase implements Characterizable, Initializab
     modules[2] = new Module(blModuleIO, 2, TunerConstants.BackLeft, this);
     modules[3] = new Module(brModuleIO, 3, TunerConstants.BackRight, this);
 
-    // posePublisher =
-    //
-    // NetworkTableInstance.getDefault().getTable("Drive").getDoubleArrayTopic("Pose").publish();
-
     // Usage reporting for swerve template
     HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_AdvantageKit);
 
@@ -263,7 +259,8 @@ public class Drive extends SubsystemBase implements Characterizable, Initializab
   }
 
   /**
-   * Runs the drive at the desired velocity.
+   * Runs the drive at the desired velocity using OPEN-LOOP voltage control. This is the standard
+   * method used for teleop driving and PathPlanner.
    *
    * @param speeds Speeds in meters/sec
    */
@@ -283,6 +280,30 @@ public class Drive extends SubsystemBase implements Characterizable, Initializab
     }
 
     // Log optimized setpoints (runSetpoint mutates each state)
+    Logger.recordOutput("SwerveStates/SetpointsOptimized", setpointStates);
+  }
+
+  /**
+    Use this for autonomous precision commands: Autopilot driveToPose, climbing alignment, etc.
+   * Do NOT use for teleop — closed-loop is less responsive to sudden input changes.
+   
+   */
+  public void runVelocityClosedLoop(ChassisSpeeds speeds) {
+    // Calculate module setpoints
+    ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
+    SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
+    SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, TunerConstants.kSpeedAt12Volts);
+
+    // Log setpoints
+    Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
+    Logger.recordOutput("SwerveChassisSpeeds/Setpoints", discreteSpeeds);
+
+    // Send setpoints to modules using closed-loop velocity control
+    for (int i = 0; i < 4; i++) {
+      modules[i].runClosedLoopSetpoint(setpointStates[i]);
+    }
+
+    // Log optimized setpoints
     Logger.recordOutput("SwerveStates/SetpointsOptimized", setpointStates);
   }
 

@@ -1,12 +1,10 @@
 package frc.robot.subsystems.shooter.turret;
 
-import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -16,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.interfaces.Characterizable;
 import frc.robot.interfaces.Initializable;
 import frc.robot.util.LiveTuning;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
@@ -25,13 +24,33 @@ public class Turret extends SubsystemBase implements Characterizable, Initializa
   private final Supplier<Angle> targetAngleSupplier;
   private final Supplier<Rotation2d> robotRotationSupplier;
 
+
+  private final DoubleSupplier targetAngularVelocitySupplier;
+
+  private final DoubleSupplier robotOmegaSupplier;
+
+  private final SysIdRoutine sysIdRoutine;
+
   public Turret(
       TurretIO io,
       Supplier<Angle> targetAngleSupplier,
-      Supplier<Rotation2d> robotRotationSupplier) {
+      Supplier<Rotation2d> robotRotationSupplier,
+      DoubleSupplier targetAngularVelocitySupplier,
+      DoubleSupplier robotOmegaSupplier) {
     this.io = io;
     this.targetAngleSupplier = targetAngleSupplier;
     this.robotRotationSupplier = robotRotationSupplier;
+    this.targetAngularVelocitySupplier = targetAngularVelocitySupplier;
+    this.robotOmegaSupplier = robotOmegaSupplier;
+    sysIdRoutine =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                null,
+                null,
+                null,
+                (state) -> Logger.recordOutput("Turret/SysIdState", state.toString())),
+            new SysIdRoutine.Mechanism(
+                (voltage) -> io.setTurretVoltage(voltage.in(Volts)), null, this));
   }
 
   @Override
@@ -79,7 +98,6 @@ public class Turret extends SubsystemBase implements Characterizable, Initializa
   }
 
   private double mapToTurretRange(double targetDeg) {
-
     if (targetDeg < TurretConstants.kMinAngle) {
       targetDeg += 360.0;
     }
@@ -89,17 +107,27 @@ public class Turret extends SubsystemBase implements Characterizable, Initializa
   public Command autoAim() {
     return Commands.run(
         () -> {
+          // --- Step 1: Compute target position (same as before) ---
           Rotation2d targetFieldAngle = new Rotation2d(targetAngleSupplier.get());
-
           Rotation2d targetRobotAngle = targetFieldAngle.minus(robotRotationSupplier.get());
-
           double targetDeg = mapToTurretRange(targetRobotAngle.getDegrees());
+
+       
+          double targetAngVelRadPerSec = targetAngularVelocitySupplier.getAsDouble();
+
+          double robotOmegaRadPerSec = robotOmegaSupplier.getAsDouble();
+
+          double turretFeedforwardRadPerSec = targetAngVelRadPerSec - robotOmegaRadPerSec;
+          double turretFeedforwardDegPerSec = Units.radiansToDegrees(turretFeedforwardRadPerSec);
+
+          io.moveToWithVelocity(targetDeg, turretFeedforwardDegPerSec);
 
           Logger.recordOutput("Turret/TargetFieldAngleDeg", targetFieldAngle.getDegrees());
           Logger.recordOutput("Turret/TargetRobotAngleDeg", targetRobotAngle.getDegrees());
           Logger.recordOutput("Turret/MappedTargetDeg", targetDeg);
-
-          io.moveTo(targetDeg);
+          Logger.recordOutput("Turret/FeedforwardDegPerSec", turretFeedforwardDegPerSec);
+          Logger.recordOutput("Turret/TargetAngVelRadPerSec", targetAngVelRadPerSec);
+          Logger.recordOutput("Turret/RobotOmegaRadPerSec", robotOmegaRadPerSec);
         },
         this);
   }
@@ -130,19 +158,12 @@ public class Turret extends SubsystemBase implements Characterizable, Initializa
     SysIdRoutine routine =
         new SysIdRoutine(
             new SysIdRoutine.Config(
-                Volts.per(Seconds).of(0.5), // Slow ramp
-                Volts.of(5),
-                Seconds.of(10),
+                null,
+                null,
+                null,
                 (state) -> Logger.recordOutput("Turret/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
-                (voltage) -> io.setTurretVoltage(voltage.in(Volts)),
-                (log) -> {
-                  log.motor("turret-sysid")
-                      .voltage(Volts.of(inputs.turretAppliedVolts))
-                      .angularPosition(Rotations.of(inputs.turretPositionDeg / 360.0))
-                      .angularVelocity(RotationsPerSecond.of(inputs.turretVelocityRPM / 60.0));
-                },
-                this));
+                (voltage) -> io.setTurretVoltage(voltage.in(Volts)), null, this));
 
     return Commands.sequence(
         Commands.print("Starting Turret SysId"),
