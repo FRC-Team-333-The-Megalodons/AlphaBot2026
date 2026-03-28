@@ -3,20 +3,24 @@ package frc.robot.subsystems.intake;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.interfaces.Characterizable;
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 public class Intake extends SubsystemBase implements Characterizable {
   private final IntakeIO io;
   private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
+  private Supplier<Twist2d> robotVelocitySupplier;
 
-  public Intake(IntakeIO io) {
+  public Intake(IntakeIO io, Supplier<Twist2d> robotVelocitySupplier) {
     this.io = io;
+    this.robotVelocitySupplier = robotVelocitySupplier;
   }
 
   @Override
@@ -24,6 +28,10 @@ public class Intake extends SubsystemBase implements Characterizable {
     io.updateInputs(inputs);
     Logger.processInputs("Intake", inputs);
     Logger.recordOutput("Intake/VelocityRPM", inputs.velocityRpm);
+  }
+
+  public Twist2d fieldVelocity() {
+    return robotVelocitySupplier.get();
   }
 
   public Command ingest() {
@@ -50,10 +58,13 @@ public class Intake extends SubsystemBase implements Characterizable {
     return runEnd(() -> io.setVoltage(IntakeConstants.EJECT_VOLTS), () -> io.setVoltage(0.0));
   }
 
-  public Command dynamicIngest(DoubleSupplier maxSpeedSupplier) {
+  public Command dynamicIngest() {
     return runEnd(
         () -> {
-          double currentRobotSpeed = maxSpeedSupplier.getAsDouble();
+          var fieldVelocity = robotVelocitySupplier.get();
+          double absX = Math.abs(fieldVelocity.dx);
+          double absY = Math.abs(fieldVelocity.dy);
+          double currentRobotSpeed = Math.max(absX, absY);
           double targetVolts = io.getVoltageFromSpeed(currentRobotSpeed);
           Logger.recordOutput("Intake/DynamicSpeedInput", currentRobotSpeed);
           Logger.recordOutput("Intake/DynamicVoltsOutput", targetVolts);

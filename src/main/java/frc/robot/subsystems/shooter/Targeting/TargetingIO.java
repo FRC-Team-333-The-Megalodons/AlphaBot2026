@@ -1,11 +1,20 @@
 package frc.robot.subsystems.shooter.Targeting;
 
+import static edu.wpi.first.units.Units.Inches;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import org.littletonrobotics.junction.AutoLog;
 
 public interface TargetingIO {
+
+  static final Transform2d chassisToTurretOffset = new Transform2d(
+    Inches.of(-6.846),
+    Inches.of(-5.826),
+    Rotation2d.kZero
+  );
 
   @AutoLog
   public static class TargetingIOInputs {
@@ -52,7 +61,6 @@ public interface TargetingIO {
   public default double getTOFFromDistance(double distanceMeters) {
     return 0.0;
   }
-
 
   public default Translation2d velocityCompensatedCoordinates(
       Pose2d robotPose, Translation2d fieldVelocity, double tof, Translation2d selectedTarget) {

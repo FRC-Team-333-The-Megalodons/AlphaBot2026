@@ -6,11 +6,10 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import frc.robot.util.Targets;
+import frc.robot.interfaces.Targetable;
 
-public class TargetingIOReal implements TargetingIO {
+public class TargetingIOReal implements Targetable, TargetingIO {
 
-  private Targets targets;
   private final InterpolatingDoubleTreeMap distanceToTOF;
   private final InterpolatingDoubleTreeMap distanceToVelocityScalar;
   private final double dragConstant;
@@ -21,7 +20,6 @@ public class TargetingIOReal implements TargetingIO {
   private String currentTargetName = "hub";
 
   public TargetingIOReal() {
-    targets = new Targets();
 
     distanceToTOF = new InterpolatingDoubleTreeMap();
     distanceToVelocityScalar = new InterpolatingDoubleTreeMap();
@@ -58,11 +56,11 @@ public class TargetingIOReal implements TargetingIO {
   }
 
   private Translation2d selectTarget(String targetName) {
-    return targets.select(targetName);
+    return select(targetName);
   }
 
   private Translation2d selectTarget(String targetName, Pose2d robotPose) {
-    return targets.select(targetName, robotPose);
+    return select(targetName, robotPose);
   }
 
   @Override
@@ -133,7 +131,10 @@ public class TargetingIOReal implements TargetingIO {
       Pose2d robotPose, Translation2d fieldVelocity, double tof, Translation2d selectedTarget) {
 
     // Use the passed-in target, not a hardcoded getHub()
-    Translation2d hubOffset = selectedTarget.minus(robotPose.getTranslation());
+
+    Pose2d turretPose = getTurretPose(robotPose);
+
+    Translation2d hubOffset = selectedTarget.minus(turretPose.getTranslation());
     double uncompensatedRange = hubOffset.getNorm();
     Rotation2d robotToGoalAngle = hubOffset.getAngle();
 
@@ -160,6 +161,6 @@ public class TargetingIOReal implements TargetingIO {
     Rotation2d finalHeading = robotToGoalAngle.plus(Rotation2d.fromRadians(angularOffsetRad));
     Translation2d virtualOffset = new Translation2d(effectiveRange, finalHeading);
 
-    return robotPose.getTranslation().plus(virtualOffset);
+    return turretPose.getTranslation().plus(virtualOffset);
   }
 }
