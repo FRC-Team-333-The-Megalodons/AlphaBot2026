@@ -55,8 +55,6 @@ public class Targeting extends SubsystemBase implements Initializable, Zonable {
           Twist2d vel = robotVelocitySupplier.get();
           Translation2d rawTarget;
 
-          double lookaheadTime = 0.060;
-
           if (inAllianceZone(pose)) rawTarget = io.getHub();
           else rawTarget = io.getAllianceZoneTarget(pose);
 
@@ -72,7 +70,7 @@ public class Targeting extends SubsystemBase implements Initializable, Zonable {
           inputs.targetDistance = predictedPose.getTranslation().getDistance(rawTarget);
           inputs.targetYaw = io.getAngleTo(predictedPose, rawTarget).getDegrees();
 
-          //2-iteration TOF refinement with velocity compensation
+          // 2-iteration TOF refinement with velocity compensation
           // Iteration 1: seed TOF from raw distance
           double tofSeed = io.getTOFFromDistance(inputs.targetDistance);
           Translation2d velocityCompensatedTarget =
@@ -127,10 +125,9 @@ public class Targeting extends SubsystemBase implements Initializable, Zonable {
 
   @Override
   public void seed() {
-
     Pose2d turretPose = io.getTurretPose(robotPoseSupplier.get());
     inputs.targetDistance = io.getDistanceFromHub(turretPose);
-    
+
     inputs.augmentedTargetDistance = inputs.targetDistance;
     inputs.targetYaw =
         DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
@@ -150,7 +147,6 @@ public class Targeting extends SubsystemBase implements Initializable, Zonable {
   public Distance getTargetDistance() {
     return Meters.of(inputs.augmentedTargetDistance);
   }
-
 
   public double getTargetAngularVelocityRadPerSec() {
     return inputs.targetAngularVelocityRadPerSec;

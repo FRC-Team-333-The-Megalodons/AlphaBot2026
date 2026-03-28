@@ -32,6 +32,16 @@ public interface TargetingIO {
     public double targetAngularVelocityRadPerSec = 0.0;
   }
 
+  /**
+   * Transforms the robot chassis pose into the turret pivot pose using the fixed
+   * chassis-to-turret offset. All targeting math (distance, angle, velocity compensation)
+   * should use this pose as the origin, since the ball launches from the turret,
+   * not the robot center.
+   */
+  public default Pose2d getTurretPose(Pose2d robotPose) {
+    return robotPose.transformBy(chassisToTurretOffset);
+  }
+
   public default void updateInputs(TargetingIOInputs inputs) {}
 
   public default Translation2d getHub() {
@@ -66,7 +76,6 @@ public interface TargetingIO {
       Pose2d robotPose, Translation2d fieldVelocity, double tof, Translation2d selectedTarget) {
     return new Translation2d();
   }
-
 
   public default double getLastTargetAngularVelocityRadPerSec() {
     return 0.0;
