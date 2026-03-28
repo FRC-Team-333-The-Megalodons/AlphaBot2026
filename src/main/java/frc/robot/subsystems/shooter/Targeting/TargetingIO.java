@@ -55,7 +55,7 @@ public interface TargetingIO {
     return 0.0;
   }
 
-  public static Pose2d getTurretPose(Pose2d chassisPose) {
+  public default Pose2d getTurretPose(Pose2d chassisPose) {
     return chassisPose.plus(chassisToTurretOffset);
   }
 

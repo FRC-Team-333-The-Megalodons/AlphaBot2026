@@ -111,7 +111,10 @@ public class Targeting extends SubsystemBase implements Initializable, Zonable {
 
   @Override
   public void seed() {
-    inputs.targetDistance = io.getDistanceFromHub(robotPoseSupplier.get());
+
+    Pose2d turretPose = io.getTurretPose(robotPoseSupplier.get());
+    inputs.targetDistance = io.getDistanceFromHub(turretPose);
+    
     inputs.augmentedTargetDistance = inputs.targetDistance;
     inputs.targetYaw =
         DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue

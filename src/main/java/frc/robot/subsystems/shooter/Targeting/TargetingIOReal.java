@@ -128,7 +128,10 @@ public class TargetingIOReal implements Targetable, TargetingIO {
     // }
 
     // Use the passed-in target, not a hardcoded getHub()
-    Translation2d hubOffset = selectedTarget.minus(robotPose.getTranslation());
+
+    Pose2d turretPose = getTurretPose(robotPose);
+
+    Translation2d hubOffset = selectedTarget.minus(turretPose.getTranslation());
     double uncompensatedRange = hubOffset.getNorm();
     Rotation2d robotToGoalAngle = hubOffset.getAngle();
 
@@ -152,6 +155,6 @@ public class TargetingIOReal implements Targetable, TargetingIO {
     Rotation2d finalHeading = robotToGoalAngle.plus(Rotation2d.fromRadians(angularOffsetRad));
     Translation2d virtualOffset = new Translation2d(effectiveRange, finalHeading);
 
-    return robotPose.getTranslation().plus(virtualOffset);
+    return turretPose.getTranslation().plus(virtualOffset);
   }
 }
