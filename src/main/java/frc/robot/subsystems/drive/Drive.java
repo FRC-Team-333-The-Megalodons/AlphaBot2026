@@ -37,6 +37,8 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -57,6 +59,8 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase implements Characterizable, Initializable {
+
+  private final Field2d fieldWidget = new Field2d();
 
   // TunerConstants doesn't include these constants, so they are declared locally
   static final double ODOMETRY_FREQUENCY = TunerConstants.kCANBus.isNetworkFD() ? 250.0 : 100.0;
@@ -127,6 +131,7 @@ public class Drive extends SubsystemBase implements Characterizable, Initializab
 
     // Start odometry thread
     PhoenixOdometryThread.getInstance().start();
+    SmartDashboard.putData("RobotToField", fieldWidget);
 
     // Configure SysId
     sysId =
@@ -256,6 +261,7 @@ public class Drive extends SubsystemBase implements Characterizable, Initializab
     ChassisSpeeds speeds = getChassisSpeeds();
     LiveTuning.publish(
         "Drive/SpeedMPS", Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond));
+    fieldWidget.setRobotPose(getPose());
   }
 
   /**
@@ -284,9 +290,8 @@ public class Drive extends SubsystemBase implements Characterizable, Initializab
   }
 
   /**
-    Use this for autonomous precision commands: Autopilot driveToPose, climbing alignment, etc.
-   * Do NOT use for teleop — closed-loop is less responsive to sudden input changes.
-   
+   * Use this for autonomous precision commands: Autopilot driveToPose, climbing alignment, etc. Do
+   * NOT use for teleop — closed-loop is less responsive to sudden input changes.
    */
   public void runVelocityClosedLoop(ChassisSpeeds speeds) {
     // Calculate module setpoints

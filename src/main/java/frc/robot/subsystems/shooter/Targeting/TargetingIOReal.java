@@ -14,7 +14,6 @@ public class TargetingIOReal implements Targetable, TargetingIO {
   private final InterpolatingDoubleTreeMap distanceToVelocityScalar;
   private final double dragConstant;
 
-
   private double lastTargetYawVelocityRadPerSec = 0.0;
 
   private String currentTargetName = "hub";

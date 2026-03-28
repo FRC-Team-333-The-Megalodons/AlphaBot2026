@@ -93,7 +93,7 @@ public class Module {
 
   public void runClosedLoopSetpoint(SwerveModuleState state) {
     state.optimize(getAngle());
-   
+
     double velocityRadPerSec = state.speedMetersPerSecond / constants.WheelRadius;
     io.setDriveVelocity(velocityRadPerSec);
     io.setTurnPosition(state.angle);

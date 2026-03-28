@@ -68,6 +68,7 @@ import frc.robot.subsystems.spindexer.SpindexerIO;
 import frc.robot.subsystems.spindexer.SpindexerIOKraken;
 import frc.robot.subsystems.spindexer.SpindexerIOKrakenSim;
 import frc.robot.subsystems.tracker.RobotStateTracker;
+import frc.robot.subsystems.tracker.ShiftTracker;
 import frc.robot.subsystems.transfer.Transfer;
 import frc.robot.subsystems.transfer.TransferIO;
 import frc.robot.subsystems.transfer.TransferIOKraken;
@@ -98,6 +99,7 @@ public class RobotContainer {
   private final Led leds;
   private final Climber climber;
   private final RobotStateTracker stateTracker;
+  private final ShiftTracker shiftTracker;
 
   // Controller
   private final CommandPS5Controller driverController = new CommandPS5Controller(0);
@@ -110,6 +112,8 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    shiftTracker = new ShiftTracker();
+
     switch (Constants.currentMode) {
       case REAL:
         drive =
@@ -255,10 +259,7 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "ShootOnMove",
         ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, intake, pivot));
-    NamedCommands.registerCommand(
-        "Intake",
-        intake.dynamicIngest()
-    );
+    NamedCommands.registerCommand("Intake", intake.dynamicIngest());
   }
 
   public void onDriverStationConnected() {

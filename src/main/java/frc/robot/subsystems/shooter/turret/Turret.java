@@ -24,7 +24,6 @@ public class Turret extends SubsystemBase implements Characterizable, Initializa
   private final Supplier<Angle> targetAngleSupplier;
   private final Supplier<Rotation2d> robotRotationSupplier;
 
-
   private final DoubleSupplier targetAngularVelocitySupplier;
 
   private final DoubleSupplier robotOmegaSupplier;
@@ -112,7 +111,6 @@ public class Turret extends SubsystemBase implements Characterizable, Initializa
           Rotation2d targetRobotAngle = targetFieldAngle.minus(robotRotationSupplier.get());
           double targetDeg = mapToTurretRange(targetRobotAngle.getDegrees());
 
-       
           double targetAngVelRadPerSec = targetAngularVelocitySupplier.getAsDouble();
 
           double robotOmegaRadPerSec = robotOmegaSupplier.getAsDouble();

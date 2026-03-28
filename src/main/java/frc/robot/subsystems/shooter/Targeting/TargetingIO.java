@@ -10,11 +10,8 @@ import org.littletonrobotics.junction.AutoLog;
 
 public interface TargetingIO {
 
-  static final Transform2d chassisToTurretOffset = new Transform2d(
-    Inches.of(-6.846),
-    Inches.of(-5.826),
-    Rotation2d.kZero
-  );
+  static final Transform2d chassisToTurretOffset =
+      new Transform2d(Inches.of(-6.846), Inches.of(-5.826), Rotation2d.kZero);
 
   @AutoLog
   public static class TargetingIOInputs {
@@ -33,10 +30,9 @@ public interface TargetingIO {
   }
 
   /**
-   * Transforms the robot chassis pose into the turret pivot pose using the fixed
-   * chassis-to-turret offset. All targeting math (distance, angle, velocity compensation)
-   * should use this pose as the origin, since the ball launches from the turret,
-   * not the robot center.
+   * Transforms the robot chassis pose into the turret pivot pose using the fixed chassis-to-turret
+   * offset. All targeting math (distance, angle, velocity compensation) should use this pose as the
+   * origin, since the ball launches from the turret, not the robot center.
    */
   public default Pose2d getTurretPose(Pose2d robotPose) {
     return robotPose.transformBy(chassisToTurretOffset);

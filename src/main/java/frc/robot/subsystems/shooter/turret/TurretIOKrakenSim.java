@@ -31,8 +31,7 @@ public class TurretIOKrakenSim implements TurretIO {
   public void updateInputs(TurretIOInputs inputs) {
     if (closedLoopMode) {
       appliedVolts = simController.calculate(sim.getAngleRads(), targetPositionRad);
-      appliedVolts +=
-          Math.signum(targetPositionRad - sim.getAngleRads()) * TurretConstants.kS;
+      appliedVolts += Math.signum(targetPositionRad - sim.getAngleRads()) * TurretConstants.kS;
 
       // Velocity feedforward: kV * targetVelocity compensates for the moving setpoint
       appliedVolts += TurretConstants.kV * targetVelocityRadPerSec;
