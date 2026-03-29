@@ -63,9 +63,9 @@ public class Turret extends SubsystemBase implements Characterizable, Initializa
     Logger.processInputs("Turret", inputs);
     // Live values for real-time turret monitoring
     LiveTuning.publish("Turret/PositionDeg", inputs.turretPositionDeg);
-    LiveTuning.publish("Turret/VelocityRPM", inputs.turretVelocityRPM);
-    LiveTuning.publish("Turret/AtTarget", atTarget());
-    LiveTuning.publish("Turret/AbsPositionRot", inputs.calculatedAbsPositionRot);
+    // LiveTuning.publish("Turret/VelocityRPM", inputs.turretVelocityRPM);
+    // LiveTuning.publish("Turret/AtTarget", atTarget());
+    // LiveTuning.publish("Turret/AbsPositionRot", inputs.calculatedAbsPositionRot);
     LiveTuning.publish("Turret/Encoder17", inputs.encoder17Rotations);
     LiveTuning.publish("Turret/Encoder18", inputs.encoder18Rotations);
   }

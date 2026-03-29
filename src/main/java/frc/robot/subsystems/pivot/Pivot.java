@@ -13,7 +13,6 @@ import frc.robot.interfaces.Characterizable;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
-import frc.robot.util.LiveTuning;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
@@ -30,8 +29,8 @@ public class Pivot extends SubsystemBase implements Characterizable {
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Pivot", inputs);
-    LiveTuning.publish("Pivot/AngleDegrees", getPositionDeg());
-    LiveTuning.publish("Pivot/AppliedVoltage", io.getAppliedVoltage());
+    // LiveTuning.publish("Pivot/AngleDegrees", getPositionDeg());
+    // LiveTuning.publish("Pivot/AppliedVoltage", io.getAppliedVoltage());
   }
 
   public double getPositionDeg() {

@@ -16,13 +16,13 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
-import frc.robot.util.LiveTuning;
 import java.util.ArrayList;
 import java.util.List;
 import org.littletonrobotics.junction.Logger;
@@ -52,6 +52,8 @@ public class Vision extends SubsystemBase {
   public Vision(VisionConsumer consumer, VisionIO... io) {
     this.consumer = consumer;
     this.io = io;
+    Pose3d dummyPose = new Pose3d();
+    dummyPose.transformBy(new Transform3d());
 
     // Initialize inputs
     this.inputs = new VisionIOInputsAutoLogged[io.length];
@@ -190,11 +192,11 @@ public class Vision extends SubsystemBase {
         "Vision/Summary/RobotPosesAccepted", allRobotPosesAccepted.toArray(EMPTY_POSE3D_ARRAY));
     Logger.recordOutput(
         "Vision/Summary/RobotPosesRejected", allRobotPosesRejected.toArray(EMPTY_POSE3D_ARRAY));
-    for (int i = 0; i < io.length; i++) {
-      LiveTuning.publish("Vision/Camera" + i + "/Connected", inputs[i].connected);
-      LiveTuning.publish("Vision/Camera" + i + "/TagCount", inputs[i].tagIds.length);
-    }
-    LiveTuning.publish("Vision/AcceptedPosesThisLoop", allRobotPosesAccepted.size());
+    // for (int i = 0; i < io.length; i++) {
+    //   LiveTuning.publish("Vision/Camera" + i + "/Connected", inputs[i].connected);
+    //   LiveTuning.publish("Vision/Camera" + i + "/TagCount", inputs[i].tagIds.length);
+    // }
+    // LiveTuning.publish("Vision/AcceptedPosesThisLoop", allRobotPosesAccepted.size());
   }
 
   @FunctionalInterface

@@ -8,7 +8,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.interfaces.Characterizable;
-import frc.robot.util.LiveTuning;
 import org.littletonrobotics.junction.Logger;
 
 public class Spindexer extends SubsystemBase implements Characterizable {
@@ -25,7 +24,7 @@ public class Spindexer extends SubsystemBase implements Characterizable {
     Logger.processInputs("Spindexer", inputs);
     Logger.recordOutput("Spindexer/Voltage", inputs.appliedVolts);
     Logger.recordOutput("Spindexer/VelocityRPM", inputs.velocityRps * 60.0);
-    LiveTuning.publish("Spindexer/VelocityRPM", inputs.velocityRps * 60);
+    // LiveTuning.publish("Spindexer/VelocityRPM", inputs.velocityRps * 60);
   }
 
   public Command spin() {

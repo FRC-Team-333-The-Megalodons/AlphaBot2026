@@ -49,7 +49,6 @@ import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
 import frc.robot.interfaces.Characterizable;
 import frc.robot.interfaces.Initializable;
-import frc.robot.util.LiveTuning;
 import frc.robot.util.LocalADStarAK;
 import frc.robot.util.MatchStateCalculator;
 import java.util.concurrent.locks.Lock;
@@ -255,13 +254,13 @@ public class Drive extends SubsystemBase implements Characterizable, Initializab
 
     Logger.recordOutput("Drive/DistanceToHub", getDistanceToHub());
     Pose2d pose = getPose();
-    LiveTuning.publish("Drive/Pose", pose);
-    LiveTuning.publish("Drive/DistanceToHub", getDistanceToHub());
+    // LiveTuning.publish("Drive/Pose", pose);
+    // LiveTuning.publish("Drive/DistanceToHub", getDistanceToHub());
 
     ChassisSpeeds speeds = getChassisSpeeds();
-    LiveTuning.publish(
-        "Drive/SpeedMPS", Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond));
-    fieldWidget.setRobotPose(getPose());
+    // LiveTuning.publish(
+    //     "Drive/SpeedMPS", Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond));
+    // fieldWidget.setRobotPose(getPose());
   }
 
   /**

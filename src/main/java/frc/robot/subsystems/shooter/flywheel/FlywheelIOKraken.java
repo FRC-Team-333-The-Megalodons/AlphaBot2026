@@ -49,16 +49,16 @@ public class FlywheelIOKraken implements FlywheelIO {
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-    config.Voltage.PeakForwardVoltage = 9.0;
-    config.Voltage.PeakReverseVoltage = -1.0; // Flywheel should never have to rotate backwards.
+    // config.Voltage.PeakForwardVoltage = 9.0;
+    // config.Voltage.PeakReverseVoltage = -1.0; // Flywheel should never have to rotate backwards.
 
-    config.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 1.0;
-    config.OpenLoopRamps.VoltageOpenLoopRampPeriod = 1.0;
+    // config.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 1.0;
+    // config.OpenLoopRamps.VoltageOpenLoopRampPeriod = 1.0;
 
-    config.CurrentLimits.SupplyCurrentLimit = 40.0;
+    config.CurrentLimits.SupplyCurrentLimit = 30.0;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
-    config.CurrentLimits.StatorCurrentLimit = 60.0;
+    config.CurrentLimits.StatorCurrentLimit = 80.0;
     config.CurrentLimits.StatorCurrentLimitEnable = true;
 
     motor.getConfigurator().apply(config);

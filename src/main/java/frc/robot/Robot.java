@@ -75,14 +75,15 @@ public class Robot extends LoggedRobot {
     robotContainer = new RobotContainer();
 
     // Modify this to log to AdvantageKit if needed.
-    CommandScheduler.getInstance()
-        .onCommandInitialize(
-            (command) -> System.out.println("Starting Command: " + command.getName()));
-    CommandScheduler.getInstance()
-        .onCommandInterrupt(
-            (command) -> System.out.println("Interrupted Command: " + command.getName()));
-    CommandScheduler.getInstance()
-        .onCommandFinish((command) -> System.out.println("Finished Command: " + command.getName()));
+    // CommandScheduler.getInstance()
+    //     .onCommandInitialize(
+    //         (command) -> System.out.println("Starting Command: " + command.getName()));
+    // CommandScheduler.getInstance()
+    //     .onCommandInterrupt(
+    //         (command) -> System.out.println("Interrupted Command: " + command.getName()));
+    // CommandScheduler.getInstance()
+    //     .onCommandFinish((command) -> System.out.println("Finished Command: " +
+    // command.getName()));
   }
 
   /** This function is called periodically during all modes. */
@@ -99,6 +100,8 @@ public class Robot extends LoggedRobot {
     // the Command-based framework to work.
     CommandScheduler.getInstance().run();
 
+    // CommandScheduler.getInstance().printWatchdogEpochs();
+
     // Return to non-RT thread priority (do not modify the first argument)
     // Threads.setCurrentThreadPriority(false, 10);
   }
@@ -112,7 +115,7 @@ public class Robot extends LoggedRobot {
   /** This function is called once when the robot is disabled. */
   @Override
   public void disabledInit() {
-    robotContainer.seedTurret();
+    // robotContainer.seedTurret();
     // robotContainer.resetTransfer();
     // robotContainer.resetFlywheel();
   }
@@ -131,7 +134,7 @@ public class Robot extends LoggedRobot {
       CommandScheduler.getInstance().schedule(autonomousCommand);
     }
 
-    robotContainer.seedTurret();
+    // robotContainer.seedTurret();
   }
 
   /** This function is called periodically during autonomous. */
@@ -149,7 +152,7 @@ public class Robot extends LoggedRobot {
       autonomousCommand.cancel();
     }
 
-    robotContainer.seedTurret();
+    // robotContainer.seedTurret();
   }
 
   /** This function is called periodically during operator control. */

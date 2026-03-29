@@ -23,12 +23,12 @@ public interface IntakeIO extends Automatable {
     map.put(0.5, 6.8);
     map.put(0.7, 6.5);
     map.put(0.9, 6.2);
-    map.put(1.1, 5.6);
-    map.put(1.5, 5.5);
-    map.put(1.8, 5.35);
-    map.put(2.0, 5.3);
-    map.put(2.5, 5.2);
-    map.put(5.0, 5.0);
+    // map.put(1.1, 5.6);
+    // map.put(1.5, 5.5);
+    // map.put(1.8, 5.35);
+    // map.put(2.0, 5.3);
+    // map.put(2.5, 5.2);
+    // map.put(5.0, 5.0);
     return map;
   }
 

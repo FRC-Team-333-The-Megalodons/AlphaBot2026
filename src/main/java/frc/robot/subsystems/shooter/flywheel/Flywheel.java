@@ -9,7 +9,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.interfaces.Characterizable;
-import frc.robot.util.LiveTuning;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
@@ -103,7 +102,7 @@ public class Flywheel extends SubsystemBase implements Characterizable {
     Logger.recordOutput("Flywheel/PreSpinState", preSpinState.toString());
     Logger.recordOutput("Flywheel/CoastDownTimer", coastDownTimer.get());
     Logger.recordOutput("Flywheel/VelocityRPM", inputs.velocityRPM);
-    LiveTuning.publish("Flywheel/RPM", inputs.velocityRPM);
+    // LiveTuning.publish("Flywheel/RPM", inputs.velocityRPM);
   }
 
   private void requestPreSpin() {
