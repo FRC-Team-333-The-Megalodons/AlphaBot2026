@@ -252,14 +252,19 @@ public class RobotContainer {
   private void registerNamedCommands() {
     NamedCommands.registerCommand("DriveToOutpost", PathfindCommands.driveToTheOutpost(drive));
     NamedCommands.registerCommand("PivotDown", pivot.motionMagicDown());
-    NamedCommands.registerCommand("ClimbSequence", PathfindCommands.climbSequence(drive));
-    NamedCommands.registerCommand("ClimbingPosition", climber.extend());
-    NamedCommands.registerCommand("Climb", climber.retract());
     NamedCommands.registerCommand("PivotDown", pivot.motionMagicDown().withTimeout(2));
     NamedCommands.registerCommand(
         "ShootOnMove",
         ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, intake, pivot));
     NamedCommands.registerCommand("Intake", intake.dynamicIngest());
+    NamedCommands.registerCommand("ClimbingPosition", climber.extend());
+    NamedCommands.registerCommand("Climb", climber.retract());
+    NamedCommands.registerCommand("ClimbZero", climber.zeroSequence());
+ 
+    // Teleop climb sequence (pathfind + precision drive, no climber mechanism):
+    NamedCommands.registerCommand("ClimbSequence", PathfindCommands.climbSequence(drive));
+    NamedCommands.registerCommand(
+        "AutoClimb", PathfindCommands.autonomousClimbSequence(drive, climber));
   }
 
   public void onDriverStationConnected() {

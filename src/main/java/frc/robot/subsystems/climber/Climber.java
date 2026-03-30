@@ -3,6 +3,7 @@ package frc.robot.subsystems.climber;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.util.LiveTuning;
 import org.littletonrobotics.junction.Logger;
 
 public class Climber extends SubsystemBase {
@@ -18,11 +19,12 @@ public class Climber extends SubsystemBase {
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Climber", inputs);
-    // LiveTuning.publish("Climber/PostionRot", inputs.positionRot);
-    // LiveTuning.publish("Climber/IsTriggered", inputs.limitSwitchTriggered);
-    // LiveTuning.publish("Climber/HasZeroed", inputs.hasZeroed);
-    // LiveTuning.publish("Climber/RawPosition", inputs.rawPosition);
+    LiveTuning.publish("Climber/PostionRot", inputs.positionRot);
+    LiveTuning.publish("Climber/IsTriggered", inputs.limitSwitchTriggered);
+    LiveTuning.publish("Climber/HasZeroed", inputs.hasZeroed);
+    LiveTuning.publish("Climber/RawPosition", inputs.rawPosition);
   }
+
 
   public double getPositionRot() {
     return inputs.positionRot;
@@ -39,6 +41,21 @@ public class Climber extends SubsystemBase {
   public boolean atTarget(double positionRot) {
     return io.atTarget(positionRot);
   }
+
+  /**
+   * Returns true if the climber is at the extended climbing position.
+   */
+  public boolean isExtended() {
+    return io.atTarget(ClimberConstants.kClimbPosition);
+  }
+
+  /**
+   * Returns true if the climber is at the retracted (climbed) position.
+   */
+  public boolean isRetracted() {
+    return io.atTarget(ClimberConstants.kStowedPosition);
+  }
+
 
   public Command extend() {
     return run(() -> io.moveTo(ClimberConstants.kClimbPosition))
@@ -73,13 +90,25 @@ public class Climber extends SubsystemBase {
         .withName("Climber.runVoltage(" + volts + ")");
   }
 
+  //Zero sequence
+  /**
+   * Drives the climber slowly downward until the limit switch triggers,
+   * then zeros the encoder. If the switch is already triggered (normal boot state).
+   */
   public Command zeroSequence() {
     return Commands.sequence(
             runEnd(() -> io.setDutyCycle(-0.1), io::stop).until(this::isLimitSwitchTriggered),
             Commands.runOnce(io::zeroPosition))
         .withName("Climber.zeroSequence");
   }
-
+  public Command fullClimbSequence() {
+    return Commands.sequence(
+            zeroSequence(),
+            extend(),
+            Commands.waitSeconds(0.3),
+            retract())
+        .withName("Climber.fullClimbSequence");
+  }
   public Command stop() {
     return runOnce(io::stop).withName("Climber.stop");
   }
