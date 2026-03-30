@@ -278,25 +278,32 @@ public class RobotContainer {
   public void resetFlywheel() {
     flywheel.resetPreSpin();
   }
+  private void configureOperatorBindings(){
+    // Intake
+    operatorController.L1().whileTrue(intake.ingest());
+    operatorController.L2().whileTrue(intake.eject());
 
-  /**
-   * Use this method to define your button->command mappings. Buttons can be created by
-   * instantiating a {@link GenericHID} or one of its subclasses ({@link
-   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
-   * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
-   */
-  private void configureButtonBindings() {
-    leds.setDefaultCommand(leds.gameStateAwareLeds(stateTracker));
+    // Pivot
+    operatorController.R1().whileTrue(pivot.runPercent(() -> 0.1));
+    operatorController.R2().whileTrue(pivot.runPercent(() -> -0.15));
 
-    drive.setDefaultCommand(
-        DriveCommands.joystickDrive(
-            drive,
-            () -> -driverController.getLeftY(),
-            () -> -driverController.getLeftX(),
-            () -> -driverController.getRightX()));
+    // Spindexer
+    operatorController.povRight().whileTrue(spindexer.spin());
+    operatorController.povLeft().whileTrue(spindexer.eject());
 
-    targeting.setDefaultCommand(targeting.defaultTargetingBehavior());
+    // Transfer
+    operatorController.cross().whileTrue(transfer.feedShooter());
 
+    // Climber
+    operatorController.povDown().whileTrue(climber.driveUp(0.70));
+    operatorController.povUp().whileTrue(climber.driveDown(-0.70));
+    operatorController
+        .triangle()
+        .whileTrue(
+            ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, pivot));
+  }
+  private void configureDriverBindings(){
+    
     driverController.L3().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
     driverController
@@ -366,8 +373,8 @@ public class RobotContainer {
                             new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
                     drive)
                 .ignoringDisable(true));
-    driverController.R1().whileTrue(intake.eject());
-    driverController.L2().whileTrue(intake.dynamicIngest());
+    driverController.L1().whileTrue(intake.eject());
+    driverController.R1().whileTrue(intake.dynamicIngest());
 
     // driverController.PS().whileTrue(ShootingCommands.dashboardRPMControl(flywheel));
 
@@ -376,30 +383,30 @@ public class RobotContainer {
     //     .whileTrue(Commands.parallel(spindexer.spin(), transfer.feedShooter(), intake.ingest()));
 
     // driverController.povRight().onTrue(PathfindCommands.climbSequence(drive));
-
-    // Intake
-    operatorController.L1().whileTrue(intake.ingest());
-    operatorController.L2().whileTrue(intake.eject());
-
-    // Pivot
-    operatorController.R1().whileTrue(pivot.runPercent(() -> 0.1));
-    operatorController.R2().whileTrue(pivot.runPercent(() -> -0.15));
-
-    // Spindexer
-    operatorController.povRight().whileTrue(spindexer.spin());
-    operatorController.povLeft().whileTrue(spindexer.eject());
-
-    // Transfer
-    operatorController.cross().whileTrue(transfer.feedShooter());
-
-    // Climber
-    operatorController.povDown().whileTrue(climber.driveUp(0.70));
-    operatorController.povUp().whileTrue(climber.driveDown(-0.70));
-    operatorController
-        .triangle()
-        .whileTrue(
-            ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, intake, pivot));
   }
+  private void configureDefaultBindings(){
+    leds.setDefaultCommand(leds.gameStateAwareLeds(stateTracker));
+    drive.setDefaultCommand(
+        DriveCommands.joystickDrive(
+            drive,
+            () -> -driverController.getLeftY(),
+            () -> -driverController.getLeftX(),
+            () -> -driverController.getRightX()));
+    targeting.setDefaultCommand(targeting.defaultTargetingBehavior());
+  }
+
+  /**
+   * Use this method to define your button->command mappings. Buttons can be created by
+   * instantiating a {@link GenericHID} or one of its subclasses ({@link
+   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
+   * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
+   */
+  private void configureButtonBindings() {
+    configureDefaultBindings();
+    configureDriverBindings();
+    configureOperatorBindings();
+  }
+  
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.

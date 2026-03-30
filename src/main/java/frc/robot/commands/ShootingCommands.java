@@ -60,6 +60,24 @@ public class ShootingCommands {
                 .feedShooter()
                 .alongWith(
                     spindexer
-                        .spin()))); // feedShooterVelocity add this for more consisent shooting.
+                        .spin()))); 
+  }
+   public static Command shootOnMove(
+      Flywheel flywheel,
+      Turret turret,
+      Spindexer spindexer,
+      Transfer transfer,
+      Pivot pivot) {
+
+    return Commands.parallel(
+        turret.autoAim(),
+        flywheel.shootOnMoveSpinUp(),
+        Commands.sequence(
+            Commands.waitUntil(() -> flywheel.ready() && turret.atTarget()),
+            transfer
+                .feedShooter()
+                .alongWith(
+                    spindexer
+                        .spin())));
   }
 }
