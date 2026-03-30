@@ -260,7 +260,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("ClimbingPosition", climber.extend());
     NamedCommands.registerCommand("Climb", climber.retract());
     NamedCommands.registerCommand("ClimbZero", climber.zeroSequence());
- 
+
     // Teleop climb sequence (pathfind + precision drive, no climber mechanism):
     NamedCommands.registerCommand("ClimbSequence", PathfindCommands.climbSequence(drive));
     NamedCommands.registerCommand(
@@ -278,7 +278,8 @@ public class RobotContainer {
   public void resetFlywheel() {
     flywheel.resetPreSpin();
   }
-  private void configureOperatorBindings(){
+
+  private void configureOperatorBindings() {
     // Intake
     operatorController.L1().whileTrue(intake.ingest());
     operatorController.L2().whileTrue(intake.eject());
@@ -299,11 +300,11 @@ public class RobotContainer {
     operatorController.povUp().whileTrue(climber.driveDown(-0.70));
     operatorController
         .triangle()
-        .whileTrue(
-            ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, pivot));
+        .whileTrue(ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, pivot));
   }
-  private void configureDriverBindings(){
-    
+
+  private void configureDriverBindings() {
+
     driverController.L3().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
     driverController
@@ -384,7 +385,8 @@ public class RobotContainer {
 
     // driverController.povRight().onTrue(PathfindCommands.climbSequence(drive));
   }
-  private void configureDefaultBindings(){
+
+  private void configureDefaultBindings() {
     leds.setDefaultCommand(leds.gameStateAwareLeds(stateTracker));
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
@@ -406,7 +408,6 @@ public class RobotContainer {
     configureDriverBindings();
     configureOperatorBindings();
   }
-  
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.

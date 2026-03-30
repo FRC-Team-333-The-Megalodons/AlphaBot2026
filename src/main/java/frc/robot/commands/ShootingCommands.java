@@ -56,28 +56,17 @@ public class ShootingCommands {
         intake.dynamicIngest(),
         Commands.sequence(
             Commands.waitUntil(() -> flywheel.ready() && turret.atTarget()),
-            transfer
-                .feedShooter()
-                .alongWith(
-                    spindexer
-                        .spin()))); 
+            transfer.feedShooter().alongWith(spindexer.spin())));
   }
-   public static Command shootOnMove(
-      Flywheel flywheel,
-      Turret turret,
-      Spindexer spindexer,
-      Transfer transfer,
-      Pivot pivot) {
+
+  public static Command shootOnMove(
+      Flywheel flywheel, Turret turret, Spindexer spindexer, Transfer transfer, Pivot pivot) {
 
     return Commands.parallel(
         turret.autoAim(),
         flywheel.shootOnMoveSpinUp(),
         Commands.sequence(
             Commands.waitUntil(() -> flywheel.ready() && turret.atTarget()),
-            transfer
-                .feedShooter()
-                .alongWith(
-                    spindexer
-                        .spin())));
+            transfer.feedShooter().alongWith(spindexer.spin())));
   }
 }

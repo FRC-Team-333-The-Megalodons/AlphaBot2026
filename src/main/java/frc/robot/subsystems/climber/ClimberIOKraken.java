@@ -173,8 +173,8 @@ public class ClimberIOKraken implements ClimberIO {
   }
 
   /**
-   * Dynamically applies software limits using the Phoenix 6 config group API.
-   * This only touches the SoftwareLimitSwitch config — all other motor config is untouched.
+   * Dynamically applies software limits using the Phoenix 6 config group API. This only touches the
+   * SoftwareLimitSwitch config — all other motor config is untouched.
    */
   private void enableSoftLimits() {
     var softLimits = new SoftwareLimitSwitchConfigs();
