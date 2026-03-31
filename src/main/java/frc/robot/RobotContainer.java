@@ -377,11 +377,11 @@ public class RobotContainer {
     driverController.L1().whileTrue(intake.eject());
     driverController.R1().whileTrue(intake.dynamicIngest());
 
-    // driverController.PS().whileTrue(ShootingCommands.dashboardRPMControl(flywheel));
+    driverController.PS().whileTrue(ShootingCommands.dashboardRPMControl(flywheel));
 
-    // driverController
-    //     .povUp()
-    //     .whileTrue(Commands.parallel(spindexer.spin(), transfer.feedShooter(), intake.ingest()));
+    driverController
+        .povUp()
+        .whileTrue(Commands.parallel(spindexer.spin(), transfer.feedShooter(), intake.ingest()));
 
     // driverController.povRight().onTrue(PathfindCommands.climbSequence(drive));
   }

@@ -55,11 +55,11 @@ public class FlywheelIOKraken implements FlywheelIO {
     // config.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 1.0;
     // config.OpenLoopRamps.VoltageOpenLoopRampPeriod = 1.0;
 
-    config.CurrentLimits.SupplyCurrentLimit = 30.0;
-    config.CurrentLimits.SupplyCurrentLimitEnable = true;
+    // config.CurrentLimits.SupplyCurrentLimit = 45.0;
+    // config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
-    config.CurrentLimits.StatorCurrentLimit = 80.0;
-    config.CurrentLimits.StatorCurrentLimitEnable = true;
+    // config.CurrentLimits.StatorCurrentLimit = 95.0;
+    // config.CurrentLimits.StatorCurrentLimitEnable = true;
 
     motor.getConfigurator().apply(config);
     motor2.getConfigurator().apply(config);
