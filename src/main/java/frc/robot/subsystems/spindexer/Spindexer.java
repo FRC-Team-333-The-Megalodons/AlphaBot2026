@@ -7,21 +7,25 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.energy.BatteryLogger;
 import frc.robot.interfaces.Characterizable;
 import org.littletonrobotics.junction.Logger;
 
 public class Spindexer extends SubsystemBase implements Characterizable {
   private final SpindexerIO io;
   private final SpindexerIOInputsAutoLogged inputs = new SpindexerIOInputsAutoLogged();
+  private final BatteryLogger batteryLogger;
 
-  public Spindexer(SpindexerIO io) {
+  public Spindexer(SpindexerIO io, BatteryLogger batteryLogger) {
     this.io = io;
+    this.batteryLogger = batteryLogger;
   }
 
   @Override
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Spindexer", inputs);
+    batteryLogger.reportCurrentUsage("Mechanisms/Spindexer", false, inputs.supplyAmps);
     Logger.recordOutput("Spindexer/Voltage", inputs.appliedVolts);
     Logger.recordOutput("Spindexer/VelocityRPM", inputs.velocityRps * 60.0);
     // LiveTuning.publish("Spindexer/VelocityRPM", inputs.velocityRps * 60);

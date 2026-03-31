@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.PathfindCommands;
 import frc.robot.commands.ShootingCommands;
+import frc.robot.energy.BatteryLogger;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.ClimberIO;
@@ -86,6 +87,9 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
+  // Energy tracking
+  private final BatteryLogger batteryLogger = new BatteryLogger();
+
   // Subsystems
   private final Drive drive;
   private final Intake intake;
@@ -122,25 +126,28 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.FrontLeft),
                 new ModuleIOTalonFX(TunerConstants.FrontRight),
                 new ModuleIOTalonFX(TunerConstants.BackLeft),
-                new ModuleIOTalonFX(TunerConstants.BackRight));
+                new ModuleIOTalonFX(TunerConstants.BackRight),
+                batteryLogger);
         vision =
             new Vision(
                 drive::addVisionMeasurement, new VisionIOPhotonVision(camera0Name, robotToCamera0));
         targeting = new Targeting(new TargetingIOReal(), drive::getPose, drive::robotFieldVelocity);
-        intake = new Intake(new IntakeIOKraken(), drive::robotFieldVelocity);
-        spindexer = new Spindexer(new SpindexerIOKraken());
-        transfer = new Transfer(new TransferIOKraken());
-        flywheel = new Flywheel(new FlywheelIOKraken(), targeting::getTargetDistance);
-        pivot = new Pivot(new PivotIOKraken());
+        intake = new Intake(new IntakeIOKraken(), drive::robotFieldVelocity, batteryLogger);
+        spindexer = new Spindexer(new SpindexerIOKraken(), batteryLogger);
+        transfer = new Transfer(new TransferIOKraken(), batteryLogger);
+        flywheel =
+            new Flywheel(new FlywheelIOKraken(), targeting::getTargetDistance, batteryLogger);
+        pivot = new Pivot(new PivotIOKraken(), batteryLogger);
         turret =
             new Turret(
                 new TurretIOYAMS(),
                 targeting::getTargetAngle,
                 drive::getRotation,
                 targeting::getTargetAngularVelocityRadPerSec,
-                drive::getFieldAngularVelocity);
+                drive::getFieldAngularVelocity,
+                batteryLogger);
         leds = new Led(new LedIOCANdle());
-        climber = new Climber(new ClimberIOKraken());
+        climber = new Climber(new ClimberIOKraken(), batteryLogger);
         break;
 
       case SIM:
@@ -150,26 +157,29 @@ public class RobotContainer {
                 new ModuleIOSim(TunerConstants.FrontLeft),
                 new ModuleIOSim(TunerConstants.FrontRight),
                 new ModuleIOSim(TunerConstants.BackLeft),
-                new ModuleIOSim(TunerConstants.BackRight));
+                new ModuleIOSim(TunerConstants.BackRight),
+                batteryLogger);
         vision =
             new Vision(
                 drive::addVisionMeasurement,
                 new VisionIOPhotonVisionSim(camera1Name, robotToCamera0, drive::getPose));
         targeting = new Targeting(new TargetingIOReal(), drive::getPose, drive::robotFieldVelocity);
-        intake = new Intake(new IntakeIOKrakenSim(), drive::robotFieldVelocity);
-        spindexer = new Spindexer(new SpindexerIOKrakenSim());
-        transfer = new Transfer(new TransferIOKrakenSim());
-        flywheel = new Flywheel(new FlywheelIOKrakenSim(), targeting::getTargetDistance);
-        pivot = new Pivot(new PivotIOKrakenSim());
+        intake = new Intake(new IntakeIOKrakenSim(), drive::robotFieldVelocity, batteryLogger);
+        spindexer = new Spindexer(new SpindexerIOKrakenSim(), batteryLogger);
+        transfer = new Transfer(new TransferIOKrakenSim(), batteryLogger);
+        flywheel =
+            new Flywheel(new FlywheelIOKrakenSim(), targeting::getTargetDistance, batteryLogger);
+        pivot = new Pivot(new PivotIOKrakenSim(), batteryLogger);
         turret =
             new Turret(
                 new TurretIOKrakenSim(),
                 targeting::getTargetAngle,
                 drive::getRotation,
                 targeting::getTargetAngularVelocityRadPerSec,
-                drive::getFieldAngularVelocity);
+                drive::getFieldAngularVelocity,
+                batteryLogger);
         leds = new Led(new LedIOSim());
-        climber = new Climber(new ClimberIOKrakenSim());
+        climber = new Climber(new ClimberIOKrakenSim(), batteryLogger);
         break;
 
       default:
@@ -179,23 +189,25 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {},
-                new ModuleIO() {});
+                new ModuleIO() {},
+                batteryLogger);
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {});
         targeting = new Targeting(new TargetingIO() {}, drive::getPose, drive::robotFieldVelocity);
-        intake = new Intake(new IntakeIO() {}, drive::robotFieldVelocity);
-        spindexer = new Spindexer(new SpindexerIO() {});
-        transfer = new Transfer(new TransferIO() {});
-        flywheel = new Flywheel(new FlywheelIO() {}, targeting::getTargetDistance);
-        pivot = new Pivot(new PivotIO() {});
+        intake = new Intake(new IntakeIO() {}, drive::robotFieldVelocity, batteryLogger);
+        spindexer = new Spindexer(new SpindexerIO() {}, batteryLogger);
+        transfer = new Transfer(new TransferIO() {}, batteryLogger);
+        flywheel = new Flywheel(new FlywheelIO() {}, targeting::getTargetDistance, batteryLogger);
+        pivot = new Pivot(new PivotIO() {}, batteryLogger);
         turret =
             new Turret(
                 new TurretIO() {},
                 targeting::getTargetAngle,
                 drive::getRotation,
                 targeting::getTargetAngularVelocityRadPerSec,
-                drive::getFieldAngularVelocity);
+                drive::getFieldAngularVelocity,
+                batteryLogger);
         leds = new Led(new LedIO() {});
-        climber = new Climber(new ClimberIO() {});
+        climber = new Climber(new ClimberIO() {}, batteryLogger);
         break;
     }
     drive.seed();
@@ -243,6 +255,12 @@ public class RobotContainer {
 
     seedTurret();
     configureButtonBindings();
+  }
+
+  public void periodicAfterScheduler() {
+    batteryLogger.setBatteryVoltage(RobotController.getBatteryVoltage());
+    batteryLogger.setRioCurrent(RobotController.getInputCurrent());
+    batteryLogger.periodicAfterScheduler();
   }
 
   public void seedTurret() {

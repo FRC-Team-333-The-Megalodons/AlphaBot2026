@@ -10,6 +10,7 @@ public interface ClimberIO {
     public double velocityRps = 0.0;
     public double appliedVolts = 0.0;
     public double currentAmps = 0.0;
+    public double supplyAmps = 0.0;
     public boolean limitSwitchTriggered = false;
     public boolean hasZeroed = false;
     public double rawPosition = 0.0;

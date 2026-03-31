@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.energy.BatteryLogger;
 import frc.robot.interfaces.Characterizable;
 import frc.robot.util.LiveTuning;
 import java.util.function.Supplier;
@@ -18,6 +19,7 @@ public class Flywheel extends SubsystemBase implements Characterizable {
   private final FlywheelIOInputsAutoLogged inputs = new FlywheelIOInputsAutoLogged();
 
   private Supplier<Distance> distanceSupplier;
+  private final BatteryLogger batteryLogger;
 
   private enum PreSpinState {
     IDLE,
@@ -35,9 +37,10 @@ public class Flywheel extends SubsystemBase implements Characterizable {
 
   private static final double COAST_DOWN_SECONDS = 0.0;
 
-  public Flywheel(FlywheelIO io, Supplier<Distance> distanceSupplier) {
+  public Flywheel(FlywheelIO io, Supplier<Distance> distanceSupplier, BatteryLogger batteryLogger) {
     this.io = io;
     this.distanceSupplier = distanceSupplier;
+    this.batteryLogger = batteryLogger;
   }
 
   private double dynamicRPM() {
@@ -59,6 +62,7 @@ public class Flywheel extends SubsystemBase implements Characterizable {
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Flywheel", inputs);
+    batteryLogger.reportCurrentUsage("Mechanisms/Flywheel", false, inputs.supplyAmps);
 
     switch (preSpinState) {
       case IDLE:

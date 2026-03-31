@@ -35,6 +35,7 @@ public class ClimberIOKraken implements ClimberIO {
   private final StatusSignal<AngularVelocity> velocity;
   private final StatusSignal<Voltage> appliedVolts;
   private final StatusSignal<Current> currentAmps;
+  private final StatusSignal<Current> supplyCurrentAmps;
 
   private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0).withSlot(0);
   private final VoltageOut voltageRequest = new VoltageOut(0);
@@ -101,15 +102,16 @@ public class ClimberIOKraken implements ClimberIO {
     velocity = motor.getVelocity();
     appliedVolts = motor.getMotorVoltage();
     currentAmps = motor.getStatorCurrent();
+    supplyCurrentAmps = motor.getSupplyCurrent();
     s1State = candi.getS1State();
 
     BaseStatusSignal.setUpdateFrequencyForAll(
-        50.0, position, velocity, appliedVolts, currentAmps, s1State);
+        50.0, position, velocity, appliedVolts, currentAmps, supplyCurrentAmps, s1State);
   }
 
   @Override
   public void updateInputs(ClimberIOInputs inputs) {
-    BaseStatusSignal.refreshAll(position, velocity, appliedVolts, currentAmps);
+    BaseStatusSignal.refreshAll(position, velocity, appliedVolts, currentAmps, supplyCurrentAmps);
 
     // Magnetic limit switches are normally-closed so the DigitalInput
     // reads false when triggered. Invert here so limitSwitchTriggered
@@ -125,6 +127,7 @@ public class ClimberIOKraken implements ClimberIO {
     inputs.velocityRps = velocity.getValueAsDouble();
     inputs.appliedVolts = appliedVolts.getValueAsDouble();
     inputs.currentAmps = currentAmps.getValueAsDouble();
+    inputs.supplyAmps = supplyCurrentAmps.getValueAsDouble();
     inputs.limitSwitchTriggered = limitTriggered;
     inputs.hasZeroed = hasZeroed;
     inputs.rawPosition = motor.get();

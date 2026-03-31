@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.energy.BatteryLogger;
 import frc.robot.interfaces.Characterizable;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.intake.Intake;
@@ -20,15 +21,18 @@ public class Pivot extends SubsystemBase implements Characterizable {
 
   private final PivotIO io;
   private final PivotIOInputsAutoLogged inputs = new PivotIOInputsAutoLogged();
+  private final BatteryLogger batteryLogger;
 
-  public Pivot(PivotIO io) {
+  public Pivot(PivotIO io, BatteryLogger batteryLogger) {
     this.io = io;
+    this.batteryLogger = batteryLogger;
   }
 
   @Override
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Pivot", inputs);
+    batteryLogger.reportCurrentUsage("Mechanisms/Pivot", false, inputs.supplyAmps);
     // LiveTuning.publish("Pivot/AngleDegrees", getPositionDeg());
     // LiveTuning.publish("Pivot/AppliedVoltage", io.getAppliedVoltage());
   }
