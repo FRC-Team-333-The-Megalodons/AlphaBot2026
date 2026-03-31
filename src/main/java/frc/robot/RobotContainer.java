@@ -272,8 +272,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("PivotDown", pivot.motionMagicDown());
     NamedCommands.registerCommand("PivotDown", pivot.motionMagicDown().withTimeout(2));
     NamedCommands.registerCommand(
-        "ShootOnMove",
-        ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, intake, pivot));
+        "ShootOnMove", ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, pivot));
     NamedCommands.registerCommand("Intake", intake.dynamicIngest());
     NamedCommands.registerCommand("ClimbingPosition", climber.extend());
     NamedCommands.registerCommand("Climb", climber.retract());
@@ -406,6 +405,9 @@ public class RobotContainer {
 
   private void configureDefaultBindings() {
     leds.setDefaultCommand(leds.gameStateAwareLeds(stateTracker));
+
+    flywheel.setDefaultCommand(flywheel.spinAt(800.0, false));
+
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
             drive,

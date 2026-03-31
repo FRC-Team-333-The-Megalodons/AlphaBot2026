@@ -5,7 +5,7 @@ import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -28,7 +28,8 @@ public class FlywheelIOKraken implements FlywheelIO {
   private final StatusSignal<Current> supplyCurrentSignal;
 
   // Reusable control requests — no per-loop allocations
-  private final MotionMagicVelocityVoltage mmVelocity = new MotionMagicVelocityVoltage(0);
+  // private final MotionMagicVelocityVoltage mmVelocity = new MotionMagicVelocityVoltage(0);
+  private final VelocityTorqueCurrentFOC velocityTorque = new VelocityTorqueCurrentFOC(0);
   private final VoltageOut voltageRequest = new VoltageOut(0);
 
   public FlywheelIOKraken() {
@@ -42,9 +43,9 @@ public class FlywheelIOKraken implements FlywheelIO {
     config.Slot0.kV = FlywheelConstants.kV;
     config.Slot0.kP = FlywheelConstants.kP;
 
-    config.MotionMagic.MotionMagicCruiseVelocity = FlywheelConstants.MAX_VELOCITY;
-    config.MotionMagic.MotionMagicAcceleration = FlywheelConstants.MAX_ACCEL;
-    config.MotionMagic.MotionMagicJerk = FlywheelConstants.MAX_JERK;
+    // config.MotionMagic.MotionMagicCruiseVelocity = FlywheelConstants.MAX_VELOCITY;
+    // config.MotionMagic.MotionMagicAcceleration = FlywheelConstants.MAX_ACCEL;
+    // config.MotionMagic.MotionMagicJerk = FlywheelConstants.MAX_JERK;
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
@@ -55,10 +56,10 @@ public class FlywheelIOKraken implements FlywheelIO {
     // config.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 1.0;
     // config.OpenLoopRamps.VoltageOpenLoopRampPeriod = 1.0;
 
-    // config.CurrentLimits.SupplyCurrentLimit = 45.0;
+    // config.CurrentLimits.SupplyCurrentLimit = 70.0;
     // config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
-    // config.CurrentLimits.StatorCurrentLimit = 95.0;
+    // config.CurrentLimits.StatorCurrentLimit = 120.0;
     // config.CurrentLimits.StatorCurrentLimitEnable = true;
 
     motor.getConfigurator().apply(config);
@@ -102,7 +103,7 @@ public class FlywheelIOKraken implements FlywheelIO {
 
   @Override
   public void moveTo(double rpm) {
-    motor2.setControl(mmVelocity.withVelocity(rpm / 60.0));
+    motor2.setControl(velocityTorque.withVelocity(rpm / 60.0));
   }
 
   @Override

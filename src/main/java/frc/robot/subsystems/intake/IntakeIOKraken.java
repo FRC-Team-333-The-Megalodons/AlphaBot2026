@@ -33,15 +33,15 @@ public class IntakeIOKraken implements IntakeIO {
     config.Feedback.SensorToMechanismRatio = IntakeConstants.GEAR_RATIO;
 
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-    config.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 1.0;
-    config.OpenLoopRamps.VoltageOpenLoopRampPeriod = 1.0;
+    // config.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 1.0;
+    // config.OpenLoopRamps.VoltageOpenLoopRampPeriod = 1.0;
 
-    config.Voltage.PeakForwardVoltage = 6.0;
-    config.Voltage.PeakReverseVoltage = -6.0;
+    // config.Voltage.PeakForwardVoltage = 6.0;
+    // config.Voltage.PeakReverseVoltage = -6.0;
 
     config.CurrentLimits.StatorCurrentLimit = 60.0;
     config.CurrentLimits.StatorCurrentLimitEnable = true;
-    config.CurrentLimits.SupplyCurrentLimit = 20.0;
+    config.CurrentLimits.SupplyCurrentLimit = 15.0;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     config.Slot0.kS = IntakeConstants.kS;

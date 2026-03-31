@@ -48,7 +48,7 @@ public class TransferIOKraken implements TransferIO {
     config.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 1.0;
     config.OpenLoopRamps.VoltageOpenLoopRampPeriod = 1.0;
 
-    config.CurrentLimits.SupplyCurrentLimit = 20.0;
+    config.CurrentLimits.SupplyCurrentLimit = 15.0;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.CurrentLimits.StatorCurrentLimit = 60.0;
     config.CurrentLimits.StatorCurrentLimitEnable = true;
