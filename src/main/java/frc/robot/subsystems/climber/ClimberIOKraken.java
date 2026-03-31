@@ -4,6 +4,7 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANdiConfiguration;
+import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
@@ -40,8 +41,13 @@ public class ClimberIOKraken implements ClimberIO {
   private final DutyCycleOut dutyCycleRequest = new DutyCycleOut(0);
 
   // Tracks whether we have zeroed at least once since robot boot.
-  // We refuse to run Motion Magic until this is true
+  // We refuse to run Motion Magic until this is true.
   private boolean hasZeroed = false;
+
+  // Tracks whether soft limits have been applied after zeroing.
+  // We only need to apply them once — re-applying on every zero
+  // is harmless but wastes CAN bandwidth.
+  private boolean softLimitsEnabled = false;
 
   // Tracks the previous limit switch state so we only zero on the
   // rising edge (switch goes from false to true), not every loop
@@ -79,12 +85,10 @@ public class ClimberIOKraken implements ClimberIO {
     config.MotionMagic.MotionMagicAcceleration = ClimberConstants.kAcceleration;
     config.MotionMagic.MotionMagicJerk = ClimberConstants.kJerk;
 
-    // config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = ClimberConstants.kMinPositionRot;
-    // config.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
-    // config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = ClimberConstants.kMaxPositionRot;
-    // config.SoftwareLimitSwitch.ReverseSoftLimitEnable = false;
-
-    // config.HardwareLimitSwitch.withReverseLimitRemoteCANdiS1(candi);
+    // Soft limits are NOT enabled at boot. The motor position is garbage
+    // until we zero against the limit switch. Enabling soft limits with
+    // a random position would either lock the motor out or provide no
+    // protection. They are enabled dynamically in zeroPosition().
 
     config.CurrentLimits.StatorCurrentLimit = 70.0;
     config.CurrentLimits.StatorCurrentLimitEnable = true;
@@ -160,6 +164,37 @@ public class ClimberIOKraken implements ClimberIO {
   public void zeroPosition() {
     motor.setPosition(0.0);
     hasZeroed = true;
+
+    // Enable soft limits now that 0.0 is a known-good reference.
+    // Only apply once to avoid burning CAN bandwidth on every re-zero.
+    if (!softLimitsEnabled) {
+      enableSoftLimits();
+    }
+  }
+
+  /**
+   * Dynamically applies software limits using the Phoenix 6 config group API. This only touches the
+   * SoftwareLimitSwitch config — all other motor config is untouched.
+   */
+  private void enableSoftLimits() {
+    var softLimits = new SoftwareLimitSwitchConfigs();
+
+    // Forward = positive motor direction = extending = MAX
+    softLimits.ForwardSoftLimitThreshold = ClimberConstants.kMaxPositionRot;
+    softLimits.ForwardSoftLimitEnable = true;
+
+    // Reverse = negative motor direction = retracting past zero = MIN
+    softLimits.ReverseSoftLimitThreshold = ClimberConstants.kMinPositionRot;
+    softLimits.ReverseSoftLimitEnable = true;
+
+    motor.getConfigurator().apply(softLimits);
+    softLimitsEnabled = true;
+
+    System.out.println(
+        "[Climber] Soft limits enabled: reverse="
+            + ClimberConstants.kMinPositionRot
+            + " forward="
+            + ClimberConstants.kMaxPositionRot);
   }
 
   @Override

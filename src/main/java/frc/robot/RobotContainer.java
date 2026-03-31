@@ -68,6 +68,7 @@ import frc.robot.subsystems.spindexer.SpindexerIO;
 import frc.robot.subsystems.spindexer.SpindexerIOKraken;
 import frc.robot.subsystems.spindexer.SpindexerIOKrakenSim;
 import frc.robot.subsystems.tracker.RobotStateTracker;
+import frc.robot.subsystems.tracker.ShiftTracker;
 import frc.robot.subsystems.transfer.Transfer;
 import frc.robot.subsystems.transfer.TransferIO;
 import frc.robot.subsystems.transfer.TransferIOKraken;
@@ -98,6 +99,7 @@ public class RobotContainer {
   private final Led leds;
   private final Climber climber;
   private final RobotStateTracker stateTracker;
+  private final ShiftTracker shiftTracker;
 
   // Controller
   private final CommandPS5Controller driverController = new CommandPS5Controller(0);
@@ -110,6 +112,8 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    shiftTracker = new ShiftTracker();
+
     switch (Constants.currentMode) {
       case REAL:
         drive =
@@ -128,7 +132,13 @@ public class RobotContainer {
         transfer = new Transfer(new TransferIOKraken());
         flywheel = new Flywheel(new FlywheelIOKraken(), targeting::getTargetDistance);
         pivot = new Pivot(new PivotIOKraken());
-        turret = new Turret(new TurretIOYAMS(), targeting::getTargetAngle, drive::getRotation);
+        turret =
+            new Turret(
+                new TurretIOYAMS(),
+                targeting::getTargetAngle,
+                drive::getRotation,
+                targeting::getTargetAngularVelocityRadPerSec,
+                drive::getFieldAngularVelocity);
         leds = new Led(new LedIOCANdle());
         climber = new Climber(new ClimberIOKraken());
         break;
@@ -151,7 +161,13 @@ public class RobotContainer {
         transfer = new Transfer(new TransferIOKrakenSim());
         flywheel = new Flywheel(new FlywheelIOKrakenSim(), targeting::getTargetDistance);
         pivot = new Pivot(new PivotIOKrakenSim());
-        turret = new Turret(new TurretIOKrakenSim(), targeting::getTargetAngle, drive::getRotation);
+        turret =
+            new Turret(
+                new TurretIOKrakenSim(),
+                targeting::getTargetAngle,
+                drive::getRotation,
+                targeting::getTargetAngularVelocityRadPerSec,
+                drive::getFieldAngularVelocity);
         leds = new Led(new LedIOSim());
         climber = new Climber(new ClimberIOKrakenSim());
         break;
@@ -171,7 +187,13 @@ public class RobotContainer {
         transfer = new Transfer(new TransferIO() {});
         flywheel = new Flywheel(new FlywheelIO() {}, targeting::getTargetDistance);
         pivot = new Pivot(new PivotIO() {});
-        turret = new Turret(new TurretIO() {}, targeting::getTargetAngle, drive::getRotation);
+        turret =
+            new Turret(
+                new TurretIO() {},
+                targeting::getTargetAngle,
+                drive::getRotation,
+                targeting::getTargetAngularVelocityRadPerSec,
+                drive::getFieldAngularVelocity);
         leds = new Led(new LedIO() {});
         climber = new Climber(new ClimberIO() {});
         break;
@@ -230,17 +252,19 @@ public class RobotContainer {
   private void registerNamedCommands() {
     NamedCommands.registerCommand("DriveToOutpost", PathfindCommands.driveToTheOutpost(drive));
     NamedCommands.registerCommand("PivotDown", pivot.motionMagicDown());
-    NamedCommands.registerCommand("ClimbSequence", PathfindCommands.climbSequence(drive));
-    NamedCommands.registerCommand("ClimbingPosition", climber.extend());
-    NamedCommands.registerCommand("Climb", climber.retract());
-    NamedCommands.registerCommand("PivotDown", pivot.motionMagicDown());
+    NamedCommands.registerCommand("PivotDown", pivot.motionMagicDown().withTimeout(2));
     NamedCommands.registerCommand(
         "ShootOnMove",
         ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, intake, pivot));
+    NamedCommands.registerCommand("Intake", intake.dynamicIngest());
+    NamedCommands.registerCommand("ClimbingPosition", climber.extend());
+    NamedCommands.registerCommand("Climb", climber.retract());
+    NamedCommands.registerCommand("ClimbZero", climber.zeroSequence());
+
+    // Teleop climb sequence (pathfind + precision drive, no climber mechanism):
+    NamedCommands.registerCommand("ClimbSequence", PathfindCommands.climbSequence(drive));
     NamedCommands.registerCommand(
-        "Intake",
-        intake.dynamicIngest()
-    );
+        "AutoClimb", PathfindCommands.autonomousClimbSequence(drive, climber));
   }
 
   public void onDriverStationConnected() {
@@ -255,41 +279,43 @@ public class RobotContainer {
     flywheel.resetPreSpin();
   }
 
-  /**
-   * Use this method to define your button->command mappings. Buttons can be created by
-   * instantiating a {@link GenericHID} or one of its subclasses ({@link
-   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
-   * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
-   */
-  private void configureButtonBindings() {
-    leds.setDefaultCommand(leds.gameStateAwareLeds(stateTracker));
+  private void configureOperatorBindings() {
+    // Intake
+    operatorController.L1().whileTrue(intake.ingest());
+    operatorController.L2().whileTrue(intake.eject());
 
-    drive.setDefaultCommand(
-        DriveCommands.joystickDrive(
-            drive,
-            () -> -driverController.getLeftY(),
-            () -> -driverController.getLeftX(),
-            () -> -driverController.getRightX()));
+    // Pivot
+    operatorController.R1().whileTrue(pivot.runPercent(() -> 0.1));
+    operatorController.R2().whileTrue(pivot.runPercent(() -> -0.15));
 
-    targeting.setDefaultCommand(targeting.defaultTargetingBehavior());
+    // Spindexer
+    operatorController.povRight().whileTrue(spindexer.spin());
+    operatorController.povLeft().whileTrue(spindexer.eject());
 
-    driverController.L2().whileTrue(intake.dynamicIngest());
+    // Transfer
+    operatorController.cross().whileTrue(transfer.feedShooter());
 
-    driverController.R3().onTrue(Commands.runOnce(drive::stopWithX, drive));
-
+    // Climber
+    operatorController.povDown().whileTrue(climber.driveUp(0.70));
+    operatorController.povUp().whileTrue(climber.driveDown(-0.70));
     operatorController
         .triangle()
-        .onTrue(ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, intake, pivot));
+        .whileTrue(ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, pivot));
+  }
+
+  private void configureDriverBindings() {
+
+    driverController.L3().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
     driverController
-        .L3()
+        .R3()
         .whileTrue(
             DriveCommands.faceHubAlternative(
                 drive,
                 () -> -driverController.getLeftY(),
                 () -> -driverController.getLeftX(),
                 () -> -driverController.getRightX(),
-                true));
+                false));
 
     driverController
         .triangle()
@@ -348,39 +374,39 @@ public class RobotContainer {
                             new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
                     drive)
                 .ignoringDisable(true));
+    driverController.L1().whileTrue(intake.eject());
+    driverController.R1().whileTrue(intake.dynamicIngest());
 
     driverController.PS().whileTrue(ShootingCommands.dashboardRPMControl(flywheel));
-    driverController.R1().whileTrue(pivot.motionMagicDown());
-    driverController.L1().whileTrue(pivot.motionMagicUp());
+
     driverController
         .povUp()
         .whileTrue(Commands.parallel(spindexer.spin(), transfer.feedShooter(), intake.ingest()));
 
-    driverController.povRight().onTrue(PathfindCommands.climbSequence(drive));
+    // driverController.povRight().onTrue(PathfindCommands.climbSequence(drive));
+  }
 
-    // Intake
-    operatorController.L1().whileTrue(intake.ingest());
-    operatorController.L2().whileTrue(intake.eject());
+  private void configureDefaultBindings() {
+    leds.setDefaultCommand(leds.gameStateAwareLeds(stateTracker));
+    drive.setDefaultCommand(
+        DriveCommands.joystickDrive(
+            drive,
+            () -> -driverController.getLeftY(),
+            () -> -driverController.getLeftX(),
+            () -> -driverController.getRightX()));
+    targeting.setDefaultCommand(targeting.defaultTargetingBehavior());
+  }
 
-    // Pivot
-    operatorController.R1().whileTrue(pivot.runPercent(() -> 0.1));
-    operatorController.R2().whileTrue(pivot.runPercent(() -> -0.15));
-
-    // Spindexer
-    operatorController.povRight().whileTrue(spindexer.spin());
-    operatorController.povLeft().whileTrue(spindexer.eject());
-
-    // Transfer
-    operatorController.cross().whileTrue(transfer.feedShooter());
-
-    // Shooter
-    // operatorController
-    //     .triangle()
-    //     .whileTrue(Commands.run(() -> flywheel.setRPMDirect(2200), flywheel));
-
-    // Climber
-    operatorController.povDown().whileTrue(climber.driveUp(0.70));
-    operatorController.povUp().whileTrue(climber.driveDown(-0.70));
+  /**
+   * Use this method to define your button->command mappings. Buttons can be created by
+   * instantiating a {@link GenericHID} or one of its subclasses ({@link
+   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
+   * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
+   */
+  private void configureButtonBindings() {
+    configureDefaultBindings();
+    configureDriverBindings();
+    configureOperatorBindings();
   }
 
   /**

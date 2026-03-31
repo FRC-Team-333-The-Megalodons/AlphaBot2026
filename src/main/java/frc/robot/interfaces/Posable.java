@@ -3,17 +3,15 @@ package frc.robot.interfaces;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 
+import com.pathplanner.lib.util.FlippingUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-
 import java.util.HashMap;
 import java.util.Map;
-
-import com.pathplanner.lib.util.FlippingUtil;
 
 public interface Posable extends Localizable {
 
@@ -34,10 +32,8 @@ public interface Posable extends Localizable {
   public default Pose2d getPose(String poseName) {
     Pose2d pose = bluePoses.get(poseName);
 
-    if(Localizable.alliance() == Alliance.Red)
-      return FlippingUtil.flipFieldPose(pose);
-    else
-      return pose;
+    if (Localizable.alliance() == Alliance.Red) return FlippingUtil.flipFieldPose(pose);
+    else return pose;
   }
 
   public default Pose2d getPoseNear(

@@ -73,7 +73,10 @@ public class Module {
     turnEncoderDisconnectedAlert.set(!inputs.turnEncoderConnected);
   }
 
-  /** Runs the module with the specified setpoint state. Mutates the state to optimize it. */
+  /**
+   * Runs the module with the specified setpoint state using OPEN-LOOP voltage. Mutates the state to
+   * optimize it.
+   */
   public void runSetpoint(SwerveModuleState state) {
     // Optimize velocity setpoint
     state.optimize(getAngle());
@@ -85,6 +88,14 @@ public class Module {
     // io.setDriveVelocity(state.speedMetersPerSecond / constants.WheelRadius); -> for getting to
     // the setpoint
     io.setDriveOpenLoop(driveVoltage); // -> runs on raw voltage just like the CTRE code
+    io.setTurnPosition(state.angle);
+  }
+
+  public void runClosedLoopSetpoint(SwerveModuleState state) {
+    state.optimize(getAngle());
+
+    double velocityRadPerSec = state.speedMetersPerSecond / constants.WheelRadius;
+    io.setDriveVelocity(velocityRadPerSec);
     io.setTurnPosition(state.angle);
   }
 

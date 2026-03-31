@@ -41,6 +41,16 @@ public class Climber extends SubsystemBase {
     return io.atTarget(positionRot);
   }
 
+  /** Returns true if the climber is at the extended climbing position. */
+  public boolean isExtended() {
+    return io.atTarget(ClimberConstants.kClimbPosition);
+  }
+
+  /** Returns true if the climber is at the retracted (climbed) position. */
+  public boolean isRetracted() {
+    return io.atTarget(ClimberConstants.kStowedPosition);
+  }
+
   public Command extend() {
     return run(() -> io.moveTo(ClimberConstants.kClimbPosition))
         .until(() -> io.atTarget(ClimberConstants.kClimbPosition))
@@ -74,11 +84,21 @@ public class Climber extends SubsystemBase {
         .withName("Climber.runVoltage(" + volts + ")");
   }
 
+  // Zero sequence
+  /**
+   * Drives the climber slowly downward until the limit switch triggers, then zeros the encoder. If
+   * the switch is already triggered (normal boot state).
+   */
   public Command zeroSequence() {
     return Commands.sequence(
             runEnd(() -> io.setDutyCycle(-0.1), io::stop).until(this::isLimitSwitchTriggered),
             Commands.runOnce(io::zeroPosition))
         .withName("Climber.zeroSequence");
+  }
+
+  public Command fullClimbSequence() {
+    return Commands.sequence(zeroSequence(), extend(), Commands.waitSeconds(0.3), retract())
+        .withName("Climber.fullClimbSequence");
   }
 
   public Command stop() {

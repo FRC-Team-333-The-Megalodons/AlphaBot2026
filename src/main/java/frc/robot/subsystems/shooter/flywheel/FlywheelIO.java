@@ -22,23 +22,26 @@ public interface FlywheelIO extends Automatable {
 
   private static InterpolatingDoubleTreeMap buildMap() {
     InterpolatingDoubleTreeMap map = new InterpolatingDoubleTreeMap();
-    map.put(1.37, 2100.0);
-    map.put(1.48, 2170.0);
-    map.put(1.65, 2210.0);
-    map.put(1.82, 2250.0);
-    map.put(1.98, 2280.0);
-    map.put(2.25, 2310.0);
-    map.put(2.4, 2330.0);
-    map.put(2.71, 2380.0);
-    map.put(2.85, 2390.0);
-    map.put(3.0, 2460.0);
-    map.put(3.37, 2530.0);
-    map.put(3.70, 2620.0);
-    map.put(3.99, 2660.0);
-    map.put(4.14, 2690.0);
-    map.put(4.23, 2720.0);
-    map.put(4.34, 2760.0);
-    map.put(4.52, 2840.0);
+    map.put(1.45, 2100.0);
+    map.put(1.64, 2130.0);
+    map.put(1.74, 2150.0);
+    map.put(1.87, 2170.0);
+    map.put(1.96, 2190.0);
+    map.put(2.12, 2210.0);
+    map.put(2.37, 2240.0);
+    map.put(2.55, 2280.0);
+    map.put(2.76, 2310.0);
+    map.put(3.02, 2365.0);
+    map.put(3.24, 2440.0);
+    map.put(3.45, 2495.0);
+    map.put(3.83, 2580.0);
+    map.put(4.02, 2640.0);
+    map.put(4.22, 2690.0);
+    map.put(4.4, 2740.0);
+    map.put(4.67, 2785.0);
+    map.put(4.86, 2850.0);
+    map.put(4.90, 2895.0);
+
     // map.put(1.18, 2100.0);
     // map.put(1.18, 2100.0);
     // map.put(1.5, 2135.0);

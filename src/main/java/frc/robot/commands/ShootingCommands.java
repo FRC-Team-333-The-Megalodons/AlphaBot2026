@@ -54,9 +54,19 @@ public class ShootingCommands {
         turret.autoAim(),
         flywheel.shootOnMoveSpinUp(),
         intake.dynamicIngest(),
-        spindexer.spin(),
         Commands.sequence(
             Commands.waitUntil(() -> flywheel.ready() && turret.atTarget()),
-            transfer.feedShooter())); // feedShooterVelocity add this for more consisent shooting.
+            transfer.feedShooter().alongWith(spindexer.spin())));
+  }
+
+  public static Command shootOnMove(
+      Flywheel flywheel, Turret turret, Spindexer spindexer, Transfer transfer, Pivot pivot) {
+
+    return Commands.parallel(
+        turret.autoAim(),
+        flywheel.shootOnMoveSpinUp(),
+        Commands.sequence(
+            Commands.waitUntil(() -> flywheel.ready() && turret.atTarget()),
+            transfer.feedShooter().alongWith(spindexer.spin())));
   }
 }

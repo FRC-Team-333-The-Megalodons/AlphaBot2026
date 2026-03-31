@@ -40,10 +40,19 @@ import java.util.function.Supplier;
 
 public class DriveCommands {
   private static final double DEADBAND = 0.1;
-  private static final double ANGLE_KP = 7;
-  private static final double ANGLE_KD = 0;
+
+  private static final double ANGLE_KP = 7.0;
+  private static final double ANGLE_KD = 0.2;
   private static final double ANGLE_MAX_VELOCITY = 8.0;
   private static final double ANGLE_MAX_ACCELERATION = 20.0;
+
+  //  Slew rate limiters
+  // Translation: 0 → full stick in ~0.33s. Prevents drive motor current spikes.
+  private static final double TRANSLATION_SLEW_RATE = 3.0;
+  // Rotation: 0 → full stick in ~0.5s. Rotation direction changes are the #1 brownout cause.
+  private static final double ROTATION_SLEW_RATE = 2.0;
+
+  // ── Characterization constants ──
   private static final double FF_START_DELAY = 2.0; // Secs
   private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
   private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
@@ -62,13 +71,25 @@ public class DriveCommands {
     double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), DEADBAND);
     Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
 
-    // Square magnitude for more precise control
-    // linearMagnitude = linearMagnitude * linearMagnitude;
+    // Square magnitude for more precise control at low speeds
+    linearMagnitude = linearMagnitude * linearMagnitude;
 
     // Return new linear velocity
     return new Pose2d(Translation2d.kZero, linearDirection)
         .transformBy(new Transform2d(linearMagnitude, 0.0, Rotation2d.kZero))
         .getTranslation();
+  }
+
+  /** Creates a new ProfiledPIDController with the unified angle-tracking constants. */
+  private static ProfiledPIDController createAngleController() {
+    ProfiledPIDController controller =
+        new ProfiledPIDController(
+            ANGLE_KP,
+            0.0,
+            ANGLE_KD,
+            new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
+    controller.enableContinuousInput(-Math.PI, Math.PI);
+    return controller;
   }
 
   /**
@@ -79,23 +100,32 @@ public class DriveCommands {
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
       DoubleSupplier omegaSupplier) {
+
+    // Slew rate limiters — created once, persist for the life of this command
+    SlewRateLimiter xLimiter = new SlewRateLimiter(TRANSLATION_SLEW_RATE);
+    SlewRateLimiter yLimiter = new SlewRateLimiter(TRANSLATION_SLEW_RATE);
+    SlewRateLimiter omegaLimiter = new SlewRateLimiter(ROTATION_SLEW_RATE);
+
     return Commands.run(
         () -> {
-          // Get linear velocity
+          // Get linear velocity (deadband + squaring applied inside)
           Translation2d linearVelocity =
               getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
 
-          // Apply rotation deadband
-          double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
+          // Apply slew rate limiting to translation
+          double limitedX = xLimiter.calculate(linearVelocity.getX());
+          double limitedY = yLimiter.calculate(linearVelocity.getY());
 
-          // Square rotation value for more precise control
-          // omega = Math.copySign(omega * omega, omega);-> uncomment if the swerve lose presicion
+          // Apply rotation deadband, squaring, and slew rate limiting
+          double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
+          omega = Math.copySign(omega * omega, omega);
+          omega = omegaLimiter.calculate(omega);
 
           // Convert to field relative speeds & send command
           ChassisSpeeds speeds =
               new ChassisSpeeds(
-                  linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                  linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                  limitedX * drive.getMaxLinearSpeedMetersPerSec(),
+                  limitedY * drive.getMaxLinearSpeedMetersPerSec(),
                   omega * drive.getMaxAngularSpeedRadPerSec());
           boolean isFlipped =
               DriverStation.getAlliance().isPresent()
@@ -109,6 +139,7 @@ public class DriveCommands {
         },
         drive);
   }
+
   /** Faces the alliance specific Hub using Odometry */
   public static Command faceHub(
       Drive drive,
@@ -116,9 +147,11 @@ public class DriveCommands {
       DoubleSupplier ySupplier,
       DoubleSupplier omegaSupplier) {
 
-    ProfiledPIDController angleController =
-        new ProfiledPIDController(10, 0.0, 0.4, new TrapezoidProfile.Constraints(6.0, 15.0));
-    angleController.enableContinuousInput(-Math.PI, Math.PI);
+    ProfiledPIDController angleController = createAngleController();
+
+    // Translation slew rate limiters (rotation is PID-controlled, no limiter needed)
+    SlewRateLimiter xLimiter = new SlewRateLimiter(TRANSLATION_SLEW_RATE);
+    SlewRateLimiter yLimiter = new SlewRateLimiter(TRANSLATION_SLEW_RATE);
 
     return Commands.run(
             () -> {
@@ -126,6 +159,10 @@ public class DriveCommands {
 
               Translation2d linearVelocity =
                   getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+
+              double limitedX = xLimiter.calculate(linearVelocity.getX());
+              double limitedY = yLimiter.calculate(linearVelocity.getY());
+
               double omega;
               Pose2d currentPose = drive.getPose();
 
@@ -137,7 +174,7 @@ public class DriveCommands {
                     angleController.calculate(
                         currentPose.getRotation().getRadians(), targetRotation.getRadians());
               } else {
-                // if outside the zone -> fall back to manual control
+                // If outside the zone → fall back to manual control
                 omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
                 omega = Math.copySign(omega * omega, omega);
                 omega *= drive.getMaxAngularSpeedRadPerSec();
@@ -145,21 +182,21 @@ public class DriveCommands {
               drive.runVelocity(
                   ChassisSpeeds.fromFieldRelativeSpeeds(
                       new ChassisSpeeds(
-                          linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                          linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                          limitedX * drive.getMaxLinearSpeedMetersPerSec(),
+                          limitedY * drive.getMaxLinearSpeedMetersPerSec(),
                           omega),
                       currentPose.getRotation()));
             },
             drive)
         .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
   }
-  /** alliance-flexible command that dynamically switches between auto-aiming and manual driving. */
+
+  /** Alliance-flexible command that dynamically switches between auto-aiming and manual driving. */
   public static Command faceHubAlternative(
       Drive drive,
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
       DoubleSupplier omegaSupplier) {
-    // By default, assume we're trying to face forwards toward the hub (i.e. faceBackwards is false)
     return faceHubAlternative(drive, xSupplier, ySupplier, omegaSupplier, false);
   }
 
@@ -196,23 +233,25 @@ public class DriveCommands {
       DoubleSupplier ySupplier,
       Supplier<Rotation2d> rotationSupplier) {
 
-    // Create PID controller
-    ProfiledPIDController angleController =
-        new ProfiledPIDController(
-            ANGLE_KP,
-            0.0,
-            ANGLE_KD,
-            new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
-    angleController.enableContinuousInput(-Math.PI, Math.PI);
+    // Unified PID controller
+    ProfiledPIDController angleController = createAngleController();
+
+    // Translation slew rate limiters (rotation is PID-controlled)
+    SlewRateLimiter xLimiter = new SlewRateLimiter(TRANSLATION_SLEW_RATE);
+    SlewRateLimiter yLimiter = new SlewRateLimiter(TRANSLATION_SLEW_RATE);
 
     // Construct command
     return Commands.run(
             () -> {
-              // Get linear velocity
+              // Get linear velocity (deadband + squaring applied inside)
               Translation2d linearVelocity =
                   getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
 
-              // Calculate angular speed
+              // Apply slew rate limiting to translation
+              double limitedX = xLimiter.calculate(linearVelocity.getX());
+              double limitedY = yLimiter.calculate(linearVelocity.getY());
+
+              // Calculate angular speed from PID
               double omega =
                   angleController.calculate(
                       drive.getRotation().getRadians(), rotationSupplier.get().getRadians());
@@ -220,8 +259,8 @@ public class DriveCommands {
               // Convert to field relative speeds & send command
               ChassisSpeeds speeds =
                   new ChassisSpeeds(
-                      linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                      linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                      limitedX * drive.getMaxLinearSpeedMetersPerSec(),
+                      limitedY * drive.getMaxLinearSpeedMetersPerSec(),
                       omega);
               boolean isFlipped =
                   DriverStation.getAlliance().isPresent()
@@ -406,11 +445,14 @@ public class DriveCommands {
                       AngularVelocity.ofBaseUnits(omega, RadiansPerSecond),
                       currentPose.getRotation());
 
-              drive.runVelocity(commandSpeeds);
+              // Use closed-loop velocity control — open-loop voltage is too weak
+              // at the low speeds Autopilot commands during precision approaches.
+              drive.runVelocityClosedLoop(commandSpeeds);
             })
         .until(() -> kAutopilot.atTarget(drive.getPose(), target))
         .finallyDo(drive::stop);
   }
+
   /**
    * Drives to a pose using the provided Autopilot instance. Allows callers to pass a slower or
    * differently tuned autopilot (e.g., kClimbingAutopilot).
@@ -450,7 +492,9 @@ public class DriveCommands {
                       AngularVelocity.ofBaseUnits(omega, RadiansPerSecond),
                       currentPose.getRotation());
 
-              drive.runVelocity(commandSpeeds);
+              // Use closed-loop velocity control,open-loop voltage is too weak
+              // at the low speeds Autopilot commands during precision approaches.
+              drive.runVelocityClosedLoop(commandSpeeds);
             })
         .until(() -> autopilot.atTarget(drive.getPose(), target))
         .finallyDo(drive::stop);

@@ -1,7 +1,7 @@
 package frc.robot.subsystems.spindexer;
 
 public final class SpindexerConstants {
-  public static final double GEAR_RATIO = 15.0;
+  public static final double GEAR_RATIO = 5.0;
   public static final int MOTOR_ID = 3;
 
   public static final double SPIN_VOLTAGE_STOPPED = 0.0;

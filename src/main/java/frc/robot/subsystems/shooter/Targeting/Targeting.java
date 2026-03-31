@@ -17,12 +17,18 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.interfaces.Initializable;
 import frc.robot.interfaces.Zonable;
+import frc.robot.util.LiveTuning;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 /**
  * This class depends on the robot pose from the drive. The Turret and Flywheel classes depend on
  * the target angle and distance from this class respectively.
+ *
+ * <p>All distances (targetDistance, augmentedTargetDistance) are measured from the TURRET PIVOT,
+ * not the robot center. This matches the origin used inside velocityCompensatedCoordinates(). Tune
+ * your FlywheelIO.distanceToRPM and TargetingIOReal.distanceToTOF tables using the
+ * "Targeting/TurretDistanceToHub" log key.
  */
 public class Targeting extends SubsystemBase implements Initializable, Zonable {
 
@@ -33,6 +39,13 @@ public class Targeting extends SubsystemBase implements Initializable, Zonable {
   // Input from drive
   private Supplier<Pose2d> robotPoseSupplier;
   private Supplier<Twist2d> robotVelocitySupplier;
+
+  /**
+   * Total system latency compensation in seconds. This accounts for: vision processing (~30ms), CAN
+   * bus (~5ms), robot code loop (~20ms), mechanical turret response (~40ms). The pose is predicted
+   * forward by this amount before calculating the shot.
+   */
+  private static final double LOOKAHEAD_TIME_SEC = 0.100;
 
   public Targeting(
       TargetingIO io, Supplier<Pose2d> robotPoseSupplier, Supplier<Twist2d> robotVelocitySupplier) {
@@ -48,35 +61,44 @@ public class Targeting extends SubsystemBase implements Initializable, Zonable {
           Twist2d vel = robotVelocitySupplier.get();
           Translation2d rawTarget;
 
-          double lookaheadTime = 0.060;
-
           if (inAllianceZone(pose)) rawTarget = io.getHub();
           else rawTarget = io.getAllianceZoneTarget(pose);
 
           targetVisualization.setRobotPose(new Pose2d(rawTarget, Rotation2d.kZero));
 
+          // Predict the pose forward by the system latency to compensate for delays
           Pose2d predictedPose =
               new Pose2d(
-                  pose.getX() + vel.dx * lookaheadTime,
-                  pose.getY() + vel.dy * lookaheadTime,
-                  pose.getRotation().plus(new Rotation2d(vel.dtheta * lookaheadTime)));
+                  pose.getX() + vel.dx * LOOKAHEAD_TIME_SEC,
+                  pose.getY() + vel.dy * LOOKAHEAD_TIME_SEC,
+                  pose.getRotation().plus(new Rotation2d(vel.dtheta * LOOKAHEAD_TIME_SEC)));
 
-          inputs.targetDistance = predictedPose.getTranslation().getDistance(rawTarget);
+          // All distances are measured from the turret pivot, not the robot center.
+          // This matches the origin used inside velocityCompensatedCoordinates().
+          Pose2d predictedTurretPose = io.getTurretPose(predictedPose);
+
+          inputs.targetDistance = predictedTurretPose.getTranslation().getDistance(rawTarget);
           inputs.targetYaw = io.getAngleTo(predictedPose, rawTarget).getDegrees();
 
+          // 2-iteration TOF refinement with velocity compensation.
+          // velocityCompensatedCoordinates() takes robot pose (it calls getTurretPose internally).
           double tofSeed = io.getTOFFromDistance(inputs.targetDistance);
           Translation2d velocityCompensatedTarget =
               io.velocityCompensatedCoordinates(
                   predictedPose, new Translation2d(vel.dx, vel.dy), tofSeed, rawTarget);
 
+          // Iteration 2: refine TOF using compensated distance from turret
+          Pose2d refinedTurretPose = io.getTurretPose(predictedPose);
           double refinedTof =
-              io.getTOFFromDistance(io.getDistanceFrom(predictedPose, velocityCompensatedTarget));
+              io.getTOFFromDistance(
+                  io.getDistanceFrom(refinedTurretPose, velocityCompensatedTarget));
           velocityCompensatedTarget =
               io.velocityCompensatedCoordinates(
                   predictedPose, new Translation2d(vel.dx, vel.dy), refinedTof, rawTarget);
 
+          // augmentedTargetDistance is measured turret → compensated virtual target.
           inputs.augmentedTargetDistance =
-              io.getDistanceFrom(predictedPose, velocityCompensatedTarget);
+              io.getDistanceFrom(io.getTurretPose(predictedPose), velocityCompensatedTarget);
           inputs.augmentedTargetYaw =
               io.getAngleTo(predictedPose, velocityCompensatedTarget).getDegrees();
 
@@ -87,6 +109,11 @@ public class Targeting extends SubsystemBase implements Initializable, Zonable {
           Logger.recordOutput("Targeting/TOF", refinedTof);
           Logger.recordOutput("Targeting/RobotVelocityX", vel.dx);
           Logger.recordOutput("Targeting/RobotVelocityY", vel.dy);
+          Logger.recordOutput(
+              "Targeting/TargetAngVelRadPerSec", io.getLastTargetAngularVelocityRadPerSec());
+
+          Logger.recordOutput("Targeting/TurretDistanceToHub", inputs.augmentedTargetDistance);
+          LiveTuning.publish("Targeting/TurretDistanceToHub", inputs.augmentedTargetDistance);
         });
   }
 
@@ -97,27 +124,35 @@ public class Targeting extends SubsystemBase implements Initializable, Zonable {
           Twist2d vel = robotVelocitySupplier.get();
           Translation2d hub = io.getHub();
 
-          inputs.targetDistance = io.getDistanceFromHub(pose);
+          Pose2d turretPose = io.getTurretPose(pose);
+          inputs.targetDistance = io.getDistanceFrom(turretPose, hub);
           inputs.targetYaw = io.getAngleTo(pose, hub).getDegrees();
 
           Translation2d velocityCompensatedTarget =
               io.velocityCompensatedCoordinates(
                   pose, new Translation2d(vel.dx, vel.dy), inputs.targetDistance, hub);
 
-          inputs.augmentedTargetDistance = io.getDistanceFrom(pose, velocityCompensatedTarget);
+          inputs.augmentedTargetDistance =
+              io.getDistanceFrom(io.getTurretPose(pose), velocityCompensatedTarget);
           inputs.augmentedTargetYaw = io.getAngleTo(pose, velocityCompensatedTarget).getDegrees();
+
+          Logger.recordOutput("Targeting/TurretDistanceToHub", inputs.augmentedTargetDistance);
+          SmartDashboard.putNumber("Targeting/TurretDistanceToHub", inputs.augmentedTargetDistance);
         });
   }
 
   @Override
   public void seed() {
-    inputs.targetDistance = io.getDistanceFromHub(robotPoseSupplier.get());
+    Pose2d turretPose = io.getTurretPose(robotPoseSupplier.get());
+    inputs.targetDistance = io.getDistanceFromHub(turretPose);
+
     inputs.augmentedTargetDistance = inputs.targetDistance;
     inputs.targetYaw =
         DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
             ? Rotation2d.kZero.getDegrees()
             : Rotation2d.k180deg.getDegrees();
     inputs.augmentedTargetYaw = inputs.targetYaw;
+    inputs.targetAngularVelocityRadPerSec = 0.0;
 
     targetVisualization.setRobotPose(new Pose2d(io.getHub(), Rotation2d.kZero));
     SmartDashboard.putData(targetVisualization);
@@ -129,6 +164,10 @@ public class Targeting extends SubsystemBase implements Initializable, Zonable {
 
   public Distance getTargetDistance() {
     return Meters.of(inputs.augmentedTargetDistance);
+  }
+
+  public double getTargetAngularVelocityRadPerSec() {
+    return inputs.targetAngularVelocityRadPerSec;
   }
 
   public boolean isInAllianceZone() {

@@ -13,7 +13,9 @@ public class TargetingIOReal implements Targetable, TargetingIO {
   private final InterpolatingDoubleTreeMap distanceToTOF;
   private final InterpolatingDoubleTreeMap distanceToVelocityScalar;
   private final double dragConstant;
-  static double lastTargetYawVelocityRadPerSec;
+
+  private double lastTargetYawVelocityRadPerSec = 0.0;
+
   private String currentTargetName = "hub";
 
   public TargetingIOReal() {
@@ -30,15 +32,14 @@ public class TargetingIOReal implements Targetable, TargetingIO {
     distanceToTOF.put(1.4, 0.90);
     distanceToTOF.put(1.7, 0.93);
     distanceToTOF.put(2.0, 0.97);
-    distanceToTOF.put(2.2, 0.99); // was 0.73
+    distanceToTOF.put(2.2, 0.99);
     distanceToTOF.put(2.4, 1.01);
     distanceToTOF.put(2.6, 1.03);
-    distanceToTOF.put(2.8, 1.06); // was 0.9
+    distanceToTOF.put(2.8, 1.06);
     distanceToTOF.put(3.3, 1.10);
     distanceToTOF.put(3.7, 1.13);
     distanceToTOF.put(4.3, 1.17);
 
-    // These velocity scalar values looked reasonable — left unchanged.
     distanceToVelocityScalar.put(1.57, 0.4);
     distanceToVelocityScalar.put(2.0, 0.30);
     distanceToVelocityScalar.put(2.5, 0.25);
@@ -50,6 +51,7 @@ public class TargetingIOReal implements Targetable, TargetingIO {
   @Override
   public void updateInputs(TargetingIOInputs inputs) {
     inputs.targetName = currentTargetName;
+    inputs.targetAngularVelocityRadPerSec = lastTargetYawVelocityRadPerSec;
   }
 
   private Translation2d selectTarget(String targetName) {
@@ -119,21 +121,27 @@ public class TargetingIOReal implements Targetable, TargetingIO {
   }
 
   @Override
+  public double getLastTargetAngularVelocityRadPerSec() {
+    return lastTargetYawVelocityRadPerSec;
+  }
+
+  @Override
   public Translation2d velocityCompensatedCoordinates(
       Pose2d robotPose, Translation2d fieldVelocity, double tof, Translation2d selectedTarget) {
 
-    // Make sure that "close-to-zero" velocity doesn't result in us doing actual adjustments.
-    // if (Constants.allFuzzyEqualsZero(fieldVelocity.getX(), fieldVelocity.getY())) {
-    //   return new Translation2d();
-    // }
-
     // Use the passed-in target, not a hardcoded getHub()
-    Translation2d hubOffset = selectedTarget.minus(robotPose.getTranslation());
+
+    Pose2d turretPose = getTurretPose(robotPose);
+
+    Translation2d hubOffset = selectedTarget.minus(turretPose.getTranslation());
     double uncompensatedRange = hubOffset.getNorm();
     Rotation2d robotToGoalAngle = hubOffset.getAngle();
 
     Translation2d goalRelativeVelocity = fieldVelocity.rotateBy(robotToGoalAngle.unaryMinus());
     double tangentialVelocity = goalRelativeVelocity.getY();
+
+    // This is the key value: how fast the field-relative angle to the target is changing
+    // due to the robot's linear motion. Negative = clockwise angular rate.
     lastTargetYawVelocityRadPerSec = -(tangentialVelocity / uncompensatedRange);
 
     double velocityScalar = (1.0 - Math.exp(-dragConstant * tof)) / (dragConstant * tof);
@@ -152,6 +160,6 @@ public class TargetingIOReal implements Targetable, TargetingIO {
     Rotation2d finalHeading = robotToGoalAngle.plus(Rotation2d.fromRadians(angularOffsetRad));
     Translation2d virtualOffset = new Translation2d(effectiveRange, finalHeading);
 
-    return robotPose.getTranslation().plus(virtualOffset);
+    return turretPose.getTranslation().plus(virtualOffset);
   }
 }

@@ -37,6 +37,8 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -47,7 +49,6 @@ import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
 import frc.robot.interfaces.Characterizable;
 import frc.robot.interfaces.Initializable;
-import frc.robot.util.LiveTuning;
 import frc.robot.util.LocalADStarAK;
 import frc.robot.util.MatchStateCalculator;
 import java.util.concurrent.locks.Lock;
@@ -57,6 +58,8 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase implements Characterizable, Initializable {
+
+  private final Field2d fieldWidget = new Field2d();
 
   // TunerConstants doesn't include these constants, so they are declared locally
   static final double ODOMETRY_FREQUENCY = TunerConstants.kCANBus.isNetworkFD() ? 250.0 : 100.0;
@@ -122,15 +125,12 @@ public class Drive extends SubsystemBase implements Characterizable, Initializab
     modules[2] = new Module(blModuleIO, 2, TunerConstants.BackLeft, this);
     modules[3] = new Module(brModuleIO, 3, TunerConstants.BackRight, this);
 
-    // posePublisher =
-    //
-    // NetworkTableInstance.getDefault().getTable("Drive").getDoubleArrayTopic("Pose").publish();
-
     // Usage reporting for swerve template
     HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_AdvantageKit);
 
     // Start odometry thread
     PhoenixOdometryThread.getInstance().start();
+    SmartDashboard.putData("RobotToField", fieldWidget);
 
     // Configure SysId
     sysId =
@@ -254,16 +254,18 @@ public class Drive extends SubsystemBase implements Characterizable, Initializab
 
     Logger.recordOutput("Drive/DistanceToHub", getDistanceToHub());
     Pose2d pose = getPose();
-    LiveTuning.publish("Drive/Pose", pose);
-    LiveTuning.publish("Drive/DistanceToHub", getDistanceToHub());
+    // LiveTuning.publish("Drive/Pose", pose);
+    // LiveTuning.publish("Drive/DistanceToHub", getDistanceToHub());
 
     ChassisSpeeds speeds = getChassisSpeeds();
-    LiveTuning.publish(
-        "Drive/SpeedMPS", Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond));
+    // LiveTuning.publish(
+    //     "Drive/SpeedMPS", Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond));
+    // fieldWidget.setRobotPose(getPose());
   }
 
   /**
-   * Runs the drive at the desired velocity.
+   * Runs the drive at the desired velocity using OPEN-LOOP voltage control. This is the standard
+   * method used for teleop driving and PathPlanner.
    *
    * @param speeds Speeds in meters/sec
    */
@@ -283,6 +285,29 @@ public class Drive extends SubsystemBase implements Characterizable, Initializab
     }
 
     // Log optimized setpoints (runSetpoint mutates each state)
+    Logger.recordOutput("SwerveStates/SetpointsOptimized", setpointStates);
+  }
+
+  /**
+   * Use this for autonomous precision commands: Autopilot driveToPose, climbing alignment, etc. Do
+   * NOT use for teleop — closed-loop is less responsive to sudden input changes.
+   */
+  public void runVelocityClosedLoop(ChassisSpeeds speeds) {
+    // Calculate module setpoints
+    ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
+    SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
+    SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, TunerConstants.kSpeedAt12Volts);
+
+    // Log setpoints
+    Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
+    Logger.recordOutput("SwerveChassisSpeeds/Setpoints", discreteSpeeds);
+
+    // Send setpoints to modules using closed-loop velocity control
+    for (int i = 0; i < 4; i++) {
+      modules[i].runClosedLoopSetpoint(setpointStates[i]);
+    }
+
+    // Log optimized setpoints
     Logger.recordOutput("SwerveStates/SetpointsOptimized", setpointStates);
   }
 

@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.AutopilotConstants;
+import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.util.FieldLayout;
 import frc.robot.util.MatchStateCalculator;
@@ -38,6 +39,43 @@ public class PathfindCommands {
     Command autoPilot = new DriveToPose(drive, targetPose2d);
 
     return pathfindTo.andThen(autoPilot);
+  }
+  /**
+   * Teleop climb sequence: PathPlanner pathfinds to staging area, then Autopilot precision-drives
+   * to the exact climbing pose. Does NOT operate the climber mechanism.
+   */
+  public static Command climbSequence(Drive drive) {
+    PathConstraints stagingConstraints =
+        new PathConstraints(3.0, 3.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
+
+    return Commands.sequence(
+            AutoBuilder.pathfindToPose(allianceClimbingStagePose(), stagingConstraints, 0.0),
+            Commands.waitSeconds(0.3),
+            Commands.defer(
+                () ->
+                    DriveCommands.driveToPose(
+                            drive, allianceClimbingPose(), AutopilotConstants.kClimbingAutopilot)
+                        .withTimeout(3.5),
+                Set.of(drive)))
+        .withName("PathfindCommands.climbSequence");
+  }
+
+  /** Full autonomous climb sequence for use as a NamedCommand in PathPlanner autos. */
+  public static Command autonomousClimbSequence(Drive drive, Climber climber) {
+    return Commands.sequence(
+            // Step 1: Precision drive to exact climbing position.
+            // defer() resolves the alliance-specific pose at runtime, not at registration time.
+            Commands.defer(
+                () ->
+                    DriveCommands.driveToPose(
+                            drive, allianceClimbingPose(), AutopilotConstants.kClimbingAutopilot)
+                        .withTimeout(4.0),
+                Set.of(drive)),
+
+            // Step 2: Full climber mechanism sequence.
+            // zero → extend → 0.3s engage pause → retract → hold
+            climber.fullClimbSequence())
+        .withName("PathfindCommands.autonomousClimbSequence");
   }
 
   public static Command pathfindToDepot(Drive drive) {
@@ -67,23 +105,6 @@ public class PathfindCommands {
         FieldLayout.ScoringPosition.SCORING_POSITION_A.getRotation(),
         drive,
         0.0);
-  }
-
-  public static Command climbSequence(Drive drive) {
-    PathConstraints stagingConstraints =
-        new PathConstraints(3.0, 3.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
-    PathConstraints climbingConstraints =
-        new PathConstraints(0.5, 0.5, Units.degreesToRadians(540), Units.degreesToRadians(720));
-
-    return Commands.sequence(
-            AutoBuilder.pathfindToPose(allianceClimbingStagePose(), stagingConstraints, 0.0),
-            Commands.waitSeconds(0.3),
-            Commands.defer(
-                () -> AutoBuilder.pathfindToPose(allianceClimbingPose(), climbingConstraints, 0.0),
-                // () -> DriveCommands.driveToPose(drive, allianceClimbingPose(),
-                // kClimbingAutopilot),
-                Set.of(drive)))
-        .withName("PathfindCommands.climbSequence");
   }
 
   public static Command driveToTheOutpost(Drive drive) {
