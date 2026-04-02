@@ -396,7 +396,7 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
     driverController.L1().whileTrue(intake.eject());
-    driverController.R1().whileTrue(intake.dynamicIngest());
+    driverController.R1().whileTrue(intake.ingest());
 
     driverController.PS().whileTrue(ShootingCommands.dashboardRPMControl(flywheel));
 
@@ -410,7 +410,7 @@ public class RobotContainer {
   private void configureDefaultBindings() {
     leds.setDefaultCommand(leds.gameStateAwareLeds(stateTracker));
 
-    // flywheel.setDefaultCommand(flywheel.spinAt(800.0, false));
+    flywheel.setDefaultCommand(flywheel.shootOnMoveSpinUp());
 
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(

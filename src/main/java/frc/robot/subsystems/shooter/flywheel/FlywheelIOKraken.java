@@ -5,13 +5,13 @@ import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.math.controller.BangBangController;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
@@ -27,11 +27,12 @@ public class FlywheelIOKraken implements FlywheelIO {
   private final StatusSignal<Voltage> voltageSignal;
   private final StatusSignal<Current> statorCurrentSignal;
   private final StatusSignal<Current> supplyCurrentSignal;
-   private final StatusSignal<Temperature> leftMotorSignal;
+  private final StatusSignal<Temperature> leftMotorSignal;
   private final StatusSignal<Temperature> rightMotorSignal;
 
   private final VoltageOut voltageRequest = new VoltageOut(0);
-  private final BangBangController bangBang = new BangBangController();
+  private final MotionMagicVelocityVoltage mmVelocity = new MotionMagicVelocityVoltage(0);
+  // private final BangBangController bangBang = new BangBangController();
 
   public FlywheelIOKraken() {
     var config = new TalonFXConfiguration();
@@ -39,10 +40,18 @@ public class FlywheelIOKraken implements FlywheelIO {
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
-    config.CurrentLimits.StatorCurrentLimit = 80.0;
+    config.CurrentLimits.StatorCurrentLimit = 180.0;
     config.CurrentLimits.StatorCurrentLimitEnable = true;
-    config.CurrentLimits.SupplyCurrentLimit = 40.0;
+    config.CurrentLimits.SupplyCurrentLimit = 70.0;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
+    config.Slot0.kS = FlywheelConstants.kS;
+    config.Slot0.kA = FlywheelConstants.kA;
+    config.Slot0.kV = FlywheelConstants.kV;
+    config.Slot0.kP = FlywheelConstants.kP;
+
+    config.MotionMagic.MotionMagicCruiseVelocity = FlywheelConstants.MAX_VELOCITY;
+    config.MotionMagic.MotionMagicAcceleration = FlywheelConstants.MAX_ACCEL;
+    config.MotionMagic.MotionMagicJerk = FlywheelConstants.MAX_JERK;
 
     motor.getConfigurator().apply(config);
     motor2.getConfigurator().apply(config);
@@ -55,7 +64,6 @@ public class FlywheelIOKraken implements FlywheelIO {
     supplyCurrentSignal = motor2.getSupplyCurrent();
     leftMotorSignal = motor2.getDeviceTemp();
     rightMotorSignal = motor.getDeviceTemp();
-
 
     BaseStatusSignal.setUpdateFrequencyForAll(
         50.0, velocitySignal, voltageSignal, statorCurrentSignal, supplyCurrentSignal);
@@ -86,21 +94,22 @@ public class FlywheelIOKraken implements FlywheelIO {
 
   @Override
   public void moveTo(double rpm) {
-    double currentRPM = velocitySignal.getValueAsDouble() * 60.0;
-    double error = rpm - currentRPM;
+    // double currentRPM = velocitySignal.getValueAsDouble() * 60.0;
+    // double error = rpm - currentRPM;
 
-    double bangBangOutput = bangBang.calculate(currentRPM, rpm);
+    // double bangBangOutput = bangBang.calculate(currentRPM, rpm);
 
-    double rps = rpm / 60.0;
-    double ffVolts = FlywheelConstants.kS_FF * Math.signum(rpm) + FlywheelConstants.kV_FF * rps;
-    double pTrimVolts = FlywheelConstants.kP_TRIM * error;
+    // double rps = rpm / 60.0;
+    // double ffVolts = FlywheelConstants.kS_FF * Math.signum(rpm) + FlywheelConstants.kV_FF * rps;
+    // double pTrimVolts = FlywheelConstants.kP_TRIM * error;
 
-    // Total output:
-    // Below setpoint: 12V + FF + P_trim (Phoenix caps at battery voltage)
-    // Above setpoint: FF + P_trim (P_trim is negative here, reducing below FF)
-    double outputVolts = bangBangOutput * 12.0 + ffVolts + pTrimVolts;
+    // // Total output:
+    // // Below setpoint: 12V + FF + P_trim (Phoenix caps at battery voltage)
+    // // Above setpoint: FF + P_trim (P_trim is negative here, reducing below FF)
+    // double outputVolts = bangBangOutput * 12.0 + ffVolts + pTrimVolts;
 
-    motor2.setControl(voltageRequest.withOutput(outputVolts));
+    // motor2.setControl(voltageRequest.withOutput(outputVolts));
+    motor2.setControl(mmVelocity.withVelocity(rpm / 60.0));
   }
 
   @Override

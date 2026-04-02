@@ -41,7 +41,7 @@ public class IntakeIOKraken implements IntakeIO {
 
     config.CurrentLimits.StatorCurrentLimit = 60.0;
     config.CurrentLimits.StatorCurrentLimitEnable = true;
-    config.CurrentLimits.SupplyCurrentLimit = 15.0;
+    config.CurrentLimits.SupplyCurrentLimit = 30.0;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     config.Slot0.kS = IntakeConstants.kS;

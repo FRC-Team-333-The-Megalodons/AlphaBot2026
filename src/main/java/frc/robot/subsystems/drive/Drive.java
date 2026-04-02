@@ -50,6 +50,7 @@ import frc.robot.energy.BatteryLogger;
 import frc.robot.generated.TunerConstants;
 import frc.robot.interfaces.Characterizable;
 import frc.robot.interfaces.Initializable;
+import frc.robot.util.LiveTuning;
 import frc.robot.util.LocalADStarAK;
 import frc.robot.util.MatchStateCalculator;
 import java.util.concurrent.locks.Lock;
@@ -266,7 +267,7 @@ public class Drive extends SubsystemBase implements Characterizable, Initializab
 
     Logger.recordOutput("Drive/DistanceToHub", getDistanceToHub());
     Pose2d pose = getPose();
-    // LiveTuning.publish("Drive/Pose", pose);
+    LiveTuning.publish("Drive/Pose", pose);
     // LiveTuning.publish("Drive/DistanceToHub", getDistanceToHub());
 
     ChassisSpeeds speeds = getChassisSpeeds();

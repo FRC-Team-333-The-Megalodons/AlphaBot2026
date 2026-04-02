@@ -10,10 +10,10 @@ public class FlywheelConstants {
   public static final double kS_FF = 0.0;
   public static final double kP_TRIM = 0.0;
   // These are for on-board contollers
-  public static final double kS = 0.0;
-  public static final double kV = 0.3;
-  public static final double kA = 0.0;
-  public static final double kP = 23.0;
+  public static final double kS = 0.13981;
+  public static final double kV = 0.12304;
+  public static final double kA = 0.016793;
+  public static final double kP = 0.13661;
 
   public static final double MAX_VELOCITY = 100.0;
   public static final double MAX_ACCEL = 200.0;

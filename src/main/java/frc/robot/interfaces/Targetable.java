@@ -53,7 +53,7 @@ public interface Targetable extends Localizable {
         "redHub", Localizable.tagCoordinates(10).plus(Localizable.tagCoordinates(4)).div(2));
 
     addTarget.accept(
-        "blueHub", Localizable.tagCoordinates(25).plus(Localizable.tagCoordinates(20)).div(2));
+        "blueHub", Localizable.tagCoordinates(25).plus(Localizable.tagCoordinates(19)).div(2));
 
     Translation2d ferryXOffset = Localizable.xUnitVector(2.5);
     // Translation2d ferryYOffset = yUnitVector().div(4);
