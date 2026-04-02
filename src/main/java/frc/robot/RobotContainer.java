@@ -410,7 +410,7 @@ public class RobotContainer {
   private void configureDefaultBindings() {
     leds.setDefaultCommand(leds.gameStateAwareLeds(stateTracker));
 
-    flywheel.setDefaultCommand(flywheel.shootOnMoveSpinUp());
+    // flywheel.setDefaultCommand(flywheel.shootOnMoveSpinUp());
 
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
