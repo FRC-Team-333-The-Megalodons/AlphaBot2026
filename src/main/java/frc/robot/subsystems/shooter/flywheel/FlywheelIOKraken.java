@@ -14,6 +14,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.controller.BangBangController;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 
 public class FlywheelIOKraken implements FlywheelIO {
@@ -26,6 +27,8 @@ public class FlywheelIOKraken implements FlywheelIO {
   private final StatusSignal<Voltage> voltageSignal;
   private final StatusSignal<Current> statorCurrentSignal;
   private final StatusSignal<Current> supplyCurrentSignal;
+   private final StatusSignal<Temperature> leftMotorSignal;
+  private final StatusSignal<Temperature> rightMotorSignal;
 
   private final VoltageOut voltageRequest = new VoltageOut(0);
   private final BangBangController bangBang = new BangBangController();
@@ -50,6 +53,9 @@ public class FlywheelIOKraken implements FlywheelIO {
     voltageSignal = motor2.getMotorVoltage();
     statorCurrentSignal = motor2.getStatorCurrent();
     supplyCurrentSignal = motor2.getSupplyCurrent();
+    leftMotorSignal = motor2.getDeviceTemp();
+    rightMotorSignal = motor.getDeviceTemp();
+
 
     BaseStatusSignal.setUpdateFrequencyForAll(
         50.0, velocitySignal, voltageSignal, statorCurrentSignal, supplyCurrentSignal);
@@ -66,6 +72,8 @@ public class FlywheelIOKraken implements FlywheelIO {
     inputs.appliedVolts = voltageSignal.getValueAsDouble();
     inputs.statorAmps = statorCurrentSignal.getValueAsDouble();
     inputs.supplyAmps = supplyCurrentSignal.getValueAsDouble();
+    inputs.rightMotorTempCelsius = rightMotorSignal.getValueAsDouble();
+    inputs.leftMotorTempCelsius = leftMotorSignal.getValueAsDouble();
   }
 
   @Override
