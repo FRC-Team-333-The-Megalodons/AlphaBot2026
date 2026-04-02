@@ -11,6 +11,7 @@ import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.subsystems.vision.VisionConstants.camera0Name;
 import static frc.robot.subsystems.vision.VisionConstants.camera1Name;
 import static frc.robot.subsystems.vision.VisionConstants.robotToCamera0;
+import static frc.robot.subsystems.vision.VisionConstants.robotToCamera1;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -130,7 +131,9 @@ public class RobotContainer {
                 batteryLogger);
         vision =
             new Vision(
-                drive::addVisionMeasurement, new VisionIOPhotonVision(camera0Name, robotToCamera0));
+                drive::addVisionMeasurement,
+                new VisionIOPhotonVision(camera0Name, robotToCamera0),
+                new VisionIOPhotonVision(camera1Name, robotToCamera1));
         targeting = new Targeting(new TargetingIOReal(), drive::getPose, drive::robotFieldVelocity);
         intake = new Intake(new IntakeIOKraken(), drive::robotFieldVelocity, batteryLogger);
         spindexer = new Spindexer(new SpindexerIOKraken(), batteryLogger);
@@ -162,7 +165,8 @@ public class RobotContainer {
         vision =
             new Vision(
                 drive::addVisionMeasurement,
-                new VisionIOPhotonVisionSim(camera1Name, robotToCamera0, drive::getPose));
+                new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drive::getPose),
+                new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose));
         targeting = new Targeting(new TargetingIOReal(), drive::getPose, drive::robotFieldVelocity);
         intake = new Intake(new IntakeIOKrakenSim(), drive::robotFieldVelocity, batteryLogger);
         spindexer = new Spindexer(new SpindexerIOKrakenSim(), batteryLogger);
@@ -406,7 +410,7 @@ public class RobotContainer {
   private void configureDefaultBindings() {
     leds.setDefaultCommand(leds.gameStateAwareLeds(stateTracker));
 
-    flywheel.setDefaultCommand(flywheel.spinAt(800.0, false));
+    // flywheel.setDefaultCommand(flywheel.spinAt(800.0, false));
 
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
