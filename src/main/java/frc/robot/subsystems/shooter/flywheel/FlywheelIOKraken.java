@@ -54,7 +54,10 @@ public class FlywheelIOKraken implements FlywheelIO {
     config.MotionMagic.MotionMagicAcceleration = FlywheelConstants.MAX_ACCEL;
     config.MotionMagic.MotionMagicJerk = FlywheelConstants.MAX_JERK;
 
+     // This is critical, we don't actually set the config without this call!
+     // If you want to "remove" this, just instead comment this, and uncomment the next line.
     applyEnergyLimits(EnergyLimitMode.DEFAULT);
+    //applyEnergyLimits(EnergyLimitMode.UNLIMITED);
 
     motor.setControl(new Follower(motor2.getDeviceID(), MotorAlignmentValue.Opposed));
 
@@ -96,7 +99,7 @@ public class FlywheelIOKraken implements FlywheelIO {
       default:
       {
         Commands.print("Unexpected Flywheel Energy Mode = " + mode);
-        return;
+        break;
       }
     }
 
