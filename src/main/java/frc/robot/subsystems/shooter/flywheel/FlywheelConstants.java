@@ -13,7 +13,7 @@ public class FlywheelConstants {
   public static final double kS = 0.13981;
   public static final double kV = 0.12304;
   public static final double kA = 0.016793;
-  public static final double kP = 0.13661;
+  public static final double kP = 1.3661;
 
   public static final double MAX_VELOCITY = 100.0;
   public static final double MAX_ACCEL = 200.0;

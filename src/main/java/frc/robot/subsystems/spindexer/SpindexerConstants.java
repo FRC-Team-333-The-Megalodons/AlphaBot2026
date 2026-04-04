@@ -9,7 +9,7 @@ public final class SpindexerConstants {
   public static final double SPIN_VOLTAGE_SLOW = 5.0;
   public static final double REVERSE_VOLTAGE = -4.0;
 
-  public static final double MOTOR_SPIN_RPM = 6000.0;
+  public static final double MOTOR_SPIN_RPM = 7000.0;
   public static final double SPIN_RPM = MOTOR_SPIN_RPM / GEAR_RATIO;
   public static final double SPIN_RPM_SLOW = 1500.0;
   public static final double EJECT_RPM = -1500.0;

@@ -105,6 +105,14 @@ public class Climber extends SubsystemBase {
         .withName("Climber.fullClimbSequence");
   }
 
+  public Command extendWithTimeOut() {
+    return Commands.sequence(extend().withTimeout(1));
+  }
+
+  public Command retractWithTimeOut() {
+    return Commands.sequence(retract().withTimeout(1));
+  }
+
   public Command stop() {
     return runOnce(io::stop).withName("Climber.stop");
   }

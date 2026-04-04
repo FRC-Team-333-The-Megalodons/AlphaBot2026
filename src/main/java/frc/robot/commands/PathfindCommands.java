@@ -63,8 +63,7 @@ public class PathfindCommands {
   /** Full autonomous climb sequence for use as a NamedCommand in PathPlanner autos. */
   public static Command autonomousClimbSequence(Drive drive, Climber climber) {
     return Commands.sequence(
-            // Step 1: Precision drive to exact climbing position.
-            // defer() resolves the alliance-specific pose at runtime, not at registration time.
+            climber.extendWithTimeOut(),
             Commands.defer(
                 () ->
                     DriveCommands.driveToPose(
@@ -74,7 +73,7 @@ public class PathfindCommands {
 
             // Step 2: Full climber mechanism sequence.
             // zero → extend → 0.3s engage pause → retract → hold
-            climber.fullClimbSequence())
+            climber.retractWithTimeOut())
         .withName("PathfindCommands.autonomousClimbSequence");
   }
 

@@ -25,9 +25,28 @@
                       }
                     },
                     {
-                      "type": "named",
+                      "type": "race",
                       "data": {
-                        "name": "ShootOnMove"
+                        "commands": [
+                          {
+                            "type": "path",
+                            "data": {
+                              "pathName": "PrepForDepot"
+                            }
+                          },
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "ShootOnMove"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "GoDepot"
                       }
                     }
                   ]
