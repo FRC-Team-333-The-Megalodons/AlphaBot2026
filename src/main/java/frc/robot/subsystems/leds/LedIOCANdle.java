@@ -21,7 +21,7 @@ public class LedIOCANdle implements LedIO {
   private static final int VISION_LED_COUNT = VISION_SECTION_SIZE * 2; // 12
 
   // Game state animations only touch LEDs 0 through GAME_STATE_LENGTH-1
-  private static final int GAME_STATE_LENGTH = TOTAL_LENGTH - VISION_LED_COUNT; // 28
+  private static final int GAME_STATE_LENGTH = STRIP_LENGTH - VISION_LED_COUNT; // 28
 
   // Vision LED ranges (indices into the full 40-LED chain)
   private static final int CAMERA1_START = GAME_STATE_LENGTH; // 28 — back camera
@@ -157,7 +157,7 @@ public class LedIOCANdle implements LedIO {
     // The slotted game-state animation only touches LEDs 0–27,
     // so these writes to LEDs 28–39 persist undisturbed.
 
-    
+
     long now = System.currentTimeMillis();
 
     // We only need to change something if it actually changed, and only if it's been a meaningful period of time.
