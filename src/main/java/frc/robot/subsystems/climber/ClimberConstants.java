@@ -31,6 +31,6 @@ public final class ClimberConstants {
   public static final double VELOCITY_TOLERANCE_RPS = 0.1;
 
   // Named positions in mechanism rotations
-  public static final double kStowedPosition = 0.0;
-  public static final double kClimbPosition = 18.0; // TODO: measure real climb height
+  public static final double kStowedPosition = 0.086181640625;
+  public static final double kClimbPosition = 1.1962890625; // TODO: measure real climb height
 }

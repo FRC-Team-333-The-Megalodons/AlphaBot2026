@@ -11,14 +11,11 @@ public interface ClimberIO {
     public double appliedVolts = 0.0;
     public double currentAmps = 0.0;
     public double supplyAmps = 0.0;
-    public boolean limitSwitchTriggered = false;
     public boolean hasZeroed = false;
-    public double rawPosition = 0.0;
   }
 
   public default void updateInputs(ClimberIOInputs inputs) {}
 
-  // Motion Magic position control —> method for auto and precise movement
   public default void moveTo(double positionRot) {}
 
   public default void setVoltage(double volts) {}
@@ -30,10 +27,6 @@ public interface ClimberIO {
   public default void zeroPosition() {}
 
   public default boolean atTarget(double positionRot) {
-    return false;
-  }
-
-  public default boolean isAttached() {
     return false;
   }
 }

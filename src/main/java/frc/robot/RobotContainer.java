@@ -280,7 +280,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("Intake", intake.dynamicIngest());
     NamedCommands.registerCommand("ClimbingPosition", climber.extend());
     NamedCommands.registerCommand("Climb", climber.retract());
-    NamedCommands.registerCommand("ClimbZero", climber.zeroSequence());
+    NamedCommands.registerCommand("ClimbZero", climber.zeroEncoder());
 
     // Teleop climb sequence (pathfind + precision drive, no climber mechanism):
     NamedCommands.registerCommand("ClimbSequence", PathfindCommands.climbSequence(drive));
@@ -317,8 +317,8 @@ public class RobotContainer {
     operatorController.cross().whileTrue(transfer.feedShooter());
 
     // Climber
-    operatorController.povDown().whileTrue(climber.driveUp(0.70));
-    operatorController.povUp().whileTrue(climber.driveDown(-0.70));
+    operatorController.povDown().whileTrue(climber.driveDown(0.70));
+    operatorController.povUp().whileTrue(climber.driveUp(0.70));
     operatorController
         .triangle()
         .whileTrue(ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, pivot));
@@ -404,7 +404,7 @@ public class RobotContainer {
         .povUp()
         .whileTrue(Commands.parallel(spindexer.spin(), transfer.feedShooter(), intake.ingest()));
 
-    // driverController.povRight().onTrue(PathfindCommands.climbSequence(drive));
+    driverController.povRight().whileTrue(PathfindCommands.autonomousClimbSequence(drive, climber));
   }
 
   private void configureDefaultBindings() {
