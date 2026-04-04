@@ -17,6 +17,7 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.subsystems.shooter.flywheel.FlywheelConstants.EnergyLimitMode;
 
 public class FlywheelIOKraken implements FlywheelIO {
 
@@ -35,7 +36,7 @@ public class FlywheelIOKraken implements FlywheelIO {
   private final MotionMagicVelocityVoltage mmVelocity = new MotionMagicVelocityVoltage(0);
   // private final BangBangController bangBang = new BangBangController();
 
-  private double lastStatorLimit = -1.0, lastSupplyLimit = -1.0;
+  private EnergyLimitMode lastMode = EnergyLimitMode.UNSET;
   private TalonFXConfiguration config;
 
   public FlywheelIOKraken() {
@@ -53,7 +54,7 @@ public class FlywheelIOKraken implements FlywheelIO {
     config.MotionMagic.MotionMagicAcceleration = FlywheelConstants.MAX_ACCEL;
     config.MotionMagic.MotionMagicJerk = FlywheelConstants.MAX_JERK;
 
-    applyEnergyLimits(FlywheelConstants.LOW_STATOR_LIMIT, FlywheelConstants.LOW_SUPPLY_LIMIT);
+    applyEnergyLimits(EnergyLimitMode.DEFAULT);
 
     motor.setControl(new Follower(motor2.getDeviceID(), MotorAlignmentValue.Opposed));
 
@@ -71,16 +72,33 @@ public class FlywheelIOKraken implements FlywheelIO {
   }
 
   @Override
-  public void applyEnergyLimits(double stator, double supply) {
-    if (stator == lastStatorLimit && supply == lastSupplyLimit) {
+  public void applyEnergyLimits(EnergyLimitMode mode) {
+    if (mode == lastMode) {
       return;
     }
 
-    Commands.print("Applying Flywheel Limits: Stator=" + stator + ", Current=" + supply);
-    config.CurrentLimits.StatorCurrentLimit = stator;
-    config.CurrentLimits.SupplyCurrentLimit = supply;
-    config.CurrentLimits.StatorCurrentLimitEnable = true;
-    config.CurrentLimits.SupplyCurrentLimitEnable = true;
+    switch(mode) {
+      case DEFAULT:
+      {
+        config.CurrentLimits.SupplyCurrentLimit = FlywheelConstants.HIGH_SUPPLY_LIMIT;
+        config.CurrentLimits.SupplyCurrentLowerLimit = FlywheelConstants.LOW_SUPPLY_LIMIT;
+        config.CurrentLimits.SupplyCurrentLowerTime = FlywheelConstants.DROP_TO_LOW_SUPPLY_TIME_s;
+        config.CurrentLimits.SupplyCurrentLimitEnable = true;
+        Commands.print("Applying Flywheel Energy Mode "+mode+" with SupplyLim="+config.CurrentLimits.SupplyCurrentLimit+", SupplyLowerLim="+config.CurrentLimits.SupplyCurrentLowerLimit+", SupplyDropToLowerTime="+config.CurrentLimits.SupplyCurrentLowerTime);
+        break;
+      }
+      case UNLIMITED:
+      {
+        config.CurrentLimits.SupplyCurrentLimitEnable = false;
+        Commands.print("Applying Flywheel Energy Mode "+mode);
+        break;
+      }
+      default:
+      {
+        Commands.print("Unexpected Flywheel Energy Mode = " + mode);
+        return;
+      }
+    }
 
     motor.getConfigurator().apply(config);
     motor2.getConfigurator().apply(config);

@@ -22,14 +22,16 @@ public class FlywheelConstants {
   public static final double VELOCITY_TOLERANCE_RPM = 50.0;
 
   // Energy/Motor-related Low & High limits
-  public static final double LOW_SUPPLY_LIMIT = 70.0;
-  public static final double HIGH_SUPPLY_LIMIT = 95.0;
+  public static final double LOW_SUPPLY_LIMIT = 65.0;
+  public static final double HIGH_SUPPLY_LIMIT = 100.0;
+  public static final double DROP_TO_LOW_SUPPLY_TIME_s = 1.0;
 
   public static final double LOW_STATOR_LIMIT = 180.0;
   public static final double HIGH_STATOR_LIMIT = 300.0;
 
   public enum EnergyLimitMode {
-    LOW,
-    HIGH
+    UNSET,
+    DEFAULT,
+    UNLIMITED
   }
 }

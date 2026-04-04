@@ -129,21 +129,29 @@ public class LedIOCANdle implements LedIO {
 
   @Override
   public void setVisionState(boolean camera0SeesTag, boolean camera1SeesTag) {
+    /*
     boolean changed =
         camera0SeesTag != lastCamera0 || camera1SeesTag != lastCamera1 || forceVisionRefresh;
 
     if (!changed) return;
+    */
 
     // SolidColor is a direct LED write — no slot needed.
     // The slotted game-state animation only touches LEDs 0–27,
     // so these writes to LEDs 28–39 persist undisturbed.
-    candle.setControl(
-        new SolidColor(CAMERA1_START, VISION_SECTION_SIZE).withColor(camera1SeesTag ? GREEN : RED));
-    candle.setControl(
-        new SolidColor(CAMERA0_START, VISION_SECTION_SIZE).withColor(camera0SeesTag ? GREEN : RED));
 
-    lastCamera0 = camera0SeesTag;
-    lastCamera1 = camera1SeesTag;
+    // We only need to change something if it actually changed.
+    if (camera1SeesTag != lastCamera1) {
+      candle.setControl(
+          new SolidColor(CAMERA1_START, VISION_SECTION_SIZE).withColor(camera1SeesTag ? GREEN : RED));    
+      lastCamera1 = camera1SeesTag;
+    }
+    if (camera0SeesTag != lastCamera0) {
+      lastCamera0 = camera0SeesTag;
+      candle.setControl(
+          new SolidColor(CAMERA0_START, VISION_SECTION_SIZE).withColor(camera0SeesTag ? GREEN : RED));
+    }
+
     forceVisionRefresh = false;
   }
 }

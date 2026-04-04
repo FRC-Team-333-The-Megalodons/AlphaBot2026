@@ -327,8 +327,8 @@ public class RobotContainer {
         .whileTrue(ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, pivot));
 
     // Override Limits
-    operatorController.touchpad().onTrue(flywheel.setEnergyLimits(EnergyLimitMode.HIGH));
-    operatorController.touchpad().onFalse(flywheel.setEnergyLimits(EnergyLimitMode.LOW));
+    operatorController.touchpad().onTrue(flywheel.setEnergyLimits(EnergyLimitMode.UNLIMITED));
+    operatorController.touchpad().onFalse(flywheel.setEnergyLimits(EnergyLimitMode.DEFAULT));
   }
 
   private void configureDriverBindings() {
