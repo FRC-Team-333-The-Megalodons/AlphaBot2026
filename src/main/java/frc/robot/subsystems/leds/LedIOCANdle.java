@@ -37,8 +37,11 @@ public class LedIOCANdle implements LedIO {
   private final CANdle candle;
 
   private LedState lastState = null;
-  private boolean lastCamera0 = false;
-  private boolean lastCamera1 = false;
+  private boolean last_isTagSeen_cam0 = false;
+  private long last_isTagSeen_cam0_time = 0;
+  private boolean last_isTagSeen_cam1 = false;
+  private long last_isTagSeen_cam1_time = 0;
+
   private boolean forceVisionRefresh = true;
 
   public LedIOCANdle() {
@@ -65,9 +68,23 @@ public class LedIOCANdle implements LedIO {
     if (state == lastState) return;
     lastState = state;
 
+    // For now, take everything "GAME_STATE" and blank it out.
+    candle.setControl(new EmptyAnimation(GAME_STATE_SLOT));
+    candle.setControl(
+      new SolidColor(0, GAME_STATE_LENGTH).withColor(new RGBWColor(0,0,0,0)));
+
+    // This is a cheapo way to always return here, without deleting the rest of the code below. 
+    // If i just did 'return', the compiler would think the below code is unreachable.
+    // System.currentTimeMillis is always positive, so it's effectively always exiting here.
+    if (System.currentTimeMillis() > 0) {
+      return;
+    }
+
     // After any game state change, vision LEDs need re-applying
     // in case the control switch momentarily reset them.
     forceVisionRefresh = true;
+
+    
 
     switch (state) {
       case IDLE:
@@ -135,19 +152,25 @@ public class LedIOCANdle implements LedIO {
 
     if (!changed) return;
     */
-
+    final long ELAPED_WAIT_ms = 1000;
     // SolidColor is a direct LED write — no slot needed.
     // The slotted game-state animation only touches LEDs 0–27,
     // so these writes to LEDs 28–39 persist undisturbed.
 
-    // We only need to change something if it actually changed.
-    if (camera1SeesTag != lastCamera1) {
+    
+    long now = System.currentTimeMillis();
+
+    // We only need to change something if it actually changed, and only if it's been a meaningful period of time.
+    if (camera1SeesTag != last_isTagSeen_cam1 && (last_isTagSeen_cam1_time - now > ELAPED_WAIT_ms)) {
+      last_isTagSeen_cam1 = camera1SeesTag;
+      last_isTagSeen_cam1_time = now;
       candle.setControl(
           new SolidColor(CAMERA1_START, VISION_SECTION_SIZE).withColor(camera1SeesTag ? GREEN : RED));    
-      lastCamera1 = camera1SeesTag;
     }
-    if (camera0SeesTag != lastCamera0) {
-      lastCamera0 = camera0SeesTag;
+
+    if (camera0SeesTag != last_isTagSeen_cam0 && (last_isTagSeen_cam0_time - now > ELAPED_WAIT_ms)) {
+      last_isTagSeen_cam0 = camera0SeesTag;
+      last_isTagSeen_cam0_time = now;
       candle.setControl(
           new SolidColor(CAMERA0_START, VISION_SECTION_SIZE).withColor(camera0SeesTag ? GREEN : RED));
     }
