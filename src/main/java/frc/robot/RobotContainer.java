@@ -61,6 +61,7 @@ import frc.robot.subsystems.shooter.flywheel.Flywheel;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIO;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIOKraken;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIOKrakenSim;
+import frc.robot.subsystems.shooter.flywheel.FlywheelConstants.EnergyLimitMode;
 import frc.robot.subsystems.shooter.turret.Turret;
 import frc.robot.subsystems.shooter.turret.TurretIO;
 import frc.robot.subsystems.shooter.turret.TurretIOKrakenSim;
@@ -319,9 +320,15 @@ public class RobotContainer {
     // Climber
     operatorController.povDown().whileTrue(climber.driveDown(0.70));
     operatorController.povUp().whileTrue(climber.driveUp(0.70));
+
+    // Flywheel
     operatorController
         .triangle()
         .whileTrue(ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, pivot));
+
+    // Override Limits
+    operatorController.touchpad().onTrue(flywheel.setEnergyLimits(EnergyLimitMode.HIGH));
+    operatorController.touchpad().onFalse(flywheel.setEnergyLimits(EnergyLimitMode.LOW));
   }
 
   private void configureDriverBindings() {

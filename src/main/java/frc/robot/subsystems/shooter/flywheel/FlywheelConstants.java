@@ -20,4 +20,16 @@ public class FlywheelConstants {
   public static final double MAX_JERK = 1000.0;
 
   public static final double VELOCITY_TOLERANCE_RPM = 50.0;
+
+
+  // Energy/Motor-related Low & High limits
+  public static final double LOW_SUPPLY_LIMIT = 70.0;
+  public static final double HIGH_SUPPLY_LIMIT = 95.0;
+
+  public static final double LOW_STATOR_LIMIT = 180.0;
+  public static final double HIGH_STATOR_LIMIT = 300.0;
+
+  public enum EnergyLimitMode {
+    LOW, HIGH
+  }
 }

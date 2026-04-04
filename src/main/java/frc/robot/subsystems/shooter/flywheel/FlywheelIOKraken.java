@@ -16,6 +16,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj2.command.Commands;
 
 public class FlywheelIOKraken implements FlywheelIO {
 
@@ -33,17 +34,16 @@ public class FlywheelIOKraken implements FlywheelIO {
   private final VoltageOut voltageRequest = new VoltageOut(0);
   private final MotionMagicVelocityVoltage mmVelocity = new MotionMagicVelocityVoltage(0);
   // private final BangBangController bangBang = new BangBangController();
+  
+  private double lastStatorLimit = -1.0, lastSupplyLimit = -1.0;
+  private TalonFXConfiguration config;
 
   public FlywheelIOKraken() {
-    var config = new TalonFXConfiguration();
+    config = new TalonFXConfiguration();
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
-    config.CurrentLimits.StatorCurrentLimit = 180.0;
-    config.CurrentLimits.StatorCurrentLimitEnable = true;
-    config.CurrentLimits.SupplyCurrentLimit = 70.0;
-    config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.Slot0.kS = FlywheelConstants.kS;
     config.Slot0.kA = FlywheelConstants.kA;
     config.Slot0.kV = FlywheelConstants.kV;
@@ -53,8 +53,7 @@ public class FlywheelIOKraken implements FlywheelIO {
     config.MotionMagic.MotionMagicAcceleration = FlywheelConstants.MAX_ACCEL;
     config.MotionMagic.MotionMagicJerk = FlywheelConstants.MAX_JERK;
 
-    motor.getConfigurator().apply(config);
-    motor2.getConfigurator().apply(config);
+    applyEnergyLimits(FlywheelConstants.LOW_STATOR_LIMIT, FlywheelConstants.LOW_SUPPLY_LIMIT);
 
     motor.setControl(new Follower(motor2.getDeviceID(), MotorAlignmentValue.Opposed));
 
@@ -69,6 +68,23 @@ public class FlywheelIOKraken implements FlywheelIO {
         50.0, velocitySignal, voltageSignal, statorCurrentSignal, supplyCurrentSignal);
 
     ParentDevice.optimizeBusUtilizationForAll(motor, motor2);
+  }
+
+  @Override
+  public void applyEnergyLimits(double stator, double supply)
+  {
+    if (stator == lastStatorLimit && supply == lastSupplyLimit) {
+      return;
+    }
+
+    Commands.print("Applying Flywheel Limits: Stator="+stator+", Current="+supply);
+    config.CurrentLimits.StatorCurrentLimit = stator;
+    config.CurrentLimits.SupplyCurrentLimit = supply;
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
+    
+    motor.getConfigurator().apply(config);
+    motor2.getConfigurator().apply(config);
   }
 
   @Override

@@ -128,4 +128,6 @@ public interface FlywheelIO extends Automatable {
   public default AngularVelocity rpmToRPS(double rpm) {
     return RotationsPerSecond.of(rpm / 60.0);
   }
+
+  public default void applyEnergyLimits(double stator, double supply) {}
 }

@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.energy.BatteryLogger;
 import frc.robot.interfaces.Characterizable;
+import frc.robot.subsystems.shooter.flywheel.FlywheelConstants.EnergyLimitMode;
 import frc.robot.util.LiveTuning;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
@@ -179,6 +180,12 @@ public class Flywheel extends SubsystemBase implements Characterizable {
 
   public Command stop() {
     return runOnce(() -> io.setVoltage(0.0));
+  }
+
+  public Command setEnergyLimits(EnergyLimitMode mode) {
+    double stator = mode == EnergyLimitMode.LOW ? FlywheelConstants.LOW_STATOR_LIMIT : FlywheelConstants.HIGH_STATOR_LIMIT;
+    double supply = mode == EnergyLimitMode.LOW ? FlywheelConstants.LOW_SUPPLY_LIMIT : FlywheelConstants.HIGH_SUPPLY_LIMIT;
+    return runOnce(() ->  io.applyEnergyLimits(stator, supply));
   }
 
   @Override
