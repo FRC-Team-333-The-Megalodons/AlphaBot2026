@@ -18,6 +18,7 @@ public class SpindexerIOKraken implements SpindexerIO {
   private final StatusSignal<AngularVelocity> velocitySignal;
   private final StatusSignal<Voltage> voltageSignal;
   private final StatusSignal<Current> currentSignal;
+  private final StatusSignal<Current> supplyCurrentSignal;
 
   private final MotionMagicVelocityVoltage velocityRequest =
       new MotionMagicVelocityVoltage(0).withSlot(0);
@@ -41,7 +42,7 @@ public class SpindexerIOKraken implements SpindexerIO {
 
     config.CurrentLimits.StatorCurrentLimit = 60.0;
     config.CurrentLimits.StatorCurrentLimitEnable = true;
-    config.CurrentLimits.SupplyCurrentLimit = 30.0;
+    config.CurrentLimits.SupplyCurrentLimit = 20.0;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     motor.getConfigurator().apply(config);
@@ -49,17 +50,20 @@ public class SpindexerIOKraken implements SpindexerIO {
     velocitySignal = motor.getVelocity();
     voltageSignal = motor.getMotorVoltage();
     currentSignal = motor.getStatorCurrent();
+    supplyCurrentSignal = motor.getSupplyCurrent();
 
-    BaseStatusSignal.setUpdateFrequencyForAll(50.0, velocitySignal, voltageSignal, currentSignal);
+    BaseStatusSignal.setUpdateFrequencyForAll(
+        50.0, velocitySignal, voltageSignal, currentSignal, supplyCurrentSignal);
   }
 
   @Override
   public void updateInputs(SpindexerIOInputs inputs) {
-    BaseStatusSignal.refreshAll(velocitySignal, voltageSignal, currentSignal);
+    BaseStatusSignal.refreshAll(velocitySignal, voltageSignal, currentSignal, supplyCurrentSignal);
 
     inputs.velocityRps = velocitySignal.getValueAsDouble();
     inputs.appliedVolts = voltageSignal.getValueAsDouble();
     inputs.currentAmps = currentSignal.getValueAsDouble();
+    inputs.supplyAmps = supplyCurrentSignal.getValueAsDouble();
   }
 
   @Override

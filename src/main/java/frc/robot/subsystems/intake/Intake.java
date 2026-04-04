@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.energy.BatteryLogger;
 import frc.robot.interfaces.Characterizable;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
@@ -16,10 +17,12 @@ public class Intake extends SubsystemBase implements Characterizable {
   private final IntakeIO io;
   private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
   private Supplier<Twist2d> robotVelocitySupplier;
+  private final BatteryLogger batteryLogger;
 
-  public Intake(IntakeIO io, Supplier<Twist2d> robotVelocitySupplier) {
+  public Intake(IntakeIO io, Supplier<Twist2d> robotVelocitySupplier, BatteryLogger batteryLogger) {
     this.io = io;
     this.robotVelocitySupplier = robotVelocitySupplier;
+    this.batteryLogger = batteryLogger;
   }
 
   @Override
@@ -27,6 +30,7 @@ public class Intake extends SubsystemBase implements Characterizable {
     io.updateInputs(inputs);
     Logger.processInputs("Intake", inputs);
     Logger.recordOutput("Intake/VelocityRPM", inputs.velocityRpm);
+    batteryLogger.reportCurrentUsage("Mechanisms/Intake", false, inputs.supplyAmps);
   }
 
   public Twist2d fieldVelocity() {

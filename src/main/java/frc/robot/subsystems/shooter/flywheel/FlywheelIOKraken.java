@@ -14,29 +14,36 @@ import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 
 public class FlywheelIOKraken implements FlywheelIO {
+
   private final CANBus rio = CANBus.roboRIO();
   private final TalonFX motor = new TalonFX(FlywheelConstants.MOTOR_ID, rio);
   private final TalonFX motor2 = new TalonFX(FlywheelConstants.MOTOR_2_ID, rio);
 
-  // Cached status signals — read from motor2 (the leader)
   private final StatusSignal<AngularVelocity> velocitySignal;
   private final StatusSignal<Voltage> voltageSignal;
   private final StatusSignal<Current> statorCurrentSignal;
   private final StatusSignal<Current> supplyCurrentSignal;
+  private final StatusSignal<Temperature> leftMotorSignal;
+  private final StatusSignal<Temperature> rightMotorSignal;
 
-  // Reusable control requests — no per-loop allocations
-  private final MotionMagicVelocityVoltage mmVelocity = new MotionMagicVelocityVoltage(0);
   private final VoltageOut voltageRequest = new VoltageOut(0);
+  private final MotionMagicVelocityVoltage mmVelocity = new MotionMagicVelocityVoltage(0);
+  // private final BangBangController bangBang = new BangBangController();
 
   public FlywheelIOKraken() {
     var config = new TalonFXConfiguration();
-    motor.getConfigurator().apply(config);
-    motor2.getConfigurator().apply(config);
 
-    // Slot 0 Gains
+    config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+
+    config.CurrentLimits.StatorCurrentLimit = 180.0;
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
+    config.CurrentLimits.SupplyCurrentLimit = 70.0;
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.Slot0.kS = FlywheelConstants.kS;
     config.Slot0.kA = FlywheelConstants.kA;
     config.Slot0.kV = FlywheelConstants.kV;
@@ -46,38 +53,21 @@ public class FlywheelIOKraken implements FlywheelIO {
     config.MotionMagic.MotionMagicAcceleration = FlywheelConstants.MAX_ACCEL;
     config.MotionMagic.MotionMagicJerk = FlywheelConstants.MAX_JERK;
 
-    config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-
-    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-    // config.Voltage.PeakForwardVoltage = 9.0;
-    // config.Voltage.PeakReverseVoltage = -1.0; // Flywheel should never have to rotate backwards.
-
-    // config.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 1.0;
-    // config.OpenLoopRamps.VoltageOpenLoopRampPeriod = 1.0;
-
-    // config.CurrentLimits.SupplyCurrentLimit = 45.0;
-    // config.CurrentLimits.SupplyCurrentLimitEnable = true;
-
-    // config.CurrentLimits.StatorCurrentLimit = 95.0;
-    // config.CurrentLimits.StatorCurrentLimitEnable = true;
-
     motor.getConfigurator().apply(config);
     motor2.getConfigurator().apply(config);
 
-    // Motor 1 follows Motor 2 in the opposite direction (counter-rotation for shooting)
     motor.setControl(new Follower(motor2.getDeviceID(), MotorAlignmentValue.Opposed));
 
-    // Cache status signals from the LEADER motor (motor2)
     velocitySignal = motor2.getVelocity();
     voltageSignal = motor2.getMotorVoltage();
     statorCurrentSignal = motor2.getStatorCurrent();
     supplyCurrentSignal = motor2.getSupplyCurrent();
+    leftMotorSignal = motor2.getDeviceTemp();
+    rightMotorSignal = motor.getDeviceTemp();
 
-    // Set update frequencies — only read what we need at the rate we need
     BaseStatusSignal.setUpdateFrequencyForAll(
         50.0, velocitySignal, voltageSignal, statorCurrentSignal, supplyCurrentSignal);
 
-    // Kill all default status frames we don't use. This is the big one(maybe)
     ParentDevice.optimizeBusUtilizationForAll(motor, motor2);
   }
 
@@ -90,6 +80,8 @@ public class FlywheelIOKraken implements FlywheelIO {
     inputs.appliedVolts = voltageSignal.getValueAsDouble();
     inputs.statorAmps = statorCurrentSignal.getValueAsDouble();
     inputs.supplyAmps = supplyCurrentSignal.getValueAsDouble();
+    inputs.rightMotorTempCelsius = rightMotorSignal.getValueAsDouble();
+    inputs.leftMotorTempCelsius = leftMotorSignal.getValueAsDouble();
   }
 
   @Override
@@ -102,6 +94,21 @@ public class FlywheelIOKraken implements FlywheelIO {
 
   @Override
   public void moveTo(double rpm) {
+    // double currentRPM = velocitySignal.getValueAsDouble() * 60.0;
+    // double error = rpm - currentRPM;
+
+    // double bangBangOutput = bangBang.calculate(currentRPM, rpm);
+
+    // double rps = rpm / 60.0;
+    // double ffVolts = FlywheelConstants.kS_FF * Math.signum(rpm) + FlywheelConstants.kV_FF * rps;
+    // double pTrimVolts = FlywheelConstants.kP_TRIM * error;
+
+    // // Total output:
+    // // Below setpoint: 12V + FF + P_trim (Phoenix caps at battery voltage)
+    // // Above setpoint: FF + P_trim (P_trim is negative here, reducing below FF)
+    // double outputVolts = bangBangOutput * 12.0 + ffVolts + pTrimVolts;
+
+    // motor2.setControl(voltageRequest.withOutput(outputVolts));
     motor2.setControl(mmVelocity.withVelocity(rpm / 60.0));
   }
 

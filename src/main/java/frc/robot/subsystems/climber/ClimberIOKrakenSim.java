@@ -41,13 +41,10 @@ public class ClimberIOKrakenSim implements ClimberIO {
     sim.setInputVoltage(appliedVolts);
     sim.update(0.02);
 
-    boolean limitTriggered = sim.getPositionMeters() <= 0.001;
-
     inputs.positionRot = sim.getPositionMeters();
     inputs.velocityRps = sim.getVelocityMetersPerSecond();
     inputs.appliedVolts = appliedVolts;
     inputs.currentAmps = sim.getCurrentDrawAmps();
-    inputs.limitSwitchTriggered = limitTriggered;
     inputs.hasZeroed = hasZeroed;
   }
 

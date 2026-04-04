@@ -1,8 +1,10 @@
 package frc.robot.subsystems.climber;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.energy.BatteryLogger;
 import frc.robot.util.LiveTuning;
 import org.littletonrobotics.junction.Logger;
 
@@ -10,27 +12,30 @@ public class Climber extends SubsystemBase {
 
   private final ClimberIO io;
   private final ClimberIOInputsAutoLogged inputs = new ClimberIOInputsAutoLogged();
+  private final BatteryLogger batteryLogger;
 
-  public Climber(ClimberIO io) {
+  public Climber(ClimberIO io, BatteryLogger batteryLogger) {
     this.io = io;
+    this.batteryLogger = batteryLogger;
+
+    // ── SmartDashboard commands ──
+    SmartDashboard.putData("Climber/Zero Encoder", zeroEncoder());
+    SmartDashboard.putData("Climber/Go To Zero", goToZero());
+    SmartDashboard.putData("Climber/Go To Extended", extend());
+    SmartDashboard.putData("Climber/Go To Climb (Retract)", retract());
   }
 
   @Override
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Climber", inputs);
+    batteryLogger.reportCurrentUsage("Mechanisms/Climber", false, inputs.supplyAmps);
     LiveTuning.publish("Climber/PostionRot", inputs.positionRot);
-    LiveTuning.publish("Climber/IsTriggered", inputs.limitSwitchTriggered);
     LiveTuning.publish("Climber/HasZeroed", inputs.hasZeroed);
-    LiveTuning.publish("Climber/RawPosition", inputs.rawPosition);
   }
 
   public double getPositionRot() {
     return inputs.positionRot;
-  }
-
-  public boolean isLimitSwitchTriggered() {
-    return inputs.limitSwitchTriggered;
   }
 
   public boolean hasZeroed() {
@@ -49,6 +54,19 @@ public class Climber extends SubsystemBase {
   /** Returns true if the climber is at the retracted (climbed) position. */
   public boolean isRetracted() {
     return io.atTarget(ClimberConstants.kStowedPosition);
+  }
+
+
+  public Command zeroEncoder() {
+    return Commands.runOnce(io::zeroPosition, this)
+        .ignoringDisable(true)
+        .withName("Climber.zeroEncoder");
+  }
+
+  public Command goToZero() {
+    return run(() -> io.moveTo(ClimberConstants.kStowedPosition))
+        .until(() -> io.atTarget(ClimberConstants.kStowedPosition))
+        .withName("Climber.goToZero");
   }
 
   public Command extend() {
@@ -73,7 +91,6 @@ public class Climber extends SubsystemBase {
     return runEnd(() -> io.setDutyCycle(Math.abs(percent)), io::stop).withName("Climber.driveUp");
   }
 
-  // Will naturally zero when the limit switch triggers
   public Command driveDown(double percent) {
     return runEnd(() -> io.setDutyCycle(-Math.abs(percent)), io::stop)
         .withName("Climber.driveDown");
@@ -84,20 +101,8 @@ public class Climber extends SubsystemBase {
         .withName("Climber.runVoltage(" + volts + ")");
   }
 
-  // Zero sequence
-  /**
-   * Drives the climber slowly downward until the limit switch triggers, then zeros the encoder. If
-   * the switch is already triggered (normal boot state).
-   */
-  public Command zeroSequence() {
-    return Commands.sequence(
-            runEnd(() -> io.setDutyCycle(-0.1), io::stop).until(this::isLimitSwitchTriggered),
-            Commands.runOnce(io::zeroPosition))
-        .withName("Climber.zeroSequence");
-  }
-
   public Command fullClimbSequence() {
-    return Commands.sequence(zeroSequence(), extend(), Commands.waitSeconds(0.3), retract())
+    return Commands.sequence(extend(), Commands.waitSeconds(0.3), retract())
         .withName("Climber.fullClimbSequence");
   }
 

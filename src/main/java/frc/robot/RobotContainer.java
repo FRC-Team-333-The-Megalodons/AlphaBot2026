@@ -11,6 +11,7 @@ import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.subsystems.vision.VisionConstants.camera0Name;
 import static frc.robot.subsystems.vision.VisionConstants.camera1Name;
 import static frc.robot.subsystems.vision.VisionConstants.robotToCamera0;
+import static frc.robot.subsystems.vision.VisionConstants.robotToCamera1;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -29,6 +30,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.PathfindCommands;
 import frc.robot.commands.ShootingCommands;
+import frc.robot.energy.BatteryLogger;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.ClimberIO;
@@ -86,6 +88,9 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
+  // Energy tracking
+  private final BatteryLogger batteryLogger = new BatteryLogger();
+
   // Subsystems
   private final Drive drive;
   private final Intake intake;
@@ -122,25 +127,30 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.FrontLeft),
                 new ModuleIOTalonFX(TunerConstants.FrontRight),
                 new ModuleIOTalonFX(TunerConstants.BackLeft),
-                new ModuleIOTalonFX(TunerConstants.BackRight));
+                new ModuleIOTalonFX(TunerConstants.BackRight),
+                batteryLogger);
         vision =
             new Vision(
-                drive::addVisionMeasurement, new VisionIOPhotonVision(camera0Name, robotToCamera0));
+                drive::addVisionMeasurement,
+                new VisionIOPhotonVision(camera0Name, robotToCamera0),
+                new VisionIOPhotonVision(camera1Name, robotToCamera1));
         targeting = new Targeting(new TargetingIOReal(), drive::getPose, drive::robotFieldVelocity);
-        intake = new Intake(new IntakeIOKraken(), drive::robotFieldVelocity);
-        spindexer = new Spindexer(new SpindexerIOKraken());
-        transfer = new Transfer(new TransferIOKraken());
-        flywheel = new Flywheel(new FlywheelIOKraken(), targeting::getTargetDistance);
-        pivot = new Pivot(new PivotIOKraken());
+        intake = new Intake(new IntakeIOKraken(), drive::robotFieldVelocity, batteryLogger);
+        spindexer = new Spindexer(new SpindexerIOKraken(), batteryLogger);
+        transfer = new Transfer(new TransferIOKraken(), batteryLogger);
+        flywheel =
+            new Flywheel(new FlywheelIOKraken(), targeting::getTargetDistance, batteryLogger);
+        pivot = new Pivot(new PivotIOKraken(), batteryLogger);
         turret =
             new Turret(
                 new TurretIOYAMS(),
                 targeting::getTargetAngle,
                 drive::getRotation,
                 targeting::getTargetAngularVelocityRadPerSec,
-                drive::getFieldAngularVelocity);
+                drive::getFieldAngularVelocity,
+                batteryLogger);
         leds = new Led(new LedIOCANdle());
-        climber = new Climber(new ClimberIOKraken());
+        climber = new Climber(new ClimberIOKraken(), batteryLogger);
         break;
 
       case SIM:
@@ -150,26 +160,30 @@ public class RobotContainer {
                 new ModuleIOSim(TunerConstants.FrontLeft),
                 new ModuleIOSim(TunerConstants.FrontRight),
                 new ModuleIOSim(TunerConstants.BackLeft),
-                new ModuleIOSim(TunerConstants.BackRight));
+                new ModuleIOSim(TunerConstants.BackRight),
+                batteryLogger);
         vision =
             new Vision(
                 drive::addVisionMeasurement,
-                new VisionIOPhotonVisionSim(camera1Name, robotToCamera0, drive::getPose));
+                new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drive::getPose),
+                new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose));
         targeting = new Targeting(new TargetingIOReal(), drive::getPose, drive::robotFieldVelocity);
-        intake = new Intake(new IntakeIOKrakenSim(), drive::robotFieldVelocity);
-        spindexer = new Spindexer(new SpindexerIOKrakenSim());
-        transfer = new Transfer(new TransferIOKrakenSim());
-        flywheel = new Flywheel(new FlywheelIOKrakenSim(), targeting::getTargetDistance);
-        pivot = new Pivot(new PivotIOKrakenSim());
+        intake = new Intake(new IntakeIOKrakenSim(), drive::robotFieldVelocity, batteryLogger);
+        spindexer = new Spindexer(new SpindexerIOKrakenSim(), batteryLogger);
+        transfer = new Transfer(new TransferIOKrakenSim(), batteryLogger);
+        flywheel =
+            new Flywheel(new FlywheelIOKrakenSim(), targeting::getTargetDistance, batteryLogger);
+        pivot = new Pivot(new PivotIOKrakenSim(), batteryLogger);
         turret =
             new Turret(
                 new TurretIOKrakenSim(),
                 targeting::getTargetAngle,
                 drive::getRotation,
                 targeting::getTargetAngularVelocityRadPerSec,
-                drive::getFieldAngularVelocity);
+                drive::getFieldAngularVelocity,
+                batteryLogger);
         leds = new Led(new LedIOSim());
-        climber = new Climber(new ClimberIOKrakenSim());
+        climber = new Climber(new ClimberIOKrakenSim(), batteryLogger);
         break;
 
       default:
@@ -179,23 +193,25 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {},
-                new ModuleIO() {});
+                new ModuleIO() {},
+                batteryLogger);
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {});
         targeting = new Targeting(new TargetingIO() {}, drive::getPose, drive::robotFieldVelocity);
-        intake = new Intake(new IntakeIO() {}, drive::robotFieldVelocity);
-        spindexer = new Spindexer(new SpindexerIO() {});
-        transfer = new Transfer(new TransferIO() {});
-        flywheel = new Flywheel(new FlywheelIO() {}, targeting::getTargetDistance);
-        pivot = new Pivot(new PivotIO() {});
+        intake = new Intake(new IntakeIO() {}, drive::robotFieldVelocity, batteryLogger);
+        spindexer = new Spindexer(new SpindexerIO() {}, batteryLogger);
+        transfer = new Transfer(new TransferIO() {}, batteryLogger);
+        flywheel = new Flywheel(new FlywheelIO() {}, targeting::getTargetDistance, batteryLogger);
+        pivot = new Pivot(new PivotIO() {}, batteryLogger);
         turret =
             new Turret(
                 new TurretIO() {},
                 targeting::getTargetAngle,
                 drive::getRotation,
                 targeting::getTargetAngularVelocityRadPerSec,
-                drive::getFieldAngularVelocity);
+                drive::getFieldAngularVelocity,
+                batteryLogger);
         leds = new Led(new LedIO() {});
-        climber = new Climber(new ClimberIO() {});
+        climber = new Climber(new ClimberIO() {}, batteryLogger);
         break;
     }
     drive.seed();
@@ -245,6 +261,12 @@ public class RobotContainer {
     configureButtonBindings();
   }
 
+  public void periodicAfterScheduler() {
+    batteryLogger.setBatteryVoltage(RobotController.getBatteryVoltage());
+    batteryLogger.setRioCurrent(RobotController.getInputCurrent());
+    batteryLogger.periodicAfterScheduler();
+  }
+
   public void seedTurret() {
     turret.seed();
   }
@@ -254,12 +276,11 @@ public class RobotContainer {
     NamedCommands.registerCommand("PivotDown", pivot.motionMagicDown());
     NamedCommands.registerCommand("PivotDown", pivot.motionMagicDown().withTimeout(2));
     NamedCommands.registerCommand(
-        "ShootOnMove",
-        ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, intake, pivot));
+        "ShootOnMove", ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, pivot));
     NamedCommands.registerCommand("Intake", intake.dynamicIngest());
     NamedCommands.registerCommand("ClimbingPosition", climber.extend());
     NamedCommands.registerCommand("Climb", climber.retract());
-    NamedCommands.registerCommand("ClimbZero", climber.zeroSequence());
+    NamedCommands.registerCommand("ClimbZero", climber.zeroEncoder());
 
     // Teleop climb sequence (pathfind + precision drive, no climber mechanism):
     NamedCommands.registerCommand("ClimbSequence", PathfindCommands.climbSequence(drive));
@@ -296,8 +317,8 @@ public class RobotContainer {
     operatorController.cross().whileTrue(transfer.feedShooter());
 
     // Climber
-    operatorController.povDown().whileTrue(climber.driveUp(0.70));
-    operatorController.povUp().whileTrue(climber.driveDown(-0.70));
+    operatorController.povDown().whileTrue(climber.driveDown(0.70));
+    operatorController.povUp().whileTrue(climber.driveUp(0.70));
     operatorController
         .triangle()
         .whileTrue(ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, pivot));
@@ -375,7 +396,7 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
     driverController.L1().whileTrue(intake.eject());
-    driverController.R1().whileTrue(intake.dynamicIngest());
+    driverController.R1().whileTrue(intake.ingest());
 
     driverController.PS().whileTrue(ShootingCommands.dashboardRPMControl(flywheel));
 
@@ -383,11 +404,14 @@ public class RobotContainer {
         .povUp()
         .whileTrue(Commands.parallel(spindexer.spin(), transfer.feedShooter(), intake.ingest()));
 
-    // driverController.povRight().onTrue(PathfindCommands.climbSequence(drive));
+    driverController.povRight().whileTrue(PathfindCommands.autonomousClimbSequence(drive, climber));
   }
 
   private void configureDefaultBindings() {
     leds.setDefaultCommand(leds.gameStateAwareLeds(stateTracker));
+
+    // flywheel.setDefaultCommand(flywheel.shootOnMoveSpinUp());
+
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
             drive,

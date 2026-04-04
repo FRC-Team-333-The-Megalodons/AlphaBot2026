@@ -81,6 +81,8 @@ public class TurretIOYAMS implements TurretIO {
     motorConfig.MotionMagic.MotionMagicJerk = TurretConstants.kJerk;
     motorConfig.CurrentLimits.SupplyCurrentLimit = 10.0;
     motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+    motorConfig.CurrentLimits.StatorCurrentLimit = 40.0;
+    motorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
     motorConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
         Units.degreesToRotations(TurretConstants.kMaxAngle);

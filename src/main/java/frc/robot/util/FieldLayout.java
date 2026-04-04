@@ -20,7 +20,14 @@ public class FieldLayout {
   // ALWAYS provide the Blue Alliance coordinates below.
 
   public static class Tower {
-    public static final Pose2d CLIMBING_POSE = new Pose2d(1.243, 4.642, Rotation2d.kPi);
+    public static final Translation2d leftUpright =
+        new Translation2d(
+            Units.inchesToMeters(43.51),
+            (tagLayout.getTagPose(31).get().getY())
+                + Units.inchesToMeters(32.250) / 2
+                + Units.inchesToMeters(0.75));
+    public static final Pose2d CLIMBING_POSE =
+        new Pose2d(leftUpright.getX(), leftUpright.getY(), Rotation2d.kPi);
     public static final Pose2d CLIMBING_STAGING_POSE = new Pose2d(1.243, 5.642, Rotation2d.kPi);
   }
 

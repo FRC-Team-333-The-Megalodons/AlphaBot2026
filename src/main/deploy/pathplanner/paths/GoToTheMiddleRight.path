@@ -8,24 +8,40 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.314911111111112,
-        "y": 0.7395666666666658
+        "x": 5.278944246737841,
+        "y": 0.5436417556346373
       },
       "isLocked": false,
       "linkedName": "RightStartingPose"
     },
     {
       "anchor": {
-        "x": 8.038211111111112,
-        "y": 1.0519777777777768
+        "x": 7.24787663107948,
+        "y": 0.8664175563463812
       },
       "prevControl": {
-        "x": 7.030433333333334,
-        "y": 0.8907333333333316
+        "x": 6.09664294187426,
+        "y": 0.21010676156583574
+      },
+      "nextControl": {
+        "x": 8.335935838638264,
+        "y": 1.4867129924312943
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.866888888888889,
+        "y": 3.0373
+      },
+      "prevControl": {
+        "x": 7.850391459074734,
+        "y": 2.4049822064056934
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "PrepToIntakeFromNZRightSide"
+      "linkedName": "RightNeutralZoneDoneIntaking"
     }
   ],
   "rotationTargets": [],
@@ -33,8 +49,8 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 5.4,
-    "maxAcceleration": 4.2,
+    "maxVelocity": 5.2,
+    "maxAcceleration": 4.1,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -42,7 +58,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 101.92190831900564
+    "rotation": 104.67226777532638
   },
   "reversed": false,
   "folder": "RightPaths",

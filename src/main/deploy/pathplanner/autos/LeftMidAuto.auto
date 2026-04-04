@@ -15,32 +15,19 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "GoToTheMiddleRight"
+                        "pathName": "PrepToIntakeLeft"
                       }
                     },
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "GoBackRToShoot"
+                        "pathName": "GoBackLToShoot"
                       }
                     },
                     {
-                      "type": "parallel",
+                      "type": "named",
                       "data": {
-                        "commands": [
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "ShootOnMove"
-                            }
-                          },
-                          {
-                            "type": "path",
-                            "data": {
-                              "pathName": "StartingLineToOutpost"
-                            }
-                          }
-                        ]
+                        "name": "ShootOnMove"
                       }
                     }
                   ]

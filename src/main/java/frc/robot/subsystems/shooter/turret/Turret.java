@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.energy.BatteryLogger;
 import frc.robot.interfaces.Characterizable;
 import frc.robot.interfaces.Initializable;
 import frc.robot.util.LiveTuning;
@@ -29,18 +30,21 @@ public class Turret extends SubsystemBase implements Characterizable, Initializa
   private final DoubleSupplier robotOmegaSupplier;
 
   private final SysIdRoutine sysIdRoutine;
+  private final BatteryLogger batteryLogger;
 
   public Turret(
       TurretIO io,
       Supplier<Angle> targetAngleSupplier,
       Supplier<Rotation2d> robotRotationSupplier,
       DoubleSupplier targetAngularVelocitySupplier,
-      DoubleSupplier robotOmegaSupplier) {
+      DoubleSupplier robotOmegaSupplier,
+      BatteryLogger batteryLogger) {
     this.io = io;
     this.targetAngleSupplier = targetAngleSupplier;
     this.robotRotationSupplier = robotRotationSupplier;
     this.targetAngularVelocitySupplier = targetAngularVelocitySupplier;
     this.robotOmegaSupplier = robotOmegaSupplier;
+    this.batteryLogger = batteryLogger;
     sysIdRoutine =
         new SysIdRoutine(
             new SysIdRoutine.Config(
@@ -61,6 +65,7 @@ public class Turret extends SubsystemBase implements Characterizable, Initializa
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Turret", inputs);
+    batteryLogger.reportCurrentUsage("Mechanisms/Turret", false, inputs.turretSupplyAmps);
     // Live values for real-time turret monitoring
     LiveTuning.publish("Turret/PositionDeg", inputs.turretPositionDeg);
     // LiveTuning.publish("Turret/VelocityRPM", inputs.turretVelocityRPM);

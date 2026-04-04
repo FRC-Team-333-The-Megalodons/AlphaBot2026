@@ -16,31 +16,38 @@ public interface FlywheelIO extends Automatable {
     public double appliedVolts = 0.0;
     public double supplyAmps = 0.0;
     public double statorAmps = 0.0;
+    public double leftMotorTempCelsius = 0.0;
+    public double rightMotorTempCelsius = 0.0;
   }
 
   public static final InterpolatingDoubleTreeMap distanceToRPM = buildMap();
 
   private static InterpolatingDoubleTreeMap buildMap() {
     InterpolatingDoubleTreeMap map = new InterpolatingDoubleTreeMap();
-    map.put(1.45, 2100.0);
-    map.put(1.64, 2130.0);
-    map.put(1.74, 2150.0);
-    map.put(1.87, 2170.0);
-    map.put(1.96, 2190.0);
-    map.put(2.12, 2210.0);
-    map.put(2.37, 2240.0);
-    map.put(2.55, 2280.0);
-    map.put(2.76, 2310.0);
-    map.put(3.02, 2365.0);
+    map.put(1.45, 2150.0);
+    map.put(1.64, 2180.0);
+    map.put(1.74, 2220.0);
+    map.put(1.87, 2245.0);
+    map.put(1.96, 2268.0);
+    map.put(2.12, 2275.0);
+    map.put(2.37, 2290.0);
+    map.put(2.55, 2320.0);
+    map.put(2.76, 2340.0);
+    map.put(3.02, 2390.0);
     map.put(3.24, 2440.0);
-    map.put(3.45, 2495.0);
-    map.put(3.83, 2580.0);
-    map.put(4.02, 2640.0);
-    map.put(4.22, 2690.0);
-    map.put(4.4, 2740.0);
-    map.put(4.67, 2785.0);
-    map.put(4.86, 2850.0);
-    map.put(4.90, 2895.0);
+    map.put(3.45, 2490.0);
+    map.put(3.83, 2620.0);
+    map.put(4.02, 2680.0);
+    map.put(4.22, 2720.0);
+    map.put(4.4, 2755.0);
+    map.put(4.67, 2800.0);
+    map.put(4.86, 2890.0);
+    map.put(4.90, 2920.0);
+    map.put(5.1, 2950.0);
+    map.put(5.4, 2975.0);
+    map.put(5.6, 3000.0);
+    map.put(5.8, 3030.0);
+    map.put(6.0, 3075.0);
 
     // map.put(1.18, 2100.0);
     // map.put(1.18, 2100.0);

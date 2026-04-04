@@ -4,7 +4,12 @@ public class FlywheelConstants {
   public static final int MOTOR_ID = 14;
   public static final int MOTOR_2_ID = 9;
   public static final double GEAR_RATIO = 1.0;
-
+  // This is for Bang Bang controller
+  // kV_FF = hold_voltage / (target_rpm / 60.0)
+  public static final double kV_FF = 0.123;
+  public static final double kS_FF = 0.0;
+  public static final double kP_TRIM = 0.0;
+  // These are for on-board contollers
   public static final double kS = 0.13981;
   public static final double kV = 0.12304;
   public static final double kA = 0.016793;

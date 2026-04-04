@@ -46,9 +46,11 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.energy.BatteryLogger;
 import frc.robot.generated.TunerConstants;
 import frc.robot.interfaces.Characterizable;
 import frc.robot.interfaces.Initializable;
+import frc.robot.util.LiveTuning;
 import frc.robot.util.LocalADStarAK;
 import frc.robot.util.MatchStateCalculator;
 import java.util.concurrent.locks.Lock;
@@ -94,6 +96,7 @@ public class Drive extends SubsystemBase implements Characterizable, Initializab
   private final GyroIO gyroIO;
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
+  private final BatteryLogger batteryLogger;
   private final SysIdRoutine sysId;
   private final Alert gyroDisconnectedAlert =
       new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
@@ -117,9 +120,11 @@ public class Drive extends SubsystemBase implements Characterizable, Initializab
       ModuleIO flModuleIO,
       ModuleIO frModuleIO,
       ModuleIO blModuleIO,
-      ModuleIO brModuleIO) {
+      ModuleIO brModuleIO,
+      BatteryLogger batteryLogger) {
 
     this.gyroIO = gyroIO;
+    this.batteryLogger = batteryLogger;
     modules[0] = new Module(flModuleIO, 0, TunerConstants.FrontLeft, this);
     modules[1] = new Module(frModuleIO, 1, TunerConstants.FrontRight, this);
     modules[2] = new Module(blModuleIO, 2, TunerConstants.BackLeft, this);
@@ -252,9 +257,17 @@ public class Drive extends SubsystemBase implements Characterizable, Initializab
     // Update gyro alert
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
 
+    for (int i = 0; i < 4; i++) {
+      batteryLogger.reportCurrentUsage(
+          "Drive/Module" + i,
+          true,
+          modules[i].getDriveSupplyAmps(),
+          modules[i].getTurnSupplyAmps());
+    }
+
     Logger.recordOutput("Drive/DistanceToHub", getDistanceToHub());
     Pose2d pose = getPose();
-    // LiveTuning.publish("Drive/Pose", pose);
+    LiveTuning.publish("Drive/Pose", pose);
     // LiveTuning.publish("Drive/DistanceToHub", getDistanceToHub());
 
     ChassisSpeeds speeds = getChassisSpeeds();

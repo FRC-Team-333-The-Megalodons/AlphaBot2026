@@ -7,15 +7,18 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.energy.BatteryLogger;
 import frc.robot.interfaces.Characterizable;
 import org.littletonrobotics.junction.Logger;
 
 public class Transfer extends SubsystemBase implements Characterizable {
   private final TransferIO io;
   private final TransferIOInputsAutoLogged inputs = new TransferIOInputsAutoLogged();
+  private final BatteryLogger batteryLogger;
 
-  public Transfer(TransferIO io) {
+  public Transfer(TransferIO io, BatteryLogger batteryLogger) {
     this.io = io;
+    this.batteryLogger = batteryLogger;
   }
 
   @Override
@@ -23,6 +26,7 @@ public class Transfer extends SubsystemBase implements Characterizable {
     io.updateInputs(inputs);
     Logger.processInputs("Transfer", inputs);
     Logger.recordOutput("Transfer/VelocityRPM", inputs.velocityRpm);
+    batteryLogger.reportCurrentUsage("Mechanisms/Transfer", false, inputs.supplyAmps);
     // LiveTuning.publish("Transfer/VelocityRPM", inputs.velocityRpm);
   }
 
