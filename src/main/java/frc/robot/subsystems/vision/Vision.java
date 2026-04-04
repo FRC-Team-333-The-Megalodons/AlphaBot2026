@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.Logger;
 
 public class Vision extends SubsystemBase {
@@ -77,6 +78,33 @@ public class Vision extends SubsystemBase {
    */
   public Rotation2d getTargetX(int cameraIndex) {
     return inputs[cameraIndex].latestTargetObservation.tx();
+  }
+  /** Returns whether a specific camera currently sees any AprilTags. */
+  public boolean seesTags(int cameraIndex) {
+    if (cameraIndex < 0 || cameraIndex >= inputs.length) {
+      return false;
+    }
+    return inputs[cameraIndex].tagIds.length > 0;
+  }
+
+  /** Returns a BooleanSupplier that evaluates to true if the specified camera sees a tag. */
+  public BooleanSupplier seesTagsSupplier(int cameraIndex) {
+    return () -> seesTags(cameraIndex);
+  }
+
+  /**
+   * Returns a BooleanSupplier that evaluates to true if ANY of the connected cameras currently see
+   * an AprilTag.
+   */
+  public BooleanSupplier seesAnyTagsSupplier() {
+    return () -> {
+      for (int i = 0; i < inputs.length; i++) {
+        if (inputs[i].tagIds.length > 0) {
+          return true;
+        }
+      }
+      return false;
+    };
   }
 
   @Override

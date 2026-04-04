@@ -34,7 +34,7 @@ public class FlywheelIOKraken implements FlywheelIO {
   private final VoltageOut voltageRequest = new VoltageOut(0);
   private final MotionMagicVelocityVoltage mmVelocity = new MotionMagicVelocityVoltage(0);
   // private final BangBangController bangBang = new BangBangController();
-  
+
   private double lastStatorLimit = -1.0, lastSupplyLimit = -1.0;
   private TalonFXConfiguration config;
 
@@ -71,18 +71,17 @@ public class FlywheelIOKraken implements FlywheelIO {
   }
 
   @Override
-  public void applyEnergyLimits(double stator, double supply)
-  {
+  public void applyEnergyLimits(double stator, double supply) {
     if (stator == lastStatorLimit && supply == lastSupplyLimit) {
       return;
     }
 
-    Commands.print("Applying Flywheel Limits: Stator="+stator+", Current="+supply);
+    Commands.print("Applying Flywheel Limits: Stator=" + stator + ", Current=" + supply);
     config.CurrentLimits.StatorCurrentLimit = stator;
     config.CurrentLimits.SupplyCurrentLimit = supply;
     config.CurrentLimits.StatorCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
-    
+
     motor.getConfigurator().apply(config);
     motor2.getConfigurator().apply(config);
   }

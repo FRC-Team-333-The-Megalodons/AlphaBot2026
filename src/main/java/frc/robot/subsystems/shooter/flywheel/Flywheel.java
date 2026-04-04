@@ -183,9 +183,15 @@ public class Flywheel extends SubsystemBase implements Characterizable {
   }
 
   public Command setEnergyLimits(EnergyLimitMode mode) {
-    double stator = mode == EnergyLimitMode.LOW ? FlywheelConstants.LOW_STATOR_LIMIT : FlywheelConstants.HIGH_STATOR_LIMIT;
-    double supply = mode == EnergyLimitMode.LOW ? FlywheelConstants.LOW_SUPPLY_LIMIT : FlywheelConstants.HIGH_SUPPLY_LIMIT;
-    return runOnce(() ->  io.applyEnergyLimits(stator, supply));
+    double stator =
+        mode == EnergyLimitMode.LOW
+            ? FlywheelConstants.LOW_STATOR_LIMIT
+            : FlywheelConstants.HIGH_STATOR_LIMIT;
+    double supply =
+        mode == EnergyLimitMode.LOW
+            ? FlywheelConstants.LOW_SUPPLY_LIMIT
+            : FlywheelConstants.HIGH_SUPPLY_LIMIT;
+    return runOnce(() -> io.applyEnergyLimits(stator, supply));
   }
 
   @Override
