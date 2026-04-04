@@ -165,14 +165,16 @@ public class LedIOCANdle implements LedIO {
       last_isTagSeen_cam1 = camera1SeesTag;
       last_isTagSeen_cam1_time = now;
       candle.setControl(
-          new SolidColor(CAMERA1_START, VISION_SECTION_SIZE).withColor(camera1SeesTag ? GREEN : RED));    
+          new SolidColor(CAMERA1_START, VISION_SECTION_SIZE)
+              .withColor(camera1SeesTag ? GREEN : RED));
     }
 
     if (camera0SeesTag != last_isTagSeen_cam0 && (last_isTagSeen_cam0_time - now > ELAPED_WAIT_ms)) {
       last_isTagSeen_cam0 = camera0SeesTag;
       last_isTagSeen_cam0_time = now;
       candle.setControl(
-          new SolidColor(CAMERA0_START, VISION_SECTION_SIZE).withColor(camera0SeesTag ? GREEN : RED));
+          new SolidColor(CAMERA0_START, VISION_SECTION_SIZE)
+              .withColor(camera0SeesTag ? GREEN : RED));
     }
 
     forceVisionRefresh = false;

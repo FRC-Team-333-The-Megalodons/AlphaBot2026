@@ -8,7 +8,6 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import frc.robot.interfaces.Automatable;
 import frc.robot.subsystems.shooter.flywheel.FlywheelConstants.EnergyLimitMode;
-
 import org.littletonrobotics.junction.AutoLog;
 
 public interface FlywheelIO extends Automatable {

@@ -53,11 +53,11 @@ public class FlywheelIOKraken implements FlywheelIO {
     config.MotionMagic.MotionMagicCruiseVelocity = FlywheelConstants.MAX_VELOCITY;
     config.MotionMagic.MotionMagicAcceleration = FlywheelConstants.MAX_ACCEL;
     config.MotionMagic.MotionMagicJerk = FlywheelConstants.MAX_JERK;
-
-     // This is critical, we don't actually set the config without this call!
-     // If you want to "remove" this, just instead comment this, and uncomment the next line.
+    config.CurrentLimits.StatorCurrentLimitEnable = false;
+    // This is critical, we don't actually set the config without this call!
+    // If you want to "remove" this, just instead comment this, and uncomment the next line.
     applyEnergyLimits(EnergyLimitMode.DEFAULT);
-    //applyEnergyLimits(EnergyLimitMode.UNLIMITED);
+    // applyEnergyLimits(EnergyLimitMode.UNLIMITED);
 
     motor.setControl(new Follower(motor2.getDeviceID(), MotorAlignmentValue.Opposed));
 
@@ -80,27 +80,35 @@ public class FlywheelIOKraken implements FlywheelIO {
       return;
     }
 
-    switch(mode) {
+    switch (mode) {
       case DEFAULT:
-      {
-        config.CurrentLimits.SupplyCurrentLimit = FlywheelConstants.HIGH_SUPPLY_LIMIT;
-        config.CurrentLimits.SupplyCurrentLowerLimit = FlywheelConstants.LOW_SUPPLY_LIMIT;
-        config.CurrentLimits.SupplyCurrentLowerTime = FlywheelConstants.DROP_TO_LOW_SUPPLY_TIME_s;
-        config.CurrentLimits.SupplyCurrentLimitEnable = true;
-        Commands.print("Applying Flywheel Energy Mode "+mode+" with SupplyLim="+config.CurrentLimits.SupplyCurrentLimit+", SupplyLowerLim="+config.CurrentLimits.SupplyCurrentLowerLimit+", SupplyDropToLowerTime="+config.CurrentLimits.SupplyCurrentLowerTime);
-        break;
-      }
+        {
+          config.CurrentLimits.SupplyCurrentLimit = FlywheelConstants.HIGH_SUPPLY_LIMIT;
+          config.CurrentLimits.SupplyCurrentLowerLimit = FlywheelConstants.LOW_SUPPLY_LIMIT;
+          config.CurrentLimits.SupplyCurrentLowerTime = FlywheelConstants.DROP_TO_LOW_SUPPLY_TIME_s;
+          config.CurrentLimits.SupplyCurrentLimitEnable = true;
+          Commands.print(
+              "Applying Flywheel Energy Mode "
+                  + mode
+                  + " with SupplyLim="
+                  + config.CurrentLimits.SupplyCurrentLimit
+                  + ", SupplyLowerLim="
+                  + config.CurrentLimits.SupplyCurrentLowerLimit
+                  + ", SupplyDropToLowerTime="
+                  + config.CurrentLimits.SupplyCurrentLowerTime);
+          break;
+        }
       case UNLIMITED:
-      {
-        config.CurrentLimits.SupplyCurrentLimitEnable = false;
-        Commands.print("Applying Flywheel Energy Mode "+mode);
-        break;
-      }
+        {
+          config.CurrentLimits.SupplyCurrentLimitEnable = false;
+          Commands.print("Applying Flywheel Energy Mode " + mode);
+          break;
+        }
       default:
-      {
-        Commands.print("Unexpected Flywheel Energy Mode = " + mode);
-        break;
-      }
+        {
+          Commands.print("Unexpected Flywheel Energy Mode = " + mode);
+          break;
+        }
     }
 
     motor.getConfigurator().apply(config);
