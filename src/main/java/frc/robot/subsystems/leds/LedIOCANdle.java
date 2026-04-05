@@ -70,10 +70,9 @@ public class LedIOCANdle implements LedIO {
 
     // For now, take everything "GAME_STATE" and blank it out.
     candle.setControl(new EmptyAnimation(GAME_STATE_SLOT));
-    candle.setControl(
-      new SolidColor(0, GAME_STATE_LENGTH).withColor(new RGBWColor(0,0,0,0)));
+    candle.setControl(new SolidColor(0, GAME_STATE_LENGTH).withColor(new RGBWColor(0, 0, 0, 0)));
 
-    // This is a cheapo way to always return here, without deleting the rest of the code below. 
+    // This is a cheapo way to always return here, without deleting the rest of the code below.
     // If i just did 'return', the compiler would think the below code is unreachable.
     // System.currentTimeMillis is always positive, so it's effectively always exiting here.
     if (System.currentTimeMillis() > 0) {
@@ -83,8 +82,6 @@ public class LedIOCANdle implements LedIO {
     // After any game state change, vision LEDs need re-applying
     // in case the control switch momentarily reset them.
     forceVisionRefresh = true;
-
-    
 
     switch (state) {
       case IDLE:
@@ -157,11 +154,12 @@ public class LedIOCANdle implements LedIO {
     // The slotted game-state animation only touches LEDs 0–27,
     // so these writes to LEDs 28–39 persist undisturbed.
 
-
     long now = System.currentTimeMillis();
 
-    // We only need to change something if it actually changed, and only if it's been a meaningful period of time.
-    if (camera1SeesTag != last_isTagSeen_cam1 && (last_isTagSeen_cam1_time - now > ELAPED_WAIT_ms)) {
+    // We only need to change something if it actually changed, and only if it's been a meaningful
+    // period of time.
+    if (camera1SeesTag != last_isTagSeen_cam1
+        && (last_isTagSeen_cam1_time - now > ELAPED_WAIT_ms)) {
       last_isTagSeen_cam1 = camera1SeesTag;
       last_isTagSeen_cam1_time = now;
       candle.setControl(
@@ -169,7 +167,8 @@ public class LedIOCANdle implements LedIO {
               .withColor(camera1SeesTag ? GREEN : RED));
     }
 
-    if (camera0SeesTag != last_isTagSeen_cam0 && (last_isTagSeen_cam0_time - now > ELAPED_WAIT_ms)) {
+    if (camera0SeesTag != last_isTagSeen_cam0
+        && (last_isTagSeen_cam0_time - now > ELAPED_WAIT_ms)) {
       last_isTagSeen_cam0 = camera0SeesTag;
       last_isTagSeen_cam0_time = now;
       candle.setControl(
