@@ -16,6 +16,8 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.subsystems.shooter.flywheel.FlywheelConstants.EnergyLimitMode;
 
 public class FlywheelIOKraken implements FlywheelIO {
 
@@ -34,16 +36,15 @@ public class FlywheelIOKraken implements FlywheelIO {
   private final MotionMagicVelocityVoltage mmVelocity = new MotionMagicVelocityVoltage(0);
   // private final BangBangController bangBang = new BangBangController();
 
+  private EnergyLimitMode lastMode = EnergyLimitMode.UNSET;
+  private TalonFXConfiguration config;
+
   public FlywheelIOKraken() {
-    var config = new TalonFXConfiguration();
+    config = new TalonFXConfiguration();
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
-    config.CurrentLimits.StatorCurrentLimit = 180.0;
-    config.CurrentLimits.StatorCurrentLimitEnable = true;
-    config.CurrentLimits.SupplyCurrentLimit = 70.0;
-    config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.Slot0.kS = FlywheelConstants.kS;
     config.Slot0.kA = FlywheelConstants.kA;
     config.Slot0.kV = FlywheelConstants.kV;
@@ -52,9 +53,11 @@ public class FlywheelIOKraken implements FlywheelIO {
     config.MotionMagic.MotionMagicCruiseVelocity = FlywheelConstants.MAX_VELOCITY;
     config.MotionMagic.MotionMagicAcceleration = FlywheelConstants.MAX_ACCEL;
     config.MotionMagic.MotionMagicJerk = FlywheelConstants.MAX_JERK;
-
-    motor.getConfigurator().apply(config);
-    motor2.getConfigurator().apply(config);
+    config.CurrentLimits.StatorCurrentLimitEnable = false;
+    // This is critical, we don't actually set the config without this call!
+    // If you want to "remove" this, just instead comment this, and uncomment the next line.
+    applyEnergyLimits(EnergyLimitMode.DEFAULT);
+    // applyEnergyLimits(EnergyLimitMode.UNLIMITED);
 
     motor.setControl(new Follower(motor2.getDeviceID(), MotorAlignmentValue.Opposed));
 
@@ -69,6 +72,47 @@ public class FlywheelIOKraken implements FlywheelIO {
         50.0, velocitySignal, voltageSignal, statorCurrentSignal, supplyCurrentSignal);
 
     ParentDevice.optimizeBusUtilizationForAll(motor, motor2);
+  }
+
+  @Override
+  public void applyEnergyLimits(EnergyLimitMode mode) {
+    if (mode == lastMode) {
+      return;
+    }
+
+    switch (mode) {
+      case DEFAULT:
+        {
+          config.CurrentLimits.SupplyCurrentLimit = FlywheelConstants.HIGH_SUPPLY_LIMIT;
+          config.CurrentLimits.SupplyCurrentLowerLimit = FlywheelConstants.LOW_SUPPLY_LIMIT;
+          config.CurrentLimits.SupplyCurrentLowerTime = FlywheelConstants.DROP_TO_LOW_SUPPLY_TIME_s;
+          config.CurrentLimits.SupplyCurrentLimitEnable = true;
+          Commands.print(
+              "Applying Flywheel Energy Mode "
+                  + mode
+                  + " with SupplyLim="
+                  + config.CurrentLimits.SupplyCurrentLimit
+                  + ", SupplyLowerLim="
+                  + config.CurrentLimits.SupplyCurrentLowerLimit
+                  + ", SupplyDropToLowerTime="
+                  + config.CurrentLimits.SupplyCurrentLowerTime);
+          break;
+        }
+      case UNLIMITED:
+        {
+          config.CurrentLimits.SupplyCurrentLimitEnable = false;
+          Commands.print("Applying Flywheel Energy Mode " + mode);
+          break;
+        }
+      default:
+        {
+          Commands.print("Unexpected Flywheel Energy Mode = " + mode);
+          break;
+        }
+    }
+
+    motor.getConfigurator().apply(config);
+    motor2.getConfigurator().apply(config);
   }
 
   @Override

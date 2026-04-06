@@ -58,6 +58,7 @@ import frc.robot.subsystems.shooter.Targeting.Targeting;
 import frc.robot.subsystems.shooter.Targeting.TargetingIO;
 import frc.robot.subsystems.shooter.Targeting.TargetingIOReal;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
+import frc.robot.subsystems.shooter.flywheel.FlywheelConstants.EnergyLimitMode;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIO;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIOKraken;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIOKrakenSim;
@@ -149,7 +150,7 @@ public class RobotContainer {
                 targeting::getTargetAngularVelocityRadPerSec,
                 drive::getFieldAngularVelocity,
                 batteryLogger);
-        leds = new Led(new LedIOCANdle());
+        leds = new Led(new LedIOCANdle(), vision.seesTagsSupplier(0), vision.seesTagsSupplier(1));
         climber = new Climber(new ClimberIOKraken(), batteryLogger);
         break;
 
@@ -182,7 +183,7 @@ public class RobotContainer {
                 targeting::getTargetAngularVelocityRadPerSec,
                 drive::getFieldAngularVelocity,
                 batteryLogger);
-        leds = new Led(new LedIOSim());
+        leds = new Led(new LedIOSim(), vision.seesTagsSupplier(0), vision.seesTagsSupplier(1));
         climber = new Climber(new ClimberIOKrakenSim(), batteryLogger);
         break;
 
@@ -210,7 +211,7 @@ public class RobotContainer {
                 targeting::getTargetAngularVelocityRadPerSec,
                 drive::getFieldAngularVelocity,
                 batteryLogger);
-        leds = new Led(new LedIO() {});
+        leds = new Led(new LedIO() {}, vision.seesTagsSupplier(0), vision.seesTagsSupplier(1));
         climber = new Climber(new ClimberIO() {}, batteryLogger);
         break;
     }
@@ -319,9 +320,15 @@ public class RobotContainer {
     // Climber
     operatorController.povDown().whileTrue(climber.driveDown(0.70));
     operatorController.povUp().whileTrue(climber.driveUp(0.70));
+
+    // Flywheel
     operatorController
         .triangle()
         .whileTrue(ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, pivot));
+
+    // Override Limits
+    operatorController.touchpad().onTrue(flywheel.setEnergyLimits(EnergyLimitMode.UNLIMITED));
+    operatorController.touchpad().onFalse(flywheel.setEnergyLimits(EnergyLimitMode.DEFAULT));
   }
 
   private void configureDriverBindings() {
@@ -336,7 +343,7 @@ public class RobotContainer {
                 () -> -driverController.getLeftY(),
                 () -> -driverController.getLeftX(),
                 () -> -driverController.getRightX(),
-                false));
+                true));
 
     driverController
         .triangle()

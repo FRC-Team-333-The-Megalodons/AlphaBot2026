@@ -41,7 +41,7 @@ public class PivotIOKraken implements PivotIO {
     config.Feedback.SensorToMechanismRatio = PivotConstants.GEAR_RATIO;
     config.CurrentLimits.StatorCurrentLimit = 60.0;
     config.CurrentLimits.StatorCurrentLimitEnable = true;
-    config.CurrentLimits.SupplyCurrentLimit = 20.0;
+    config.CurrentLimits.SupplyCurrentLimit = 35.0;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
     // config.Voltage.PeakForwardVoltage = 10.0;
     // config.Voltage.PeakReverseVoltage = -10.0;

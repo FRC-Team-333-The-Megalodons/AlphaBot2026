@@ -56,7 +56,6 @@ public class Climber extends SubsystemBase {
     return io.atTarget(ClimberConstants.kStowedPosition);
   }
 
-
   public Command zeroEncoder() {
     return Commands.runOnce(io::zeroPosition, this)
         .ignoringDisable(true)
@@ -104,6 +103,14 @@ public class Climber extends SubsystemBase {
   public Command fullClimbSequence() {
     return Commands.sequence(extend(), Commands.waitSeconds(0.3), retract())
         .withName("Climber.fullClimbSequence");
+  }
+
+  public Command extendWithTimeOut() {
+    return Commands.sequence(extend().withTimeout(1));
+  }
+
+  public Command retractWithTimeOut() {
+    return Commands.sequence(retract().withTimeout(1));
   }
 
   public Command stop() {

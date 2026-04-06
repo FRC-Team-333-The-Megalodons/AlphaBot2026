@@ -7,6 +7,7 @@ import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import frc.robot.interfaces.Automatable;
+import frc.robot.subsystems.shooter.flywheel.FlywheelConstants.EnergyLimitMode;
 import org.littletonrobotics.junction.AutoLog;
 
 public interface FlywheelIO extends Automatable {
@@ -48,6 +49,10 @@ public interface FlywheelIO extends Automatable {
     map.put(5.6, 3000.0);
     map.put(5.8, 3030.0);
     map.put(6.0, 3075.0);
+    map.put(6.3, 3120.0);
+    map.put(6.7, 3240.0);
+    map.put(6.9, 3250.0);
+    map.put(7.5, 3350.0);
 
     // map.put(1.18, 2100.0);
     // map.put(1.18, 2100.0);
@@ -128,4 +133,6 @@ public interface FlywheelIO extends Automatable {
   public default AngularVelocity rpmToRPS(double rpm) {
     return RotationsPerSecond.of(rpm / 60.0);
   }
+
+  public default void applyEnergyLimits(EnergyLimitMode mode) {}
 }

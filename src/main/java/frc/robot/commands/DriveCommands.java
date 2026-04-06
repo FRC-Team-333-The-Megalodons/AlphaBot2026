@@ -457,13 +457,20 @@ public class DriveCommands {
    * Drives to a pose using the provided Autopilot instance. Allows callers to pass a slower or
    * differently tuned autopilot (e.g., kClimbingAutopilot).
    */
+  /**
+   * Drives to a pose using the provided Autopilot instance. Allows callers to pass a slower or
+   * differently tuned autopilot (e.g., kClimbingAutopilot).
+   *
+   * <p>Includes a minimum-distance guard and debounced at-target check to prevent premature
+   * termination from pose estimation noise on real hardware.
+   */
   public static Command driveToPose(Drive drive, Pose2d targetPose, Autopilot autopilot) {
 
     APTarget target = new APTarget(targetPose);
 
     ProfiledPIDController thetaController =
         new ProfiledPIDController(
-            5.0,
+            10.0,
             0.0,
             0.0,
             new TrapezoidProfile.Constraints(
@@ -471,9 +478,24 @@ public class DriveCommands {
 
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
+    // --- Guard state ---
+    // Minimum distance the robot must travel before atTarget() can end the command.
+    // Prevents pose noise from ending the command before the robot has actually moved.
+    final double MIN_TRAVEL_METERS = 0.05; // ~2 inches
+    // Number of consecutive cycles atTarget must be true before ending.
+    final int AT_TARGET_DEBOUNCE_CYCLES = 5; // 5 × 20ms = 100ms
+
+    // Mutable state holders (single-element arrays for lambda capture)
+    final Pose2d[] startPose = new Pose2d[1];
+    final int[] consecutiveAtTarget = {0};
+
     return drive
         .startRun(
-            () -> thetaController.reset(drive.getPose().getRotation().getRadians()),
+            () -> {
+              thetaController.reset(drive.getPose().getRotation().getRadians());
+              startPose[0] = drive.getPose();
+              consecutiveAtTarget[0] = 0;
+            },
             () -> {
               Pose2d currentPose = drive.getPose();
 
@@ -492,11 +514,31 @@ public class DriveCommands {
                       AngularVelocity.ofBaseUnits(omega, RadiansPerSecond),
                       currentPose.getRotation());
 
-              // Use closed-loop velocity control,open-loop voltage is too weak
+              // Use closed-loop velocity control — open-loop voltage is too weak
               // at the low speeds Autopilot commands during precision approaches.
               drive.runVelocityClosedLoop(commandSpeeds);
             })
-        .until(() -> autopilot.atTarget(drive.getPose(), target))
+        .until(
+            () -> {
+              Pose2d currentPose = drive.getPose();
+
+              // Guard 1: Must have traveled minimum distance from start
+              double distanceTraveled =
+                  currentPose.getTranslation().getDistance(startPose[0].getTranslation());
+              if (distanceTraveled < MIN_TRAVEL_METERS) {
+                consecutiveAtTarget[0] = 0;
+                return false;
+              }
+
+              // Guard 2: atTarget must be true for consecutive cycles (debounce)
+              if (autopilot.atTarget(currentPose, target)) {
+                consecutiveAtTarget[0]++;
+              } else {
+                consecutiveAtTarget[0] = 0;
+              }
+
+              return consecutiveAtTarget[0] >= AT_TARGET_DEBOUNCE_CYCLES;
+            })
         .finallyDo(drive::stop);
   }
 }

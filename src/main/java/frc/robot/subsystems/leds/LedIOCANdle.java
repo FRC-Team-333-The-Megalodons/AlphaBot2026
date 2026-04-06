@@ -16,22 +16,51 @@ public class LedIOCANdle implements LedIO {
   private static final int CANDLE_LENGTH = 8;
   private static final int TOTAL_LENGTH = STRIP_LENGTH + CANDLE_LENGTH;
 
+  // Vision indicator sizing
+  private static final int VISION_SECTION_SIZE = 6;
+  private static final int VISION_LED_COUNT = VISION_SECTION_SIZE * 2; // 12
+
+  // Game state animations only touch LEDs 0 through GAME_STATE_LENGTH-1
+  private static final int GAME_STATE_LENGTH = STRIP_LENGTH - VISION_LED_COUNT; // 28
+
+  // Vision LED ranges (indices into the full 40-LED chain)
+  private static final int CAMERA1_START = GAME_STATE_LENGTH; // 28 — back camera
+  private static final int CAMERA0_START =
+      GAME_STATE_LENGTH + VISION_SECTION_SIZE; // 34 — front camera
+
+  // Only the game-state animation uses a slot (Larson/Rainbow support .withSlot())
+  private static final int GAME_STATE_SLOT = 0;
+
+  private static final RGBWColor GREEN = new RGBWColor(0, 255, 0, 0);
+  private static final RGBWColor RED = new RGBWColor(255, 0, 0, 0);
+
   private final CANdle candle;
 
   private LedState lastState = null;
+  private boolean last_isTagSeen_cam0 = false;
+  private long last_isTagSeen_cam0_time = 0;
+  private boolean last_isTagSeen_cam1 = false;
+  private long last_isTagSeen_cam1_time = 0;
+
+  private boolean forceVisionRefresh = true;
 
   public LedIOCANdle() {
     CANBus rio = CANBus.roboRIO();
     candle = new CANdle(CANDLE_ID, rio);
 
+    // Clear all animation slots
     for (int i = 0; i < 8; i++) {
       candle.setControl(new EmptyAnimation(i));
     }
+
+    // Initialize vision LEDs to red (no tags seen at boot)
+    candle.setControl(new SolidColor(CAMERA1_START, VISION_SECTION_SIZE).withColor(RED));
+    candle.setControl(new SolidColor(CAMERA0_START, VISION_SECTION_SIZE).withColor(RED));
   }
 
   @Override
   public void updateInputs(LedIOInputs inputs) {
-    // LEDs are only output, so no inputs need to recorded or updated.
+    // LEDs are output-only, no inputs to record.
   }
 
   @Override
@@ -39,57 +68,114 @@ public class LedIOCANdle implements LedIO {
     if (state == lastState) return;
     lastState = state;
 
+    // For now, take everything "GAME_STATE" and blank it out.
+    candle.setControl(new EmptyAnimation(GAME_STATE_SLOT));
+    candle.setControl(new SolidColor(0, GAME_STATE_LENGTH).withColor(new RGBWColor(0, 0, 0, 0)));
+
+    // This is a cheapo way to always return here, without deleting the rest of the code below.
+    // If i just did 'return', the compiler would think the below code is unreachable.
+    // System.currentTimeMillis is always positive, so it's effectively always exiting here.
+    if (System.currentTimeMillis() > 0) {
+      return;
+    }
+
+    // After any game state change, vision LEDs need re-applying
+    // in case the control switch momentarily reset them.
+    forceVisionRefresh = true;
+
     switch (state) {
       case IDLE:
-        // All LEDs off
-        candle.setControl(new SolidColor(0, TOTAL_LENGTH).withColor(new RGBWColor(0, 0, 0, 0)));
+        // SolidColor has no .withSlot(), so clear the game-state animation slot first
+        // then set the base color for the game-state LEDs.
+        candle.setControl(new EmptyAnimation(GAME_STATE_SLOT));
+        candle.setControl(
+            new SolidColor(0, GAME_STATE_LENGTH).withColor(new RGBWColor(0, 0, 0, 0)));
         break;
 
       case INTAKING:
-        // Slow yellow Larson scanner
         candle.setControl(
-            new LarsonAnimation(0, TOTAL_LENGTH)
+            new LarsonAnimation(0, GAME_STATE_LENGTH)
                 .withColor(new RGBWColor(255, 150, 0, 0))
                 .withFrameRate(20)
-                .withSize(6));
+                .withSize(6)
+                .withSlot(GAME_STATE_SLOT));
         break;
 
       case HAS_PIECE:
-        // Solid green
-        candle.setControl(new SolidColor(0, TOTAL_LENGTH).withColor(new RGBWColor(0, 255, 0, 0)));
+        candle.setControl(new EmptyAnimation(GAME_STATE_SLOT));
+        candle.setControl(
+            new SolidColor(0, GAME_STATE_LENGTH).withColor(new RGBWColor(0, 255, 0, 0)));
         break;
 
       case SPINNING_UP:
-        // Slow blue Larson scanner
         candle.setControl(
-            new LarsonAnimation(0, TOTAL_LENGTH)
+            new LarsonAnimation(0, GAME_STATE_LENGTH)
                 .withColor(new RGBWColor(32, 40, 255, 0))
                 .withFrameRate(20)
-                .withSize(6));
+                .withSize(6)
+                .withSlot(GAME_STATE_SLOT));
         break;
 
       case READY_TO_FIRE:
-        // Fast blue Larson
         candle.setControl(
-            new LarsonAnimation(0, TOTAL_LENGTH)
+            new LarsonAnimation(0, GAME_STATE_LENGTH)
                 .withColor(new RGBWColor(32, 40, 255, 0))
                 .withFrameRate(60)
-                .withSize(3));
+                .withSize(3)
+                .withSlot(GAME_STATE_SLOT));
         break;
 
       case NEUTRAL_ZONE:
-        // Yellow Larson
         candle.setControl(
-            new LarsonAnimation(0, TOTAL_LENGTH)
+            new LarsonAnimation(0, GAME_STATE_LENGTH)
                 .withColor(new RGBWColor(255, 255, 0, 0))
                 .withFrameRate(35)
-                .withSize(6));
+                .withSize(6)
+                .withSlot(GAME_STATE_SLOT));
         break;
 
       case DISABLED:
-        // Rainbow
-        candle.setControl(new RainbowAnimation(TOTAL_LENGTH, 0).withFrameRate(6));
+        candle.setControl(
+            new RainbowAnimation(GAME_STATE_LENGTH, 0).withFrameRate(6).withSlot(GAME_STATE_SLOT));
         break;
     }
+  }
+
+  @Override
+  public void setVisionState(boolean camera0SeesTag, boolean camera1SeesTag) {
+    /*
+    boolean changed =
+        camera0SeesTag != lastCamera0 || camera1SeesTag != lastCamera1 || forceVisionRefresh;
+
+    if (!changed) return;
+    */
+    final long ELAPED_WAIT_ms = 1000;
+    // SolidColor is a direct LED write — no slot needed.
+    // The slotted game-state animation only touches LEDs 0–27,
+    // so these writes to LEDs 28–39 persist undisturbed.
+
+    long now = System.currentTimeMillis();
+
+    // We only need to change something if it actually changed, and only if it's been a meaningful
+    // period of time.
+    if (camera1SeesTag != last_isTagSeen_cam1
+        && (last_isTagSeen_cam1_time - now > ELAPED_WAIT_ms)) {
+      last_isTagSeen_cam1 = camera1SeesTag;
+      last_isTagSeen_cam1_time = now;
+      candle.setControl(
+          new SolidColor(CAMERA1_START, VISION_SECTION_SIZE)
+              .withColor(camera1SeesTag ? GREEN : RED));
+    }
+
+    if (camera0SeesTag != last_isTagSeen_cam0
+        && (last_isTagSeen_cam0_time - now > ELAPED_WAIT_ms)) {
+      last_isTagSeen_cam0 = camera0SeesTag;
+      last_isTagSeen_cam0_time = now;
+      candle.setControl(
+          new SolidColor(CAMERA0_START, VISION_SECTION_SIZE)
+              .withColor(camera0SeesTag ? GREEN : RED));
+    }
+
+    forceVisionRefresh = false;
   }
 }
