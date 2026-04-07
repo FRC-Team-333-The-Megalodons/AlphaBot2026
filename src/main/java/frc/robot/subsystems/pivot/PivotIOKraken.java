@@ -26,7 +26,6 @@ public class PivotIOKraken implements PivotIO {
   private final StatusSignal<Voltage> appliedVolts;
   private final StatusSignal<Current> currentAmps;
   private final StatusSignal<Current> supplyAmps;
-  ;
 
   private final PositionVoltage positionRequest = new PositionVoltage(0).withSlot(0);
   private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0).withSlot(0);
@@ -43,8 +42,6 @@ public class PivotIOKraken implements PivotIO {
     config.CurrentLimits.StatorCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = 35.0;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
-    // config.Voltage.PeakForwardVoltage = 10.0;
-    // config.Voltage.PeakReverseVoltage = -10.0;
 
     config.Slot0.kP = PivotConstants.kP;
     config.Slot0.kI = PivotConstants.kI;
@@ -126,5 +123,11 @@ public class PivotIOKraken implements PivotIO {
   @Override
   public void setVoltage(double volts) {
     motor.setControl(voltageRequest.withOutput(volts));
+  }
+
+  @Override
+  public void zeroPosition() {
+    motor.setPosition(0.0);
+    System.out.println("[Pivot] Encoder zeroed.");
   }
 }

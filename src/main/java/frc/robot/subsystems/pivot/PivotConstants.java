@@ -8,7 +8,6 @@ public final class PivotConstants {
   public static final double GEAR_RATIO = 13.75;
 
   // PID
-  // public static final double kP = 15.0;
   public static final double kP = 15.5;
   public static final double kI = 0.0;
   public static final double kD = 0.5;
@@ -28,11 +27,19 @@ public final class PivotConstants {
   public static final double kMaxAngleDeg = 167.0;
 
   // Named positions
-  // Named positions
   public static final double kUpAngleDeg = 0.0; // Physical hard stop at the top
   public static final double kDownAngleDeg = 165.0;
 
-  // Tolerances
+  // ── Tolerances ──
+
+  /** Tight tolerance for position control commands (atTarget). Checks position AND velocity. */
   public static final double POSITION_TOLERANCE_DEG = 1.0;
+
   public static final double VELOCITY_TOLERANCE_RPM = 1.0;
+
+  public static final double AUTON_POSITION_TOLERANCE_DEG = 10.0;
+
+  public static final double SLOW_RAISE_VOLTAGE = -1.5;
+
+  public static final double SLOW_RAISE_DURATION_SEC = 0.5;
 }

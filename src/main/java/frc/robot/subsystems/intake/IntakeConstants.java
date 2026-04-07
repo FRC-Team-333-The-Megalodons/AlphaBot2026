@@ -7,14 +7,14 @@ public class IntakeConstants {
   public static final double INTAKE_VOLTS = 7.2;
   public static final double EJECT_VOLTS = -7.2;
 
-  public static final double INTAKE_RPM = 3000.0;
+  public static final double INTAKE_RPM = 5500.0;
   public static final double EJECT_RPM = -4000.0;
   public static final double VELOCITY_TOLERANCE_RPM = 100.0;
 
   public static final double kS = 0.27809;
   public static final double kV = 0.12369;
   public static final double kA = 0.0037911;
-  public static final double kP = 0.0028356;
+  public static final double kP = 0.0048356;
 
   public static final double MAX_VELOCITY = 100.0;
   public static final double MAX_ACCEL = 200.0;

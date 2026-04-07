@@ -6,6 +6,7 @@ import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,5 +36,16 @@ public class LiveTuning {
     pose2dPublishers
         .computeIfAbsent(key, k -> nt.getStructTopic(ROOT + k, Pose2d.struct).publish())
         .set(value);
+  }
+
+  /**
+   * Reads a tunable double from SmartDashboard. On the first call, publishes the default value so
+   * it appears in the dashboard for editing. Subsequent calls read back whatever the user set.
+   */
+  public static double getDouble(String key, double defaultValue) {
+    if (!SmartDashboard.containsKey(key)) {
+      SmartDashboard.putNumber(key, defaultValue);
+    }
+    return SmartDashboard.getNumber(key, defaultValue);
   }
 }

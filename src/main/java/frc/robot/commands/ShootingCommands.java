@@ -69,4 +69,24 @@ public class ShootingCommands {
             Commands.waitUntil(() -> flywheel.ready() && turret.atTarget()),
             transfer.feedShooter().alongWith(spindexer.spin())));
   }
+  public static Command shootOnMoveProportional(
+      Flywheel flywheel, Turret turret, Spindexer spindexer, Transfer transfer, Pivot pivot) {
+
+    return Commands.parallel(
+        turret.autoAim(),
+        flywheel.shootOnMoveSpinUp(),
+        Commands.sequence(
+            Commands.waitUntil(() -> flywheel.ready() && turret.atTarget()),
+            transfer.feedProportional(flywheel::getTargetRPM).alongWith(spindexer.spin())));
+  }
+  public static Command shootOnMoveAdditive(
+      Flywheel flywheel, Turret turret, Spindexer spindexer, Transfer transfer, Pivot pivot) {
+
+    return Commands.parallel(
+        turret.autoAim(),
+        flywheel.shootOnMoveSpinUp(),
+        Commands.sequence(
+            Commands.waitUntil(() -> flywheel.ready() && turret.atTarget()),
+            transfer.feedAdditive(flywheel::getTargetRPM).alongWith(spindexer.spin())));
+  }
 }

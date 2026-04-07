@@ -43,7 +43,7 @@ public class FlywheelIOKraken implements FlywheelIO {
     config = new TalonFXConfiguration();
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
     config.Slot0.kS = FlywheelConstants.kS;
     config.Slot0.kA = FlywheelConstants.kA;
