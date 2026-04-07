@@ -24,4 +24,9 @@ public class PivotIOKrakenSim implements PivotIO {
     appliedVolts = volts;
     sim.setInputVoltage(volts);
   }
+
+  @Override
+  public void zeroPosition() {
+    System.out.println("[Pivot Sim] Encoder zeroed (no-op in sim).");
+  }
 }

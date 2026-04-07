@@ -9,6 +9,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.energy.BatteryLogger;
 import frc.robot.interfaces.Characterizable;
+import frc.robot.util.LiveTuning;
+import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
 public class Transfer extends SubsystemBase implements Characterizable {
@@ -27,9 +29,7 @@ public class Transfer extends SubsystemBase implements Characterizable {
     Logger.processInputs("Transfer", inputs);
     Logger.recordOutput("Transfer/VelocityRPM", inputs.velocityRpm);
     batteryLogger.reportCurrentUsage("Mechanisms/Transfer", false, inputs.supplyAmps);
-    // LiveTuning.publish("Transfer/VelocityRPM", inputs.velocityRpm);
   }
-
   public Command feedShooter() {
     return runEnd(() -> io.moveTo(TransferConstants.TARGET_RPM), () -> io.setVoltage(0.0));
   }
@@ -48,6 +48,47 @@ public class Transfer extends SubsystemBase implements Characterizable {
 
   public Command feedShooterVoltage() {
     return runEnd(() -> io.setVoltage(TransferConstants.FEED_VOLTAGE), () -> io.setVoltage(0.0));
+  }
+  public Command feedProportional(DoubleSupplier flywheelRPMSupplier) {
+    return runEnd(
+            () -> {
+              double flywheelRPM = flywheelRPMSupplier.getAsDouble();
+              double ratio =
+                  LiveTuning.getDouble(
+                      "Transfer/ProportionalRatio", TransferConstants.PROPORTIONAL_FEED_RATIO);
+              double transferRPM = flywheelRPM * ratio;
+
+             
+              transferRPM = Math.max(transferRPM, TransferConstants.MIN_FEED_RPM);
+
+              io.moveTo(transferRPM);
+              Logger.recordOutput("Transfer/FlywheelRPMInput", flywheelRPM);
+              Logger.recordOutput("Transfer/ProportionalTargetRPM", transferRPM);
+              Logger.recordOutput("Transfer/ProportionalRatio", ratio);
+            },
+            () -> io.setVoltage(0.0))
+        .withName("Transfer.feedProportional");
+  }
+
+
+  public Command feedAdditive(DoubleSupplier flywheelRPMSupplier) {
+    return runEnd(
+            () -> {
+              double flywheelRPM = flywheelRPMSupplier.getAsDouble();
+              double offset =
+                  LiveTuning.getDouble(
+                      "Transfer/AdditiveOffsetRPM", TransferConstants.ADDITIVE_FEED_OFFSET_RPM);
+              double transferRPM = flywheelRPM + offset;
+
+              transferRPM = Math.max(transferRPM, TransferConstants.MIN_FEED_RPM);
+
+              io.moveTo(transferRPM);
+              Logger.recordOutput("Transfer/FlywheelRPMInput", flywheelRPM);
+              Logger.recordOutput("Transfer/AdditiveTargetRPM", transferRPM);
+              Logger.recordOutput("Transfer/AdditiveOffset", offset);
+            },
+            () -> io.setVoltage(0.0))
+        .withName("Transfer.feedAdditive");
   }
 
   public void stop() {

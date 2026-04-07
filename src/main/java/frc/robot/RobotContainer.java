@@ -274,10 +274,12 @@ public class RobotContainer {
 
   private void registerNamedCommands() {
     NamedCommands.registerCommand("DriveToOutpost", PathfindCommands.driveToTheOutpost(drive));
-    NamedCommands.registerCommand("PivotDown", pivot.motionMagicDown());
-    NamedCommands.registerCommand("PivotDown", pivot.motionMagicDown().withTimeout(2));
+    NamedCommands.registerCommand("PivotDown", pivot.motionMagicDown().until(pivot::isDown));
+    NamedCommands.registerCommand("PivotSlowRaise", pivot.slowRaise());
     NamedCommands.registerCommand(
-        "ShootOnMove", ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, pivot));
+        "ShootOnMove",
+        ShootingCommands.shootOnMoveAdditive(flywheel, turret, spindexer, transfer, pivot)
+            .withTimeout(5));
     NamedCommands.registerCommand("Intake", intake.dynamicIngest());
     NamedCommands.registerCommand("ClimbingPosition", climber.extend());
     NamedCommands.registerCommand("Climb", climber.retract());
@@ -324,7 +326,8 @@ public class RobotContainer {
     // Flywheel
     operatorController
         .triangle()
-        .whileTrue(ShootingCommands.shootOnMove(flywheel, turret, spindexer, transfer, pivot));
+        .whileTrue(
+            ShootingCommands.shootOnMoveAdditive(flywheel, turret, spindexer, transfer, pivot));
 
     // Override Limits
     operatorController.touchpad().onTrue(flywheel.setEnergyLimits(EnergyLimitMode.UNLIMITED));
@@ -412,6 +415,7 @@ public class RobotContainer {
         .whileTrue(Commands.parallel(spindexer.spin(), transfer.feedShooter(), intake.ingest()));
 
     driverController.povRight().whileTrue(PathfindCommands.autonomousClimbSequence(drive, climber));
+    driverController.R2().whileTrue(pivot.slowRaise());
   }
 
   private void configureDefaultBindings() {

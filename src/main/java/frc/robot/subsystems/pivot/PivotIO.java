@@ -31,4 +31,6 @@ public interface PivotIO extends Automatable {
   }
 
   public default void set(double input) {}
+
+  public default void zeroPosition() {}
 }

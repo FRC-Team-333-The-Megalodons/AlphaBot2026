@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -26,6 +27,8 @@ public class Pivot extends SubsystemBase implements Characterizable {
   public Pivot(PivotIO io, BatteryLogger batteryLogger) {
     this.io = io;
     this.batteryLogger = batteryLogger;
+
+    SmartDashboard.putData("Pivot/Zero Encoder", zeroEncoder());
   }
 
   @Override
@@ -33,8 +36,6 @@ public class Pivot extends SubsystemBase implements Characterizable {
     io.updateInputs(inputs);
     Logger.processInputs("Pivot", inputs);
     batteryLogger.reportCurrentUsage("Mechanisms/Pivot", false, inputs.supplyAmps);
-    // LiveTuning.publish("Pivot/AngleDegrees", getPositionDeg());
-    // LiveTuning.publish("Pivot/AppliedVoltage", io.getAppliedVoltage());
   }
 
   public double getPositionDeg() {
@@ -44,6 +45,19 @@ public class Pivot extends SubsystemBase implements Characterizable {
   public boolean atTarget(double degrees) {
     return io.atTarget(degrees);
   }
+
+  public boolean isAtPosition(double degrees) {
+    return Math.abs(getPositionDeg() - degrees) < PivotConstants.AUTON_POSITION_TOLERANCE_DEG;
+  }
+
+  public boolean isUp() {
+    return isAtPosition(PivotConstants.kUpAngleDeg);
+  }
+
+  public boolean isDown() {
+    return isAtPosition(PivotConstants.kDownAngleDeg);
+  }
+
 
   public Command rotateTo(double degrees, boolean waitForCompletion) {
     return waitForCompletion
@@ -78,7 +92,7 @@ public class Pivot extends SubsystemBase implements Characterizable {
           // Intake active - pivot fast going down
           if (intakeActive && !shooterActive) {
             if (!atTarget(PivotConstants.kDownAngleDeg)) {
-              io.moveTo(PivotConstants.kDownAngleDeg); // fast
+              io.moveTo(PivotConstants.kDownAngleDeg);
             }
             return;
           }
@@ -86,7 +100,7 @@ public class Pivot extends SubsystemBase implements Characterizable {
           // Intake released + shooter active - slowing up
           if (!intakeActive && shooterActive) {
             if (!atTarget(PivotConstants.kUpAngleDeg)) {
-              io.moveTo(PivotConstants.kUpAngleDeg); // slow
+              io.moveTo(PivotConstants.kUpAngleDeg);
             }
             return;
           }
@@ -117,6 +131,17 @@ public class Pivot extends SubsystemBase implements Characterizable {
     return runEnd(
         () -> io.setVoltage(percentSupplier.getAsDouble() * 12.0), () -> io.setVoltage(0.0));
   }
+  public Command slowRaise() {
+    return runEnd(() -> io.setVoltage(PivotConstants.SLOW_RAISE_VOLTAGE), () -> io.setVoltage(0.0))
+        .withTimeout(PivotConstants.SLOW_RAISE_DURATION_SEC)
+        .withName("Pivot.slowRaise");
+  }
+  public Command zeroEncoder() {
+    return Commands.runOnce(io::zeroPosition, this)
+        .ignoringDisable(true)
+        .withName("Pivot.zeroEncoder");
+  }
+
 
   @Override
   public Command characterize() {

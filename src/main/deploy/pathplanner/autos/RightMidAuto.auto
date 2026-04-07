@@ -21,13 +21,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "PrepToIntakeLeft"
-                      }
-                    },
-                    {
-                      "type": "path",
-                      "data": {
-                        "pathName": "GoBackLToShoot"
+                        "pathName": "RightMidSweep"
                       }
                     },
                     {
@@ -65,7 +59,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "LeftMidSweep2"
+                        "pathName": "RightMidSweep2"
                       }
                     },
                     {

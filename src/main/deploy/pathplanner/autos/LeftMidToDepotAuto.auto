@@ -13,40 +13,40 @@
                 "data": {
                   "commands": [
                     {
-                      "type": "named",
+                      "type": "path",
                       "data": {
-                        "name": "PivotDown"
+                        "pathName": "PrepToIntakeLeft"
                       }
                     },
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "GoToTheMiddleRight"
+                        "pathName": "GoBackLToShoot"
                       }
                     },
                     {
-                      "type": "path",
-                      "data": {
-                        "pathName": "GoBackRToShoot"
-                      }
-                    },
-                    {
-                      "type": "parallel",
+                      "type": "race",
                       "data": {
                         "commands": [
+                          {
+                            "type": "path",
+                            "data": {
+                              "pathName": "PrepForDepot"
+                            }
+                          },
                           {
                             "type": "named",
                             "data": {
                               "name": "ShootOnMove"
                             }
-                          },
-                          {
-                            "type": "path",
-                            "data": {
-                              "pathName": "StartingLineToOutpost"
-                            }
                           }
                         ]
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "GoDepot"
                       }
                     }
                   ]
@@ -60,6 +60,12 @@
                       "type": "named",
                       "data": {
                         "name": "Intake"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "PivotDown"
                       }
                     }
                   ]

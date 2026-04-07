@@ -50,6 +50,14 @@ public class Flywheel extends SubsystemBase implements Characterizable {
     return target;
   }
 
+  /**
+   * Returns the current distance-based target RPM. Use this to couple other subsystems (e.g.
+   * transfer) to the flywheel's current commanded speed.
+   */
+  public double getTargetRPM() {
+    return dynamicRPM();
+  }
+
   public void resetPreSpin() {
     preSpinState = PreSpinState.IDLE;
     spinRequested = false;
