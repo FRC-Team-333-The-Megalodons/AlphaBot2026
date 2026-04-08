@@ -21,13 +21,31 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "RightMidSweep"
+                        "pathName": "PrepForBumpSweep"
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "GoOverBump"
+                      }
+                    },
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.7
                       }
                     },
                     {
                       "type": "parallel",
                       "data": {
                         "commands": [
+                          {
+                            "type": "path",
+                            "data": {
+                              "pathName": "RightBumpToScorePose"
+                            }
+                          },
                           {
                             "type": "named",
                             "data": {

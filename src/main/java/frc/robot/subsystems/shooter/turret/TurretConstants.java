@@ -20,7 +20,7 @@ public class TurretConstants {
 
   public static final double kMotorToTurretRatio = 19.6875;
 
-  public static final double kMinAngle = -220.0;
+  public static final double kMinAngle = -284.0; // Changed from -220.0
   public static final double kMaxAngle = 103.0;
 
   public static final double kP = 45.8;

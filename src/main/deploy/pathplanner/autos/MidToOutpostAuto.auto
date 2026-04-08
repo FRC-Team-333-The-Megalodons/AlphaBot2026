@@ -72,6 +72,6 @@
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "RightAutons",
   "choreoAuto": false
 }

@@ -30,6 +30,7 @@ public class Transfer extends SubsystemBase implements Characterizable {
     Logger.recordOutput("Transfer/VelocityRPM", inputs.velocityRpm);
     batteryLogger.reportCurrentUsage("Mechanisms/Transfer", false, inputs.supplyAmps);
   }
+
   public Command feedShooter() {
     return runEnd(() -> io.moveTo(TransferConstants.TARGET_RPM), () -> io.setVoltage(0.0));
   }
@@ -49,6 +50,7 @@ public class Transfer extends SubsystemBase implements Characterizable {
   public Command feedShooterVoltage() {
     return runEnd(() -> io.setVoltage(TransferConstants.FEED_VOLTAGE), () -> io.setVoltage(0.0));
   }
+
   public Command feedProportional(DoubleSupplier flywheelRPMSupplier) {
     return runEnd(
             () -> {
@@ -58,7 +60,6 @@ public class Transfer extends SubsystemBase implements Characterizable {
                       "Transfer/ProportionalRatio", TransferConstants.PROPORTIONAL_FEED_RATIO);
               double transferRPM = flywheelRPM * ratio;
 
-             
               transferRPM = Math.max(transferRPM, TransferConstants.MIN_FEED_RPM);
 
               io.moveTo(transferRPM);
@@ -69,7 +70,6 @@ public class Transfer extends SubsystemBase implements Characterizable {
             () -> io.setVoltage(0.0))
         .withName("Transfer.feedProportional");
   }
-
 
   public Command feedAdditive(DoubleSupplier flywheelRPMSupplier) {
     return runEnd(

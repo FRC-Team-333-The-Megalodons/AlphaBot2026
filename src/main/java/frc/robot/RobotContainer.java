@@ -275,20 +275,27 @@ public class RobotContainer {
   private void registerNamedCommands() {
     NamedCommands.registerCommand("DriveToOutpost", PathfindCommands.driveToTheOutpost(drive));
     NamedCommands.registerCommand("PivotDown", pivot.motionMagicDown().until(pivot::isDown));
-    NamedCommands.registerCommand("PivotSlowRaise", pivot.slowRaise());
+    NamedCommands.registerCommand(
+        "PivotSlowRaise", Commands.waitSeconds(2).andThen(pivot.slowRaise()));
+    NamedCommands.registerCommand(
+        "Shoot",
+        ShootingCommands.runTheIndexers(flywheel, turret, spindexer, transfer, pivot)
+            .withTimeout(4.5));
     NamedCommands.registerCommand(
         "ShootOnMove",
         ShootingCommands.shootOnMoveAdditive(flywheel, turret, spindexer, transfer, pivot)
             .withTimeout(5));
+    NamedCommands.registerCommand("Aim", ShootingCommands.autoAim(flywheel, turret));
     NamedCommands.registerCommand("Intake", intake.dynamicIngest());
     NamedCommands.registerCommand("ClimbingPosition", climber.extend());
     NamedCommands.registerCommand("Climb", climber.retract());
     NamedCommands.registerCommand("ClimbZero", climber.zeroEncoder());
 
     // Teleop climb sequence (pathfind + precision drive, no climber mechanism):
-    NamedCommands.registerCommand("ClimbSequence", PathfindCommands.climbSequence(drive));
     NamedCommands.registerCommand(
-        "AutoClimb", PathfindCommands.autonomousClimbSequence(drive, climber));
+        "AutoClimbRightSide", PathfindCommands.autonomousClimbSequence(drive, climber, true));
+    NamedCommands.registerCommand(
+        "AutoClimbLeftSide", PathfindCommands.autonomousClimbSequence(drive, climber, false));
   }
 
   public void onDriverStationConnected() {
@@ -301,6 +308,99 @@ public class RobotContainer {
 
   public void resetFlywheel() {
     flywheel.resetPreSpin();
+  }
+
+  private void configureSingleDriverBindings() {
+    driverController.L3().onTrue(Commands.runOnce(drive::stopWithX, drive));
+
+    driverController
+        .R3()
+        .whileTrue(
+            DriveCommands.faceHubAlternative(
+                drive,
+                () -> -driverController.getLeftY(),
+                () -> -driverController.getLeftX(),
+                () -> -driverController.getRightX(),
+                true));
+
+    driverController
+        .triangle()
+        .whileTrue(
+            DriveCommands.joystickDriveAtAngle(
+                drive,
+                () -> -driverController.getLeftY(),
+                () -> -driverController.getLeftX(),
+                () ->
+                    DriverStation.getAlliance().get() == Alliance.Blue
+                        ? Rotation2d.fromDegrees(0)
+                        : Rotation2d.fromDegrees(180)));
+
+    driverController
+        .cross()
+        .whileTrue(
+            DriveCommands.joystickDriveAtAngle(
+                drive,
+                () -> -driverController.getLeftY(),
+                () -> -driverController.getLeftX(),
+                () ->
+                    DriverStation.getAlliance().get() == Alliance.Blue
+                        ? Rotation2d.fromDegrees(180)
+                        : Rotation2d.fromDegrees(0)));
+
+    driverController
+        .square()
+        .whileTrue(
+            DriveCommands.joystickDriveAtAngle(
+                drive,
+                () -> -driverController.getLeftY(),
+                () -> -driverController.getLeftX(),
+                () ->
+                    DriverStation.getAlliance().get() == Alliance.Blue
+                        ? Rotation2d.fromDegrees(90)
+                        : Rotation2d.fromDegrees(-90)));
+
+    driverController
+        .circle()
+        .whileTrue(
+            DriveCommands.joystickDriveAtAngle(
+                drive,
+                () -> -driverController.getLeftY(),
+                () -> -driverController.getLeftX(),
+                () ->
+                    DriverStation.getAlliance().get() == Alliance.Blue
+                        ? Rotation2d.fromDegrees(-90)
+                        : Rotation2d.fromDegrees(90)));
+
+    driverController
+        .touchpad()
+        .onTrue(
+            Commands.runOnce(
+                    () ->
+                        drive.setPose(
+                            new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
+                    drive)
+                .ignoringDisable(true));
+    driverController.L1().whileTrue(intake.eject());
+    driverController.R1().whileTrue(intake.ingest());
+    driverController
+        .R2()
+        .whileTrue(
+            ShootingCommands.shootOnMoveAdditive(flywheel, turret, spindexer, transfer, pivot));
+    driverController.L2().whileTrue(pivot.runPercent(() -> -0.15));
+
+    driverController.PS().whileTrue(ShootingCommands.dashboardRPMControl(flywheel));
+
+    driverController
+        .povUp()
+        .whileTrue(Commands.parallel(spindexer.spin(), transfer.feedShooter(), intake.ingest()));
+
+    driverController
+        .povRight()
+        .whileTrue(PathfindCommands.autonomousClimbSequence(drive, climber, true));
+    driverController
+        .povLeft()
+        .whileTrue(PathfindCommands.autonomousClimbSequence(drive, climber, false));
+    driverController.povDown().whileTrue(climber.driveDown(0.70));
   }
 
   private void configureOperatorBindings() {
@@ -414,7 +514,12 @@ public class RobotContainer {
         .povUp()
         .whileTrue(Commands.parallel(spindexer.spin(), transfer.feedShooter(), intake.ingest()));
 
-    driverController.povRight().whileTrue(PathfindCommands.autonomousClimbSequence(drive, climber));
+    driverController
+        .povRight()
+        .whileTrue(PathfindCommands.autonomousClimbSequence(drive, climber, true));
+    driverController
+        .povLeft()
+        .whileTrue(PathfindCommands.autonomousClimbSequence(drive, climber, false));
     driverController.R2().whileTrue(pivot.slowRaise());
   }
 
@@ -439,9 +544,14 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
+
     configureDefaultBindings();
-    configureDriverBindings();
-    configureOperatorBindings();
+    if (Constants.IS_IN_SINGLE_DRIVING_MODE) {
+      configureSingleDriverBindings();
+    } else {
+      configureDriverBindings();
+      configureOperatorBindings();
+    }
   }
 
   /**

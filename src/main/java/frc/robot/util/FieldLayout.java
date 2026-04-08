@@ -26,8 +26,18 @@ public class FieldLayout {
             (tagLayout.getTagPose(31).get().getY())
                 + Units.inchesToMeters(32.250) / 2
                 + Units.inchesToMeters(0.75));
-    public static final Pose2d CLIMBING_POSE =
-        new Pose2d(leftUpright.getX(), leftUpright.getY(), Rotation2d.kPi);
+    public static final Translation2d rightUpright =
+        new Translation2d(
+            Units.inchesToMeters(43.51),
+            (tagLayout.getTagPose(31).get().getY())
+                - Units.inchesToMeters(32.250) / 2
+                - Units.inchesToMeters(0.75));
+    public static final Pose2d LEFT_CLIMBING_POSE =
+        new Pose2d(
+            leftUpright.getX(), leftUpright.getY() + Units.inchesToMeters(13), Rotation2d.kPi);
+    public static final Pose2d RIGHT_CLIMBING_POSE =
+        new Pose2d(
+            leftUpright.getX(), leftUpright.getY() - Units.inchesToMeters(13), Rotation2d.kZero);
     public static final Pose2d CLIMBING_STAGING_POSE = new Pose2d(1.243, 5.642, Rotation2d.kPi);
   }
 

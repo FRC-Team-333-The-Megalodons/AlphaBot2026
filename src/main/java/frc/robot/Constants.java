@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.RobotBase;
  */
 public final class Constants {
   public static final boolean TUNE_MODE = false;
+  public static final boolean IS_IN_SINGLE_DRIVING_MODE = false;
   public static final Mode simMode = Mode.SIM;
   public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 
