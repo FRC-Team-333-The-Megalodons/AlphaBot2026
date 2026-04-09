@@ -40,6 +40,7 @@ public class PathfindCommands {
 
     return pathfindTo.andThen(autoPilot);
   }
+
   public static Command autonomousClimbSequence(Drive drive, Climber climber, boolean rightRung) {
     return Commands.sequence(
             climber.extendWithTimeOut(),
@@ -51,6 +52,7 @@ public class PathfindCommands {
             climber.retractWithTimeOut())
         .withName("PathfindCommands.autonomousClimbSequence");
   }
+
   public static Command climbSequence(Drive drive, boolean rightRung) {
     PathConstraints stagingConstraints =
         new PathConstraints(3.0, 3.0, Units.degreesToRadians(540), Units.degreesToRadians(720));

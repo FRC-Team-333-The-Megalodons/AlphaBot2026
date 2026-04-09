@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.669933333333334,
-        "y": 2.5132555555555554
+        "x": 5.6985527876631075,
+        "y": 2.6201660735468555
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.2869777777777776,
-        "y": 2.382244444444443
+        "x": 5.315597232107551,
+        "y": 2.489154962435743
       },
       "isLocked": false,
       "linkedName": "PrepForRightBump"
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 50.572197803963746
+    "rotation": 50.57219780396375
   },
   "reversed": false,
   "folder": "RightPaths",

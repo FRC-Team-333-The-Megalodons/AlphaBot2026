@@ -274,7 +274,11 @@ public class RobotContainer {
 
   private void registerNamedCommands() {
     NamedCommands.registerCommand("DriveToOutpost", PathfindCommands.driveToTheOutpost(drive));
-    NamedCommands.registerCommand("PivotDown", pivot.motionMagicDown().until(pivot::isDown));
+    NamedCommands.registerCommand(
+        "PivotDown",
+        pivot
+            .runPercent(() -> 0.2)
+            .until(pivot::isDown)); // pivot.motionMagicDown().until(pivot::isDown));
     NamedCommands.registerCommand(
         "PivotSlowRaise", Commands.waitSeconds(2).andThen(pivot.slowRaise()));
     NamedCommands.registerCommand(

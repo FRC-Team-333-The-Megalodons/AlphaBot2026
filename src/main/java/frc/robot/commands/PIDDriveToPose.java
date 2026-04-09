@@ -115,7 +115,7 @@ public class PIDDriveToPose extends Command {
 
   @Override
   public boolean isFinished() {
-    //must have moved minimum distance from start
+    // must have moved minimum distance from start
     double traveled = drive.getPose().getTranslation().getDistance(startPose.getTranslation());
     if (traveled < MIN_TRAVEL_M) {
       consecutiveAtTarget = 0;

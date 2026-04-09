@@ -7,7 +7,7 @@ public class IntakeConstants {
   public static final double INTAKE_VOLTS = 7.2;
   public static final double EJECT_VOLTS = -7.2;
 
-  public static final double INTAKE_RPM = 4000.0;
+  public static final double INTAKE_RPM = 2800.0;
   public static final double EJECT_RPM = -6000.0;
   public static final double VELOCITY_TOLERANCE_RPM = 100.0;
 

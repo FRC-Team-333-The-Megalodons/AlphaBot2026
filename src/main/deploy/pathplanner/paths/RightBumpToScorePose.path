@@ -20,12 +20,12 @@
         "y": 0.5884000000000003
       },
       "prevControl": {
-        "x": 3.2915777777777784,
-        "y": 1.1729111111111101
+        "x": 2.797766666666667,
+        "y": 0.8000333333333332
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "RightScoringPosition"
+      "linkedName": "LeftScoringPoseFacingTrench"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -179.23610153906986
+    "rotation": 2.2496630139007823
   },
   "reversed": false,
   "folder": "RightPaths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 50.572197803963746
+    "rotation": 50.57219780396375
   },
   "useDefaultConstraints": false
 }
