@@ -1,5 +1,8 @@
 package frc.robot.subsystems.leds;
 
+import java.util.ArrayList;
+import java.util.function.BooleanSupplier;
+
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.controls.EmptyAnimation;
 import com.ctre.phoenix6.controls.LarsonAnimation;
@@ -18,20 +21,37 @@ public class LedIOCANdle implements LedIO {
 
   private final CANdle candle;
 
+  private final ArrayList<BooleanSupplier> cameraSeesTagSuppliers = new ArrayList<>();
+
   private LedState lastState = null;
 
-  public LedIOCANdle() {
+  public LedIOCANdle(BooleanSupplier... cameraTagSuppliers) {
     CANBus rio = CANBus.roboRIO();
     candle = new CANdle(CANDLE_ID, rio);
 
     for (int i = 0; i < 8; i++) {
       candle.setControl(new EmptyAnimation(i));
     }
+
+    for (BooleanSupplier supplier : cameraTagSuppliers) {
+      cameraSeesTagSuppliers.add(supplier);
+    }
   }
 
   @Override
   public void updateInputs(LedIOInputs inputs) {
     // LEDs are only output, so no inputs need to recorded or updated.
+  }
+
+  @Override
+  public boolean anyCameraSeesTag()
+  {
+    for (BooleanSupplier supplier : cameraSeesTagSuppliers) {
+      if (supplier.getAsBoolean()) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @Override
@@ -42,7 +62,7 @@ public class LedIOCANdle implements LedIO {
     switch (state) {
       case IDLE:
         // All LEDs off
-        candle.setControl(new SolidColor(0, TOTAL_LENGTH).withColor(new RGBWColor(0, 0, 0, 0)));
+        candle.setControl(new SolidColor(0, TOTAL_LENGTH).withColor(LedConstants.OFF));
         break;
 
       case INTAKING:
@@ -89,6 +109,19 @@ public class LedIOCANdle implements LedIO {
       case DISABLED:
         // Rainbow
         candle.setControl(new RainbowAnimation(TOTAL_LENGTH, 0).withFrameRate(6));
+        break;
+
+      case INTAKE_IS_AT_SPEED:
+        candle.setControl(new SolidColor(TOTAL_LENGTH, 0).withColor(LedConstants.YELLOW));
+        break;
+
+      case SHOOTER_HAS_TAG:
+        candle.setControl(new SolidColor(TOTAL_LENGTH, 0).withColor(LedConstants.GREEN));
+        break;
+
+        // Climber is UP
+      case CLIMBER_IS_UP:
+        candle.setControl(new SolidColor(TOTAL_LENGTH, 0).withColor(LedConstants.MAGENTA));
         break;
     }
   }

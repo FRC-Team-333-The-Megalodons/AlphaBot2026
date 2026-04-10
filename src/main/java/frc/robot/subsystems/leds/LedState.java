@@ -21,4 +21,13 @@ public enum LedState {
 
   // Robot is disabled.
   DISABLED,
+
+  // The intake is spun up at a reasonable RPM (i.e. its not stuck)
+  INTAKE_IS_AT_SPEED,
+
+  // Shooter has at least one Apriltag
+  SHOOTER_HAS_TAG,
+
+  // Climber is UP
+  CLIMBER_IS_UP
 }
