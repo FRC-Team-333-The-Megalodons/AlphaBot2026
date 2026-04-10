@@ -89,8 +89,7 @@ public class TransferIOKraken implements TransferIO {
   }
 
   @Override
-  public double getCurrentRPM()
-  {
+  public double getCurrentRPM() {
     return velocitySignal.getValueAsDouble() * 60.0;
   }
 

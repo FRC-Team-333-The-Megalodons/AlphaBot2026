@@ -30,4 +30,6 @@ public interface ClimberIO {
   public default boolean atTarget(double positionRot) {
     return false;
   }
+  
+  public default boolean pastTarget(double targetPos) { return false; }
 }

@@ -35,10 +35,10 @@ public class PIDDriveToPose extends Command {
 
     xController =
         new ProfiledPIDController(
-            4.0, 0.0, 0.1, new TrapezoidProfile.Constraints(maxSpeed, maxAccel));
+            1.5, 0.0, 0.1, new TrapezoidProfile.Constraints(maxSpeed, maxAccel));
     yController =
         new ProfiledPIDController(
-            4.0, 0.0, 0.1, new TrapezoidProfile.Constraints(maxSpeed, maxAccel));
+            1.5, 0.0, 0.1, new TrapezoidProfile.Constraints(maxSpeed, maxAccel));
 
     thetaController =
         new ProfiledPIDController(

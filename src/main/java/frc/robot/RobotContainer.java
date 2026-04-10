@@ -216,11 +216,16 @@ public class RobotContainer {
         break;
     }
     drive.seed();
-    // TODO: Add component pointers to this 
+    // TODO: Add component pointers to this
     stateTracker =
         new RobotStateTracker(
-            drive::getPose, flywheel::ready, flywheel::isPreSpunUp, intake::getAppliedVolts,
-            intake, flywheel, climber);
+            drive::getPose,
+            flywheel::ready,
+            flywheel::isPreSpunUp,
+            intake::getAppliedVolts,
+            intake,
+            flywheel,
+            climber);
 
     registerNamedCommands();
 

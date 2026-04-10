@@ -7,8 +7,6 @@ import frc.robot.interfaces.Zonable;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
-import frc.robot.subsystems.transfer.Transfer;
-
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -66,7 +64,9 @@ public class RobotStateTracker extends SubsystemBase implements Zonable {
       BooleanSupplier flywheelReady,
       BooleanSupplier flywheelSpinningUp,
       DoubleSupplier intakeVoltage,
-      Intake intake, Flywheel flywheel, Climber climber) {
+      Intake intake,
+      Flywheel flywheel,
+      Climber climber) {
     this.poseSupplier = poseSupplier;
     this.flywheelReady = flywheelReady;
     this.flywheelSpinningUp = flywheelSpinningUp;
@@ -171,19 +171,16 @@ public class RobotStateTracker extends SubsystemBase implements Zonable {
     return getMatchMode() == MatchMode.DISABLED;
   }
 
-  public boolean isShooting()
-  {
+  public boolean isShooting() {
     // Whether or not the transfer is spinning is a good indicator of shooting.
     return flywheel.isSpinRequested();
   }
 
-  public boolean isClimberUp()
-  {
-    return !climber.isRetracted();
+  public boolean isHighEnoughToHitTunnel() {
+    return climber.isHighEnoughToHitTunnel();
   }
 
-  public boolean isIntakeStuck()
-  {
+  public boolean isIntakeStuck() {
     return intake.isStuck();
   }
 }

@@ -23,5 +23,7 @@ public interface TransferIO extends Automatable {
     return true;
   }
 
-  public default double getCurrentRPM() { return 0.0; }
+  public default double getCurrentRPM() {
+    return 0.0;
+  }
 }

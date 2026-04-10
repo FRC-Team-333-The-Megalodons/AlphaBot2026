@@ -29,5 +29,7 @@ public enum LedState {
   SHOOTER_HAS_TAG,
 
   // Climber is UP
-  CLIMBER_IS_UP
+  CLIMBER_IS_UP,
+
+  ERROR
 }

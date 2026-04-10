@@ -56,6 +56,11 @@ public class Climber extends SubsystemBase {
     return io.atTarget(ClimberConstants.kStowedPosition);
   }
 
+  public boolean isHighEnoughToHitTunnel()
+  {
+    return io.pastTarget(ClimberConstants.kClimberUpEnoughToHitTunnel);
+  }
+
   public Command zeroEncoder() {
     return Commands.runOnce(io::zeroPosition, this)
         .ignoringDisable(true)

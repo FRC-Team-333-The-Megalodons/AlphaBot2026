@@ -48,8 +48,12 @@ public class Led extends SubsystemBase {
             return;
           }
           */
-          if (tracker.isShooting() && io.anyCameraSeesTag()) {
-            setState(LedState.SHOOTER_HAS_TAG);
+          if (tracker.isShooting()) {
+            if (io.anyCameraSeesTag()) {
+              setState(LedState.SHOOTER_HAS_TAG);
+            } else {
+              setState(LedState.ERROR);
+            }
             return;
           }
 
@@ -58,12 +62,11 @@ public class Led extends SubsystemBase {
             return;
           }
 
-          if (tracker.isClimberUp()) {
+          if (tracker.isHighEnoughToHitTunnel()) {
             setState(LedState.CLIMBER_IS_UP);
             return;
           }
-          
-          
+
           setState(LedState.IDLE);
         })
         .ignoringDisable(true)

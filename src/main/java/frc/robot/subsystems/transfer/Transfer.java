@@ -43,8 +43,7 @@ public class Transfer extends SubsystemBase implements Characterizable {
     io.moveTo(TransferConstants.TARGET_RPM);
   }
 
-  public boolean currentVelocityTarget()
-  {
+  public boolean currentVelocityTarget() {
     return io.getCurrentRPM() >= 100; // TODO: Make constant
   }
 

@@ -13,5 +13,7 @@ public interface LedIO {
 
   public default void setState(LedState state) {}
 
-  public default boolean anyCameraSeesTag() { return false; }
+  public default boolean anyCameraSeesTag() {
+    return false;
+  }
 }

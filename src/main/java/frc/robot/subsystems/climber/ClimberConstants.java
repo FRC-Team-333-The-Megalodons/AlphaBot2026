@@ -32,5 +32,7 @@ public final class ClimberConstants {
 
   // Named positions in mechanism rotations
   public static final double kStowedPosition = 0.086181640625;
-  public static final double kClimbPosition = 1.1962890625; // TODO: measure real climb height
+  public static final double kClimberUpEnoughToHitTunnel = 0.09;
+  public static final double kClimbPosition =
+      1.2; // 1.1962890625; // TODO: measure real climb height
 }

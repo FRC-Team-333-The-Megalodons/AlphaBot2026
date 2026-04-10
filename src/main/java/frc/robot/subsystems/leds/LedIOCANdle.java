@@ -1,8 +1,5 @@
 package frc.robot.subsystems.leds;
 
-import java.util.ArrayList;
-import java.util.function.BooleanSupplier;
-
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.controls.EmptyAnimation;
 import com.ctre.phoenix6.controls.LarsonAnimation;
@@ -10,6 +7,8 @@ import com.ctre.phoenix6.controls.RainbowAnimation;
 import com.ctre.phoenix6.controls.SolidColor;
 import com.ctre.phoenix6.hardware.CANdle;
 import com.ctre.phoenix6.signals.RGBWColor;
+import java.util.ArrayList;
+import java.util.function.BooleanSupplier;
 
 public class LedIOCANdle implements LedIO {
 
@@ -44,8 +43,7 @@ public class LedIOCANdle implements LedIO {
   }
 
   @Override
-  public boolean anyCameraSeesTag()
-  {
+  public boolean anyCameraSeesTag() {
     for (BooleanSupplier supplier : cameraSeesTagSuppliers) {
       if (supplier.getAsBoolean()) {
         return true;
@@ -59,11 +57,10 @@ public class LedIOCANdle implements LedIO {
     if (state == lastState) return;
     lastState = state;
 
+    // Whenever we change state, clear animations.
+    candle.clearAllAnimations();
+
     switch (state) {
-      case IDLE:
-        // All LEDs off
-        candle.setControl(new SolidColor(0, TOTAL_LENGTH).withColor(LedConstants.OFF));
-        break;
 
       case INTAKING:
         // Slow yellow Larson scanner
@@ -123,6 +120,17 @@ public class LedIOCANdle implements LedIO {
       case CLIMBER_IS_UP:
         candle.setControl(new SolidColor(TOTAL_LENGTH, 0).withColor(LedConstants.MAGENTA));
         break;
+
+      case ERROR:
+        candle.setControl(new SolidColor(TOTAL_LENGTH, 0).withColor(LedConstants.RED));
+        break;
+
+      case IDLE:
+      default:
+        // All LEDs off
+        candle.setControl(new SolidColor(0, TOTAL_LENGTH).withColor(LedConstants.OFF));
+        break;
+
     }
   }
 }
