@@ -34,6 +34,7 @@ public class Led extends SubsystemBase {
             setState(LedState.DISABLED);
             return;
           }
+          /*
           if (tracker.isShooterReady()) {
             setState(LedState.READY_TO_FIRE);
             return;
@@ -46,6 +47,23 @@ public class Led extends SubsystemBase {
             setState(LedState.INTAKING);
             return;
           }
+          */
+          if (tracker.isShooting() && io.anyCameraSeesTag()) {
+            setState(LedState.SHOOTER_HAS_TAG);
+            return;
+          }
+
+          if (tracker.isIntakeStuck()) {
+            setState(LedState.INTAKE_IS_STUCK);
+            return;
+          }
+
+          if (tracker.isClimberUp()) {
+            setState(LedState.CLIMBER_IS_UP);
+            return;
+          }
+          
+          
           setState(LedState.IDLE);
         })
         .ignoringDisable(true)

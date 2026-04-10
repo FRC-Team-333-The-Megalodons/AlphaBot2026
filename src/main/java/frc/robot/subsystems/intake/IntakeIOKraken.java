@@ -23,6 +23,8 @@ public class IntakeIOKraken implements IntakeIO {
   private final StatusSignal<Current> supplyCurrentSignal;
   private final StatusSignal<Temperature> tempSignal;
 
+  private double lastTargetRpm = -1.0;
+
   private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
   private final VoltageOut voltageRequest = new VoltageOut(0);
 
@@ -81,6 +83,7 @@ public class IntakeIOKraken implements IntakeIO {
   public void moveTo(double rpm) {
     double rps = rpm / 60.0;
     motor.setControl(velocityRequest.withVelocity(rps));
+    lastTargetRpm = rpm;
   }
 
   @Override
@@ -92,5 +95,12 @@ public class IntakeIOKraken implements IntakeIO {
   @Override
   public void setVoltage(double volts) {
     motor.setControl(voltageRequest.withOutput(volts));
+  }
+
+  @Override
+  public boolean isStuck()
+  {
+    double currentRPM = velocitySignal.getValueAsDouble() * 60.0;
+    return (lastTargetRpm < currentRPM && currentRPM-lastTargetRpm >= IntakeConstants.INTAKE_STUCK_TOLERANCE_RPM);
   }
 }

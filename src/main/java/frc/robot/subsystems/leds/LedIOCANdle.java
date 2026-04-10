@@ -111,12 +111,12 @@ public class LedIOCANdle implements LedIO {
         candle.setControl(new RainbowAnimation(TOTAL_LENGTH, 0).withFrameRate(6));
         break;
 
-      case INTAKE_IS_AT_SPEED:
+      case INTAKE_IS_STUCK:
         candle.setControl(new SolidColor(TOTAL_LENGTH, 0).withColor(LedConstants.YELLOW));
         break;
 
       case SHOOTER_HAS_TAG:
-        candle.setControl(new SolidColor(TOTAL_LENGTH, 0).withColor(LedConstants.GREEN));
+        candle.setControl(new SolidColor(TOTAL_LENGTH, 0).withColor(LedConstants.CYAN));
         break;
 
         // Climber is UP

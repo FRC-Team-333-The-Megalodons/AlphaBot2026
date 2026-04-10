@@ -48,4 +48,8 @@ public interface IntakeIO extends Automatable {
   public default boolean atTarget(double rpm) {
     return true;
   }
+
+  public default boolean isStuck() {
+    return false;
+  }
 }

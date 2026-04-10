@@ -89,6 +89,12 @@ public class TransferIOKraken implements TransferIO {
   }
 
   @Override
+  public double getCurrentRPM()
+  {
+    return velocitySignal.getValueAsDouble() * 60.0;
+  }
+
+  @Override
   public boolean atTarget(double rpm) {
     double currentRPM = velocitySignal.getValueAsDouble() * 60.0;
     return Math.abs(Math.abs(currentRPM) - Math.abs(rpm)) < TransferConstants.VELOCITY_TOLERANCE;

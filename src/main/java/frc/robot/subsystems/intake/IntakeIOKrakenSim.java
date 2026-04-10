@@ -38,4 +38,5 @@ public class IntakeIOKrakenSim implements IntakeIO {
     appliedVolts = volts;
     sim.setInputVoltage(volts);
   }
+
 }

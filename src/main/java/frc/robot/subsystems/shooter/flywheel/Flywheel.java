@@ -129,6 +129,12 @@ public class Flywheel extends SubsystemBase implements Characterizable {
 
   private boolean wasReady = false;
 
+  public boolean isSpinRequested()
+  {
+    return spinRequested;
+  }
+
+
   public boolean ready() {
     double targetRPM = dynamicRPM();
     double currentRPM = inputs.velocityRPM;
