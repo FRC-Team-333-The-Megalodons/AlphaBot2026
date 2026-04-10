@@ -18,7 +18,7 @@ public final class TransferConstants {
   public static final double MAX_ACCEL = 200.0;
   public static final double MAX_JERK = 1000.0;
 
-  //Flywheel-relative feed tuning
+  // Flywheel-relative feed tuning
 
   /** Proportional mode: transferRPM = flywheelRPM × this ratio. Start at 1.1 (10% faster). */
   public static final double PROPORTIONAL_FEED_RATIO = 1.1;

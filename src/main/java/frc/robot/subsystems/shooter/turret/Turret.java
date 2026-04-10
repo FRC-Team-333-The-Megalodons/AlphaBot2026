@@ -102,6 +102,9 @@ public class Turret extends SubsystemBase implements Characterizable, Initializa
   }
 
   private double mapToTurretRange(double targetDeg) {
+    if (targetDeg > TurretConstants.kMaxAngle) {
+      targetDeg -= 360.0;
+    }
     if (targetDeg < TurretConstants.kMinAngle) {
       targetDeg += 360.0;
     }

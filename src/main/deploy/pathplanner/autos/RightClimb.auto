@@ -7,19 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "PrepLNZ"
+            "pathName": "RightStageClimb"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "PivotDown"
+            "name": "AutoClimbRightSide"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "ClimbAutons",
   "choreoAuto": false
 }

@@ -58,7 +58,6 @@ public class Pivot extends SubsystemBase implements Characterizable {
     return isAtPosition(PivotConstants.kDownAngleDeg);
   }
 
-
   public Command rotateTo(double degrees, boolean waitForCompletion) {
     return waitForCompletion
         ? run(() -> io.moveTo(degrees)).until(() -> io.atTarget(degrees))
@@ -131,17 +130,18 @@ public class Pivot extends SubsystemBase implements Characterizable {
     return runEnd(
         () -> io.setVoltage(percentSupplier.getAsDouble() * 12.0), () -> io.setVoltage(0.0));
   }
+
   public Command slowRaise() {
     return runEnd(() -> io.setVoltage(PivotConstants.SLOW_RAISE_VOLTAGE), () -> io.setVoltage(0.0))
         .withTimeout(PivotConstants.SLOW_RAISE_DURATION_SEC)
         .withName("Pivot.slowRaise");
   }
+
   public Command zeroEncoder() {
     return Commands.runOnce(io::zeroPosition, this)
         .ignoringDisable(true)
         .withName("Pivot.zeroEncoder");
   }
-
 
   @Override
   public Command characterize() {
