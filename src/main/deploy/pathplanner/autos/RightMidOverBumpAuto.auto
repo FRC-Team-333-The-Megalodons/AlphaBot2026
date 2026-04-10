@@ -21,13 +21,13 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "PrepForBumpSweep"
+                        "pathName": "RT3.SWI.RB5"
                       }
                     },
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "GoOverBump"
+                        "pathName": "RB5.GB.RB2"
                       }
                     },
                     {
@@ -43,7 +43,7 @@
                           {
                             "type": "path",
                             "data": {
-                              "pathName": "RightBumpToScorePose"
+                              "pathName": "RB2.GS.RT2"
                             }
                           },
                           {
@@ -64,7 +64,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "RightMidSweep2"
+                        "pathName": "RT2.SWI.RT2"
                       }
                     },
                     {

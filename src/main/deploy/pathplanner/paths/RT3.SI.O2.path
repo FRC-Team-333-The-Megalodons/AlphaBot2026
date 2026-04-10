@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.622028469750891,
-        "y": 0.5866785290628707
+        "x": 4.400133333333333,
+        "y": 0.41707777777777666
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.7182562277580082,
-        "y": 0.9202135231316722
+        "x": 3.372199999999999,
+        "y": 0.8403444444444427
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "RT3.Pi.SP"
     },
     {
       "anchor": {
@@ -25,7 +25,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "O2.1/5Pi.SI"
     }
   ],
   "rotationTargets": [],
@@ -48,7 +48,7 @@
   "folder": "RightPaths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 76.8274465766732
+    "rotation": 90.0
   },
   "useDefaultConstraints": true
 }

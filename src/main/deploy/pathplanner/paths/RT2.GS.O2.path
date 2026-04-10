@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 4.349744444444445,
-        "y": 0.4674666666666667
+        "x": 3.976866666666667,
+        "y": 0.6387888888888893
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.314911111111112,
-        "y": 0.7395666666666658
+        "x": 3.4326666666666665,
+        "y": 0.6790999999999998
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "RT2.1/5Pi.SS"
     },
     {
       "anchor": {
-        "x": 8.038211111111112,
-        "y": 1.0519777777777768
+        "x": 0.600811111111111,
+        "y": 0.5866785290628707
       },
       "prevControl": {
-        "x": 7.140284697508897,
-        "y": 0.5113641755634627
+        "x": 1.1774502483259734,
+        "y": 0.5866785290628705
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "O2.1/5Pi.I"
     }
   ],
   "rotationTargets": [],
@@ -33,22 +33,22 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 5.4,
-    "maxAcceleration": 4.2,
+    "maxVelocity": 1.0,
+    "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
-    "unlimited": true
+    "unlimited": false
   },
   "goalEndState": {
-    "velocity": 1.0,
-    "rotation": 101.92190831900564
+    "velocity": 0,
+    "rotation": -179.10482628978994
   },
   "reversed": false,
   "folder": "RightPaths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 90.0
+    "rotation": -179.23610153906986
   },
   "useDefaultConstraints": false
 }
