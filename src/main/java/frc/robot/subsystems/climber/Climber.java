@@ -19,7 +19,7 @@ public class Climber extends SubsystemBase {
     this.batteryLogger = batteryLogger;
 
     // ── SmartDashboard commands ──
-    SmartDashboard.putData("Climber/Zero Encoder", zeroEncoder());
+    SmartDashboard.putData("Climber/Zero Climber Encoder", zeroEncoder());
     SmartDashboard.putData("Climber/Go To Zero", goToZero());
     SmartDashboard.putData("Climber/Go To Extended", extend());
     SmartDashboard.putData("Climber/Go To Climb (Retract)", retract());
