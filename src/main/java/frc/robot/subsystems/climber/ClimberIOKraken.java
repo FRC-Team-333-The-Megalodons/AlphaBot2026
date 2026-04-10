@@ -14,6 +14,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 
 public class ClimberIOKraken implements ClimberIO {
@@ -26,6 +27,7 @@ public class ClimberIOKraken implements ClimberIO {
   private final StatusSignal<Voltage> appliedVolts;
   private final StatusSignal<Current> currentAmps;
   private final StatusSignal<Current> supplyCurrentAmps;
+  private final StatusSignal<Temperature> tempSignal;
 
   private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0).withSlot(0);
   private final VoltageOut voltageRequest = new VoltageOut(0);
@@ -70,20 +72,22 @@ public class ClimberIOKraken implements ClimberIO {
     appliedVolts = motor.getMotorVoltage();
     currentAmps = motor.getStatorCurrent();
     supplyCurrentAmps = motor.getSupplyCurrent();
+    tempSignal = motor.getDeviceTemp();
 
     BaseStatusSignal.setUpdateFrequencyForAll(
-        50.0, position, velocity, appliedVolts, currentAmps, supplyCurrentAmps);
+        50.0, position, velocity, appliedVolts, currentAmps, supplyCurrentAmps, tempSignal);
   }
 
   @Override
   public void updateInputs(ClimberIOInputs inputs) {
-    BaseStatusSignal.refreshAll(position, velocity, appliedVolts, currentAmps, supplyCurrentAmps);
+    BaseStatusSignal.refreshAll(position, velocity, appliedVolts, currentAmps, supplyCurrentAmps, tempSignal);
 
     inputs.positionRot = position.getValueAsDouble();
     inputs.velocityRps = velocity.getValueAsDouble();
     inputs.appliedVolts = appliedVolts.getValueAsDouble();
-    inputs.currentAmps = currentAmps.getValueAsDouble();
+    inputs.statorAmps = currentAmps.getValueAsDouble();
     inputs.supplyAmps = supplyCurrentAmps.getValueAsDouble();
+    inputs.tempCelsius = tempSignal.getValueAsDouble();
     inputs.hasZeroed = hasZeroed;
   }
 

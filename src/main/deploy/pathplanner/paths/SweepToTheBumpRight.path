@@ -73,7 +73,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "RightBumpPosition"
+      "linkedName": null
     }
   ],
   "rotationTargets": [
@@ -107,7 +107,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 50.572197803963746
+    "rotation": 50.57219780396375
   },
   "reversed": false,
   "folder": "RightPaths",

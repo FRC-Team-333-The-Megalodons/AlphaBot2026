@@ -10,6 +10,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 
 public class SpindexerIOKraken implements SpindexerIO {
@@ -19,6 +20,7 @@ public class SpindexerIOKraken implements SpindexerIO {
   private final StatusSignal<Voltage> voltageSignal;
   private final StatusSignal<Current> currentSignal;
   private final StatusSignal<Current> supplyCurrentSignal;
+  private final StatusSignal<Temperature> tempSignal;
 
   private final MotionMagicVelocityVoltage velocityRequest =
       new MotionMagicVelocityVoltage(0).withSlot(0);
@@ -51,19 +53,21 @@ public class SpindexerIOKraken implements SpindexerIO {
     voltageSignal = motor.getMotorVoltage();
     currentSignal = motor.getStatorCurrent();
     supplyCurrentSignal = motor.getSupplyCurrent();
+    tempSignal = motor.getDeviceTemp();
 
     BaseStatusSignal.setUpdateFrequencyForAll(
-        50.0, velocitySignal, voltageSignal, currentSignal, supplyCurrentSignal);
+        50.0, velocitySignal, voltageSignal, currentSignal, supplyCurrentSignal, tempSignal);
   }
 
   @Override
   public void updateInputs(SpindexerIOInputs inputs) {
-    BaseStatusSignal.refreshAll(velocitySignal, voltageSignal, currentSignal, supplyCurrentSignal);
+    BaseStatusSignal.refreshAll(velocitySignal, voltageSignal, currentSignal, supplyCurrentSignal, tempSignal);
 
     inputs.velocityRps = velocitySignal.getValueAsDouble();
     inputs.appliedVolts = voltageSignal.getValueAsDouble();
-    inputs.currentAmps = currentSignal.getValueAsDouble();
+    inputs.statorAmps = currentSignal.getValueAsDouble();
     inputs.supplyAmps = supplyCurrentSignal.getValueAsDouble();
+    inputs.tempCelsius = tempSignal.getValueAsDouble();
   }
 
   @Override

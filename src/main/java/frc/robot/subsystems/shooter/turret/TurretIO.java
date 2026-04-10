@@ -12,6 +12,7 @@ public interface TurretIO extends Automatable {
     public double turretAppliedVolts = 0.0;
     public double turretStatorAmps = 0.0;
     public double turretSupplyAmps = 0.0;
+    public double turretTempCelsius = 0.0;
 
     public double encoder17Rotations = 0.0;
     public double encoder18Rotations = 0.0;

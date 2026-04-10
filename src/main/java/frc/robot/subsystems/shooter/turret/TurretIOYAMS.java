@@ -21,6 +21,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 import yams.units.EasyCRT;
 import yams.units.EasyCRTConfig;
@@ -38,6 +39,7 @@ public class TurretIOYAMS implements TurretIO {
   private final StatusSignal<Voltage> turretVolts;
   private final StatusSignal<Current> statorCurrent;
   private final StatusSignal<Current> supplyCurrent;
+  private final StatusSignal<Temperature> tempSignal;
   private final StatusSignal<Angle> enc17AbsPos;
   private final StatusSignal<Angle> enc18AbsPos;
 
@@ -98,6 +100,7 @@ public class TurretIOYAMS implements TurretIO {
     turretVolts = turretMotor.getMotorVoltage();
     statorCurrent = turretMotor.getStatorCurrent();
     supplyCurrent = turretMotor.getSupplyCurrent();
+    tempSignal = turretMotor.getDeviceTemp();
     enc17AbsPos = encoder17.getAbsolutePosition();
     enc18AbsPos = encoder18.getAbsolutePosition();
 
@@ -108,6 +111,7 @@ public class TurretIOYAMS implements TurretIO {
         turretVolts,
         statorCurrent,
         supplyCurrent,
+        tempSignal,
         enc17AbsPos,
         enc18AbsPos);
 
@@ -147,6 +151,7 @@ public class TurretIOYAMS implements TurretIO {
         turretVolts,
         statorCurrent,
         supplyCurrent,
+        tempSignal,
         enc17AbsPos,
         enc18AbsPos);
 
@@ -156,6 +161,7 @@ public class TurretIOYAMS implements TurretIO {
     inputs.turretAppliedVolts = turretVolts.getValueAsDouble();
     inputs.turretStatorAmps = statorCurrent.getValueAsDouble();
     inputs.turretSupplyAmps = supplyCurrent.getValueAsDouble();
+    inputs.turretTempCelsius = tempSignal.getValueAsDouble();
 
     inputs.encoder17Rotations = enc17AbsPos.getValue().in(Rotations);
     inputs.encoder18Rotations = enc18AbsPos.getValue().in(Rotations);

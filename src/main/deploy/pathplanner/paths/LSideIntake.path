@@ -12,7 +12,7 @@
         "y": 6.781501519041964
       },
       "isLocked": false,
-      "linkedName": "PrepToIntakeFromNZLeftSide"
+      "linkedName": null
     },
     {
       "anchor": {
@@ -25,7 +25,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "LeftNeutralZoneDoneIntaking"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],

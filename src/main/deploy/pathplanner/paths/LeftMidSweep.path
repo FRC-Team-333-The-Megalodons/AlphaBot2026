@@ -73,7 +73,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "LeftShootingUnderTrench"
+      "linkedName": null
     }
   ],
   "rotationTargets": [
@@ -91,7 +91,7 @@
     },
     {
       "waypointRelativePos": 3.1719298245614165,
-      "rotationDegrees": 158.5760136423625
+      "rotationDegrees": 158.57601364236254
     }
   ],
   "constraintZones": [],

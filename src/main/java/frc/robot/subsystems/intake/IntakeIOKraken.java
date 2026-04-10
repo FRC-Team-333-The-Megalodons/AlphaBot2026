@@ -10,6 +10,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 
 public class IntakeIOKraken implements IntakeIO {
@@ -20,6 +21,7 @@ public class IntakeIOKraken implements IntakeIO {
   private final StatusSignal<Voltage> voltageSignal;
   private final StatusSignal<Current> statorCurrentSignal;
   private final StatusSignal<Current> supplyCurrentSignal;
+  private final StatusSignal<Temperature> tempSignal;
 
   private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
   private final VoltageOut voltageRequest = new VoltageOut(0);
@@ -57,20 +59,22 @@ public class IntakeIOKraken implements IntakeIO {
     voltageSignal = motor.getMotorVoltage();
     statorCurrentSignal = motor.getStatorCurrent();
     supplyCurrentSignal = motor.getSupplyCurrent();
+    tempSignal = motor.getDeviceTemp();
 
     BaseStatusSignal.setUpdateFrequencyForAll(
-        50.0, velocitySignal, voltageSignal, statorCurrentSignal, supplyCurrentSignal);
+        50.0, velocitySignal, voltageSignal, statorCurrentSignal, supplyCurrentSignal, tempSignal);
   }
 
   @Override
   public void updateInputs(IntakeIOInputs inputs) {
     BaseStatusSignal.refreshAll(
-        velocitySignal, voltageSignal, statorCurrentSignal, supplyCurrentSignal);
+        velocitySignal, voltageSignal, statorCurrentSignal, supplyCurrentSignal, tempSignal);
 
     inputs.appliedVolts = voltageSignal.getValueAsDouble();
-    inputs.currentAmps = statorCurrentSignal.getValueAsDouble();
-    inputs.velocityRpm = velocitySignal.getValueAsDouble() * 60.0;
+    inputs.statorAmps = statorCurrentSignal.getValueAsDouble();
     inputs.supplyAmps = supplyCurrentSignal.getValueAsDouble();
+    inputs.velocityRpm = velocitySignal.getValueAsDouble() * 60.0;
+    inputs.tempCelsius = tempSignal.getValueAsDouble();
   }
 
   @Override

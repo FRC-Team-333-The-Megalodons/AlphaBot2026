@@ -12,7 +12,7 @@
         "y": 0.5436417556346373
       },
       "isLocked": false,
-      "linkedName": "RightStartingPose"
+      "linkedName": null
     },
     {
       "anchor": {
@@ -41,7 +41,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "RightNeutralZoneDoneIntaking"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
