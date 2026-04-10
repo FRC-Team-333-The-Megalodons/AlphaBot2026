@@ -5,9 +5,22 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "RB2.SC.T3"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "PivotDown"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "RB2.SC.T3"
+                }
+              }
+            ]
           }
         },
         {

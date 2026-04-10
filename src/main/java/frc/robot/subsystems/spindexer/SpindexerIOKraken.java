@@ -61,7 +61,8 @@ public class SpindexerIOKraken implements SpindexerIO {
 
   @Override
   public void updateInputs(SpindexerIOInputs inputs) {
-    BaseStatusSignal.refreshAll(velocitySignal, voltageSignal, currentSignal, supplyCurrentSignal, tempSignal);
+    BaseStatusSignal.refreshAll(
+        velocitySignal, voltageSignal, currentSignal, supplyCurrentSignal, tempSignal);
 
     inputs.velocityRps = velocitySignal.getValueAsDouble();
     inputs.appliedVolts = voltageSignal.getValueAsDouble();

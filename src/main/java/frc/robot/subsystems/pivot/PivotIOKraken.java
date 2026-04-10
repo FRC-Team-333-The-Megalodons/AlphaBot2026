@@ -78,7 +78,8 @@ public class PivotIOKraken implements PivotIO {
 
   @Override
   public void updateInputs(PivotIOInputs inputs) {
-    BaseStatusSignal.refreshAll(position, velocity, appliedVolts, currentAmps, supplyAmps, tempSignal);
+    BaseStatusSignal.refreshAll(
+        position, velocity, appliedVolts, currentAmps, supplyAmps, tempSignal);
 
     inputs.positionDeg = getPositionDeg();
     inputs.velocityRPM = velocity.getValueAsDouble() * 60.0;

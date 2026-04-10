@@ -71,7 +71,8 @@ public class TransferIOKraken implements TransferIO {
 
   @Override
   public void updateInputs(TransferIOInputs inputs) {
-    BaseStatusSignal.refreshAll(velocitySignal, voltageSignal, currentSignal, supplyCurrent, tempSignal);
+    BaseStatusSignal.refreshAll(
+        velocitySignal, voltageSignal, currentSignal, supplyCurrent, tempSignal);
 
     inputs.appliedVolts = voltageSignal.getValueAsDouble();
     inputs.statorAmps = currentSignal.getValueAsDouble();

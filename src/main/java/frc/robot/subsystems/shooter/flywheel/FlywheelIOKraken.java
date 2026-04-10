@@ -69,7 +69,13 @@ public class FlywheelIOKraken implements FlywheelIO {
     rightMotorSignal = motor.getDeviceTemp();
 
     BaseStatusSignal.setUpdateFrequencyForAll(
-        50.0, velocitySignal, voltageSignal, statorCurrentSignal, supplyCurrentSignal, leftMotorSignal, rightMotorSignal);
+        50.0,
+        velocitySignal,
+        voltageSignal,
+        statorCurrentSignal,
+        supplyCurrentSignal,
+        leftMotorSignal,
+        rightMotorSignal);
 
     ParentDevice.optimizeBusUtilizationForAll(motor, motor2);
   }
@@ -118,7 +124,12 @@ public class FlywheelIOKraken implements FlywheelIO {
   @Override
   public void updateInputs(FlywheelIOInputs inputs) {
     BaseStatusSignal.refreshAll(
-        velocitySignal, voltageSignal, statorCurrentSignal, supplyCurrentSignal, leftMotorSignal, rightMotorSignal);
+        velocitySignal,
+        voltageSignal,
+        statorCurrentSignal,
+        supplyCurrentSignal,
+        leftMotorSignal,
+        rightMotorSignal);
 
     inputs.velocityRPM = velocitySignal.getValueAsDouble() * 60.0;
     inputs.appliedVolts = voltageSignal.getValueAsDouble();

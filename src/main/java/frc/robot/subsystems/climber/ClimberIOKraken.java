@@ -80,7 +80,8 @@ public class ClimberIOKraken implements ClimberIO {
 
   @Override
   public void updateInputs(ClimberIOInputs inputs) {
-    BaseStatusSignal.refreshAll(position, velocity, appliedVolts, currentAmps, supplyCurrentAmps, tempSignal);
+    BaseStatusSignal.refreshAll(
+        position, velocity, appliedVolts, currentAmps, supplyCurrentAmps, tempSignal);
 
     inputs.positionRot = position.getValueAsDouble();
     inputs.velocityRps = velocity.getValueAsDouble();

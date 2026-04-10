@@ -41,7 +41,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "LeftShootingPosition"
     }
   ],
   "rotationTargets": [
@@ -67,7 +67,7 @@
   },
   "goalEndState": {
     "velocity": 0.0,
-    "rotation": -178.87669728592445
+    "rotation": 1.6846843178962685
   },
   "reversed": false,
   "folder": "LeftPaths",

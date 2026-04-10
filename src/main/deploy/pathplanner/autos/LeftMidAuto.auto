@@ -13,15 +13,34 @@
                 "data": {
                   "commands": [
                     {
-                      "type": "named",
+                      "type": "parallel",
                       "data": {
-                        "name": "PivotDown"
+                        "commands": [
+                          {
+                            "type": "path",
+                            "data": {
+                              "pathName": "PrepLNZ"
+                            }
+                          },
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "PivotDown"
+                            }
+                          }
+                        ]
                       }
                     },
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "LeftMidSweep"
+                        "pathName": "LSideIntake"
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "GoBackLToShoot"
                       }
                     },
                     {
