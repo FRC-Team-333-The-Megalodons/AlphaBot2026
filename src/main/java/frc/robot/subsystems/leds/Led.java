@@ -3,7 +3,6 @@ package frc.robot.subsystems.leds;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.tracker.RobotStateTracker;
-import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.Logger;
 
 public class Led extends SubsystemBase {
@@ -11,26 +10,16 @@ public class Led extends SubsystemBase {
   private final LedIO io;
   private final LedIOInputsAutoLogged inputs = new LedIOInputsAutoLogged();
 
-  private final BooleanSupplier camera0SeesTagSupplier;
-  private final BooleanSupplier camera1SeesTagSupplier;
-
   private LedState currentState = LedState.IDLE;
 
-  public Led(LedIO io, BooleanSupplier camera0SeesTag, BooleanSupplier camera1SeesTag) {
+  public Led(LedIO io) {
     this.io = io;
-    this.camera0SeesTagSupplier = camera0SeesTag;
-    this.camera1SeesTagSupplier = camera1SeesTag;
   }
 
   @Override
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Led", inputs);
-
-    // Vision indicators always update, independent of game state
-    boolean cam0 = camera0SeesTagSupplier.getAsBoolean();
-    boolean cam1 = camera1SeesTagSupplier.getAsBoolean();
-    io.setVisionState(cam0, cam1);
   }
 
   private void setState(LedState state) {

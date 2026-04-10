@@ -150,7 +150,7 @@ public class RobotContainer {
                 targeting::getTargetAngularVelocityRadPerSec,
                 drive::getFieldAngularVelocity,
                 batteryLogger);
-        leds = new Led(new LedIOCANdle(), vision.seesTagsSupplier(0), vision.seesTagsSupplier(1));
+        leds = new Led(new LedIOCANdle());
         climber = new Climber(new ClimberIOKraken(), batteryLogger);
         break;
 
@@ -183,7 +183,7 @@ public class RobotContainer {
                 targeting::getTargetAngularVelocityRadPerSec,
                 drive::getFieldAngularVelocity,
                 batteryLogger);
-        leds = new Led(new LedIOSim(), vision.seesTagsSupplier(0), vision.seesTagsSupplier(1));
+        leds = new Led(new LedIOSim());
         climber = new Climber(new ClimberIOKrakenSim(), batteryLogger);
         break;
 
@@ -211,7 +211,7 @@ public class RobotContainer {
                 targeting::getTargetAngularVelocityRadPerSec,
                 drive::getFieldAngularVelocity,
                 batteryLogger);
-        leds = new Led(new LedIO() {}, vision.seesTagsSupplier(0), vision.seesTagsSupplier(1));
+        leds = new Led(new LedIO() {});
         climber = new Climber(new ClimberIO() {}, batteryLogger);
         break;
     }
