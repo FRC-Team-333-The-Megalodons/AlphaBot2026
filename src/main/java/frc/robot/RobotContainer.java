@@ -274,6 +274,7 @@ public class RobotContainer {
 
   private void registerNamedCommands() {
     NamedCommands.registerCommand("DriveToOutpost", PathfindCommands.driveToTheOutpost(drive));
+
     NamedCommands.registerCommand(
         "PivotDown",
         pivot

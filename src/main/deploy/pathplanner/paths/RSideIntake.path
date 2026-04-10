@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.927355555555556,
-        "y": 2.0899888888888882
+        "x": 8.001020166073548,
+        "y": 1.953096085409253
       },
       "isLocked": false,
       "linkedName": "PrepToIntakeFromNZRightSide"
     },
     {
       "anchor": {
-        "x": 8.209533333333333,
-        "y": 3.2086222222222216
+        "x": 8.038211111111112,
+        "y": 2.9106642941874257
       },
       "prevControl": {
-        "x": 8.27,
-        "y": 2.5434888888888882
+        "x": 8.098677777777779,
+        "y": 2.2455309608540923
       },
       "nextControl": null,
       "isLocked": false,
@@ -40,7 +40,7 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 3.0,
+    "maxVelocity": 2.0,
     "maxAcceleration": 2.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,

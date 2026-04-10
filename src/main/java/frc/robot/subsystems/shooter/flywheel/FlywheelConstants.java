@@ -23,7 +23,7 @@ public class FlywheelConstants {
 
   // Energy/Motor-related Low & High limits
   public static final double LOW_SUPPLY_LIMIT = 65.0;
-  public static final double HIGH_SUPPLY_LIMIT = 100.0;
+  public static final double HIGH_SUPPLY_LIMIT = 75.0;
   public static final double DROP_TO_LOW_SUPPLY_TIME_s = 1.0;
 
   public static final double LOW_STATOR_LIMIT = 180.0;

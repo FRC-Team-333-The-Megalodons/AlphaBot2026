@@ -4,11 +4,11 @@ public class IntakeConstants {
   public static final int MOTOR_ID = 5;
   public static final double GEAR_RATIO = 1.0;
 
-  public static final double INTAKE_VOLTS = 7.2;
+  public static final double INTAKE_VOLTS = 12;
   public static final double EJECT_VOLTS = -7.2;
 
   public static final double INTAKE_RPM = 2800.0;
-  public static final double EJECT_RPM = -6000.0;
+  public static final double EJECT_RPM = -5000.0;
   public static final double VELOCITY_TOLERANCE_RPM = 100.0;
 
   public static final double kS = 0.27809;
