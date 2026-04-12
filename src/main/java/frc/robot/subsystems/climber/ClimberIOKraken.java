@@ -132,8 +132,7 @@ public class ClimberIOKraken implements ClimberIO {
   }
 
   @Override
-  public boolean pastTarget(double targetPos)
-  {
+  public boolean pastTarget(double targetPos) {
     double currentPos = position.getValueAsDouble();
     return (currentPos >= targetPos);
   }

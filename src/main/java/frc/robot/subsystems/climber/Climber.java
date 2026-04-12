@@ -56,8 +56,7 @@ public class Climber extends SubsystemBase {
     return io.atTarget(ClimberConstants.kStowedPosition);
   }
 
-  public boolean isHighEnoughToHitTunnel()
-  {
+  public boolean isHighEnoughToHitTunnel() {
     return io.pastTarget(ClimberConstants.kClimberUpEnoughToHitTunnel);
   }
 

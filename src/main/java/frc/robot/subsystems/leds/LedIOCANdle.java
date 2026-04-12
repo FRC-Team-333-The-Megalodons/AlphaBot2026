@@ -61,7 +61,6 @@ public class LedIOCANdle implements LedIO {
     candle.clearAllAnimations();
 
     switch (state) {
-
       case INTAKING:
         // Slow yellow Larson scanner
         candle.setControl(
@@ -130,7 +129,6 @@ public class LedIOCANdle implements LedIO {
         // All LEDs off
         candle.setControl(new SolidColor(0, TOTAL_LENGTH).withColor(LedConstants.OFF));
         break;
-
     }
   }
 }

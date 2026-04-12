@@ -25,28 +25,28 @@
                           {
                             "type": "path",
                             "data": {
-                              "pathName": "PrepLNZ"
+                              "pathName": "RT2.GS.O2"
                             }
                           }
                         ]
                       }
                     },
                     {
-                      "type": "path",
+                      "type": "wait",
                       "data": {
-                        "pathName": "LSideIntake"
-                      }
-                    },
-                    {
-                      "type": "path",
-                      "data": {
-                        "pathName": "GoBackLToShoot"
+                        "waitTime": 3.0
                       }
                     },
                     {
                       "type": "parallel",
                       "data": {
                         "commands": [
+                          {
+                            "type": "path",
+                            "data": {
+                              "pathName": "GoClimbAfterOutpost"
+                            }
+                          },
                           {
                             "type": "named",
                             "data": {
@@ -63,28 +63,9 @@
                       }
                     },
                     {
-                      "type": "path",
+                      "type": "named",
                       "data": {
-                        "pathName": "LeftMidSweep"
-                      }
-                    },
-                    {
-                      "type": "parallel",
-                      "data": {
-                        "commands": [
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "Shoot"
-                            }
-                          },
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "PivotSlowRaise"
-                            }
-                          }
-                        ]
+                        "name": "AutoClimbRightSide"
                       }
                     }
                   ]
@@ -109,6 +90,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "LeftAutons",
+  "folder": "RightAutons",
   "choreoAuto": false
 }

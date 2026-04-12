@@ -100,7 +100,8 @@ public class IntakeIOKraken implements IntakeIO {
   @Override
   public boolean isStuck() {
     double currentRPM = velocitySignal.getValueAsDouble() * 60.0;
-    return (lastTargetRpm > 0 && lastTargetRpm < currentRPM
+    return (lastTargetRpm > 0
+        && lastTargetRpm < currentRPM
         && currentRPM - lastTargetRpm >= IntakeConstants.INTAKE_STUCK_TOLERANCE_RPM);
   }
 }

@@ -17,15 +17,15 @@
                       "data": {
                         "commands": [
                           {
-                            "type": "named",
-                            "data": {
-                              "name": "PivotDown"
-                            }
-                          },
-                          {
                             "type": "path",
                             "data": {
                               "pathName": "PrepLNZ"
+                            }
+                          },
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "PivotDown"
                             }
                           }
                         ]
@@ -65,26 +65,19 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "LeftMidSweep"
+                        "pathName": "StageClimbLeft"
                       }
                     },
                     {
-                      "type": "parallel",
+                      "type": "wait",
                       "data": {
-                        "commands": [
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "Shoot"
-                            }
-                          },
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "PivotSlowRaise"
-                            }
-                          }
-                        ]
+                        "waitTime": 1.5
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "AutoClimbLeftSide"
                       }
                     }
                   ]
