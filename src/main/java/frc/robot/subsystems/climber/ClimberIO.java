@@ -9,8 +9,9 @@ public interface ClimberIO {
     public double positionRot = 0.0;
     public double velocityRps = 0.0;
     public double appliedVolts = 0.0;
-    public double currentAmps = 0.0;
+    public double statorAmps = 0.0;
     public double supplyAmps = 0.0;
+    public double tempCelsius = 0.0;
     public boolean hasZeroed = false;
   }
 
@@ -27,6 +28,10 @@ public interface ClimberIO {
   public default void zeroPosition() {}
 
   public default boolean atTarget(double positionRot) {
+    return false;
+  }
+
+  public default boolean pastTarget(double targetPos) {
     return false;
   }
 }

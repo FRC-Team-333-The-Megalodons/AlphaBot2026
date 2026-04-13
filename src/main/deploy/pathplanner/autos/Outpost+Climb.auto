@@ -13,27 +13,28 @@
                 "data": {
                   "commands": [
                     {
-                      "type": "named",
+                      "type": "parallel",
                       "data": {
-                        "name": "PivotDown"
-                      }
-                    },
-                    {
-                      "type": "path",
-                      "data": {
-                        "pathName": "RT3.SWI.RB5"
-                      }
-                    },
-                    {
-                      "type": "path",
-                      "data": {
-                        "pathName": "RB5.GB.RB2"
+                        "commands": [
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "PivotDown"
+                            }
+                          },
+                          {
+                            "type": "path",
+                            "data": {
+                              "pathName": "RT2.GS.O2"
+                            }
+                          }
+                        ]
                       }
                     },
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 0.7
+                        "waitTime": 3.0
                       }
                     },
                     {
@@ -43,7 +44,7 @@
                           {
                             "type": "path",
                             "data": {
-                              "pathName": "RB2.GS.RT2"
+                              "pathName": "GoClimbAfterOutpost"
                             }
                           },
                           {
@@ -62,28 +63,9 @@
                       }
                     },
                     {
-                      "type": "path",
+                      "type": "named",
                       "data": {
-                        "pathName": "RT2.SWI.RT2"
-                      }
-                    },
-                    {
-                      "type": "parallel",
-                      "data": {
-                        "commands": [
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "Shoot"
-                            }
-                          },
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "PivotSlowRaise"
-                            }
-                          }
-                        ]
+                        "name": "AutoClimbRightSide"
                       }
                     }
                   ]

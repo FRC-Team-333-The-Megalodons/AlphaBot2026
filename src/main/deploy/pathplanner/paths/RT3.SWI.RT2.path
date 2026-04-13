@@ -4,15 +4,15 @@
     {
       "anchor": {
         "x": 4.400133333333333,
-        "y": 0.4674666666666667
+        "y": 0.41707777777777666
       },
       "prevControl": null,
       "nextControl": {
         "x": 6.485016674426651,
-        "y": 0.9217178067322707
+        "y": 0.8713289178433807
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "RT3.Pi.SP"
     },
     {
       "anchor": {
@@ -64,16 +64,16 @@
     },
     {
       "anchor": {
-        "x": 3.9878410438908665,
-        "y": 0.5884000000000003
+        "x": 3.5838333333333336,
+        "y": 0.5866785290628707
       },
       "prevControl": {
-        "x": 4.4542573493798585,
-        "y": 0.6370023868765915
+        "x": 4.067566666666667,
+        "y": 0.6370674179517584
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "RightScoringPosition"
+      "linkedName": "RT2.1/5Pi.SS"
     }
   ],
   "rotationTargets": [

@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.038211111111112,
-        "y": 2.9106642941874257
+        "x": 7.866888888888889,
+        "y": 2.976833333333333
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.042627085804667,
-        "y": 1.5144437722419921
+        "x": 6.871304863582444,
+        "y": 1.5806128113878994
       },
       "isLocked": false,
-      "linkedName": "RightNeutralZoneDoneIntaking"
+      "linkedName": "NZNR2.3Q.I"
     },
     {
       "anchor": {
@@ -32,16 +32,16 @@
     },
     {
       "anchor": {
-        "x": 3.9878410438908665,
-        "y": 0.5884000000000003
+        "x": 3.5838333333333336,
+        "y": 0.5866785290628707
       },
       "prevControl": {
-        "x": 5.139074733096087,
-        "y": 0.6942704626334513
+        "x": 4.735067022538554,
+        "y": 0.6925489916963217
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "RightScoringPosition"
+      "linkedName": "RT2.1/5Pi.SS"
     }
   ],
   "rotationTargets": [

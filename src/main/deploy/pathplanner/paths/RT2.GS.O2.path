@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.9878410438908665,
-        "y": 0.5884000000000003
+        "x": 3.5737555555555556,
+        "y": 0.41707777777777666
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.443641043890866,
-        "y": 0.6287111111111108
+        "x": 2.7574555555555555,
+        "y": 0.5581666666666661
       },
       "isLocked": false,
-      "linkedName": "RightScoringPosition"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 0.571,
-        "y": 0.719
+        "x": 0.600811111111111,
+        "y": 0.5866785290628707
       },
       "prevControl": {
-        "x": 1.1476391372148624,
-        "y": 0.7189999999999999
+        "x": 1.1774502483259734,
+        "y": 0.5866785290628705
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "O2.1/5Pi.I"
     }
   ],
   "rotationTargets": [],
@@ -33,7 +33,7 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 1.0,
+    "maxVelocity": 2.0,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 179.9542079405853
+    "rotation": -179.10482628978994
   },
   "reversed": false,
   "folder": "RightPaths",

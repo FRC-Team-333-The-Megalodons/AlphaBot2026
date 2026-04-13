@@ -28,7 +28,7 @@ public class Pivot extends SubsystemBase implements Characterizable {
     this.io = io;
     this.batteryLogger = batteryLogger;
 
-    SmartDashboard.putData("Pivot/Zero Encoder", zeroEncoder());
+    SmartDashboard.putData("Pivot/Zero Pivot Encoder", zeroEncoder());
   }
 
   @Override

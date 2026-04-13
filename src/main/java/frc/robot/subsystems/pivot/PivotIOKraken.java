@@ -14,6 +14,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 
 public class PivotIOKraken implements PivotIO {
@@ -26,6 +27,7 @@ public class PivotIOKraken implements PivotIO {
   private final StatusSignal<Voltage> appliedVolts;
   private final StatusSignal<Current> currentAmps;
   private final StatusSignal<Current> supplyAmps;
+  private final StatusSignal<Temperature> tempSignal;
 
   private final PositionVoltage positionRequest = new PositionVoltage(0).withSlot(0);
   private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0).withSlot(0);
@@ -68,20 +70,23 @@ public class PivotIOKraken implements PivotIO {
     appliedVolts = motor.getMotorVoltage();
     currentAmps = motor.getStatorCurrent();
     supplyAmps = motor.getSupplyCurrent();
+    tempSignal = motor.getDeviceTemp();
 
     BaseStatusSignal.setUpdateFrequencyForAll(
-        50.0, position, velocity, appliedVolts, currentAmps, supplyAmps);
+        50.0, position, velocity, appliedVolts, currentAmps, supplyAmps, tempSignal);
   }
 
   @Override
   public void updateInputs(PivotIOInputs inputs) {
-    BaseStatusSignal.refreshAll(position, velocity, appliedVolts, currentAmps, supplyAmps);
+    BaseStatusSignal.refreshAll(
+        position, velocity, appliedVolts, currentAmps, supplyAmps, tempSignal);
 
     inputs.positionDeg = getPositionDeg();
     inputs.velocityRPM = velocity.getValueAsDouble() * 60.0;
     inputs.appliedVolts = getAppliedVoltage();
-    inputs.currentAmps = currentAmps.getValueAsDouble();
+    inputs.statorAmps = currentAmps.getValueAsDouble();
     inputs.supplyAmps = supplyAmps.getValueAsDouble();
+    inputs.tempCelsius = tempSignal.getValueAsDouble();
   }
 
   @Override

@@ -13,49 +13,19 @@
                 "data": {
                   "commands": [
                     {
-                      "type": "named",
-                      "data": {
-                        "name": "PivotDown"
-                      }
-                    },
-                    {
-                      "type": "path",
-                      "data": {
-                        "pathName": "RT3.SWI.RB5"
-                      }
-                    },
-                    {
-                      "type": "path",
-                      "data": {
-                        "pathName": "RB5.GB.RB2"
-                      }
-                    },
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 0.7
-                      }
-                    },
-                    {
                       "type": "parallel",
                       "data": {
                         "commands": [
                           {
                             "type": "path",
                             "data": {
-                              "pathName": "RB2.GS.RT2"
+                              "pathName": "PrepLNZ"
                             }
                           },
                           {
                             "type": "named",
                             "data": {
-                              "name": "Shoot"
-                            }
-                          },
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "PivotSlowRaise"
+                              "name": "PivotDown"
                             }
                           }
                         ]
@@ -64,7 +34,13 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "RT2.SWI.RT2"
+                        "pathName": "LSideIntake"
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "GoBackLToShoot"
                       }
                     },
                     {
@@ -84,6 +60,24 @@
                             }
                           }
                         ]
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "StageClimbLeft"
+                      }
+                    },
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 1.5
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "AutoClimbLeftSide"
                       }
                     }
                   ]
@@ -108,6 +102,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "RightAutons",
+  "folder": "LeftAutons",
   "choreoAuto": false
 }

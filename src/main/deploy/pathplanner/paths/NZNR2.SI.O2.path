@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.038211111111112,
-        "y": 2.9106642941874257
+        "x": 7.866888888888889,
+        "y": 2.976833333333333
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.302533333333335,
-        "y": 1.8625754052985366
+        "x": 7.131211111111112,
+        "y": 1.928744444444444
       },
       "isLocked": false,
-      "linkedName": "RightNeutralZoneDoneIntaking"
+      "linkedName": "NZNR2.3Q.I"
     },
     {
       "anchor": {
@@ -48,16 +48,16 @@
     },
     {
       "anchor": {
-        "x": 0.571,
-        "y": 0.7194111111111101
+        "x": 0.600811111111111,
+        "y": 0.5866785290628707
       },
       "prevControl": {
-        "x": 1.578777777777777,
-        "y": 0.7395666666666671
+        "x": 1.608588888888888,
+        "y": 0.6068340846184277
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "O2.1/5Pi.I"
     }
   ],
   "rotationTargets": [
@@ -83,7 +83,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 179.26547896574522
+    "rotation": -179.10482628978994
   },
   "reversed": false,
   "folder": "RightPaths",

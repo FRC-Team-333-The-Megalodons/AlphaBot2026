@@ -4,6 +4,9 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.interfaces.Zonable;
+import frc.robot.subsystems.climber.Climber;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.shooter.flywheel.Flywheel;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -52,16 +55,25 @@ public class RobotStateTracker extends SubsystemBase implements Zonable {
   private final BooleanSupplier flywheelReady;
   private final BooleanSupplier flywheelSpinningUp;
   private final DoubleSupplier intakeVoltage;
+  private final Intake intake;
+  private final Flywheel flywheel;
+  private final Climber climber;
 
   public RobotStateTracker(
       Supplier<Pose2d> poseSupplier,
       BooleanSupplier flywheelReady,
       BooleanSupplier flywheelSpinningUp,
-      DoubleSupplier intakeVoltage) {
+      DoubleSupplier intakeVoltage,
+      Intake intake,
+      Flywheel flywheel,
+      Climber climber) {
     this.poseSupplier = poseSupplier;
     this.flywheelReady = flywheelReady;
     this.flywheelSpinningUp = flywheelSpinningUp;
     this.intakeVoltage = intakeVoltage;
+    this.intake = intake;
+    this.flywheel = flywheel;
+    this.climber = climber;
   }
 
   @Override
@@ -157,5 +169,18 @@ public class RobotStateTracker extends SubsystemBase implements Zonable {
 
   public boolean isDisabled() {
     return getMatchMode() == MatchMode.DISABLED;
+  }
+
+  public boolean isShooting() {
+    // Whether or not the transfer is spinning is a good indicator of shooting.
+    return flywheel.isSpinRequested();
+  }
+
+  public boolean isHighEnoughToHitTunnel() {
+    return climber.isHighEnoughToHitTunnel();
+  }
+
+  public boolean isIntakeStuck() {
+    return intake.isStuck();
   }
 }

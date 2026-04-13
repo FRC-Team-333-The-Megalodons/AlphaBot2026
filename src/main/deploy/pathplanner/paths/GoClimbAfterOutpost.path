@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.5036773428232504,
-        "y": 2.4049822064056934
+        "x": 0.600811111111111,
+        "y": 0.5866785290628707
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.5245907473309606,
-        "y": 2.555610913404508
+        "x": 1.0341555555555555,
+        "y": 1.4147777777777764
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "O2.1/5Pi.I"
     },
     {
       "anchor": {
-        "x": 0.9860260972716497,
-        "y": 2.6201660735468555
+        "x": 0.9333777777777776,
+        "y": 2.483022222222222
       },
       "prevControl": {
-        "x": 2.2075618173563827,
-        "y": 2.6201660735468555
+        "x": 0.8829888888888888,
+        "y": 2.1504555555555567
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "RightStageClimbPose"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -33,8 +33,8 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
+    "maxVelocity": 1.0,
+    "maxAcceleration": 2.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -0.806929455102307
+    "rotation": -34.346097400061495
   },
   "reversed": false,
-  "folder": "MidPaths",
+  "folder": "RightPaths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 57.40288312176523
+    "rotation": -179.10482628978994
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

@@ -8,9 +8,10 @@ public interface IntakeIO extends Automatable {
   @AutoLog
   public static class IntakeIOInputs {
     public double appliedVolts = 0.0;
-    public double currentAmps = 0.0;
-    public double velocityRpm = 0.0;
+    public double statorAmps = 0.0;
     public double supplyAmps = 0.0;
+    public double velocityRpm = 0.0;
+    public double tempCelsius = 0.0;
   }
 
   /** TODO: Create a speed-to-RPM map once intake PID gains are tuned. */
@@ -46,5 +47,9 @@ public interface IntakeIO extends Automatable {
   @Override
   public default boolean atTarget(double rpm) {
     return true;
+  }
+
+  public default boolean isStuck() {
+    return false;
   }
 }

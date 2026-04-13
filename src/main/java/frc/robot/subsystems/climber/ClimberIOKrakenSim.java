@@ -44,7 +44,7 @@ public class ClimberIOKrakenSim implements ClimberIO {
     inputs.positionRot = sim.getPositionMeters();
     inputs.velocityRps = sim.getVelocityMetersPerSecond();
     inputs.appliedVolts = appliedVolts;
-    inputs.currentAmps = sim.getCurrentDrawAmps();
+    inputs.statorAmps = sim.getCurrentDrawAmps();
     inputs.hasZeroed = hasZeroed;
   }
 

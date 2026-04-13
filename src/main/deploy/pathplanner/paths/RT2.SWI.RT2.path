@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.9878410438908665,
-        "y": 0.5884000000000003
+        "x": 3.5838333333333336,
+        "y": 0.5866785290628707
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.435698249762302,
-        "y": 0.8912503639878162
+        "x": 5.024955555555556,
+        "y": 0.7277674179517588
       },
       "isLocked": false,
-      "linkedName": "RightScoringPosition"
+      "linkedName": "RT2.1/5Pi.SS"
     },
     {
       "anchor": {
@@ -80,16 +80,16 @@
     },
     {
       "anchor": {
-        "x": 3.9878410438908665,
-        "y": 0.5884000000000003
+        "x": 3.5838333333333336,
+        "y": 0.5866785290628707
       },
       "prevControl": {
-        "x": 5.5919218155142545,
-        "y": 0.6904468130291104
+        "x": 5.187914104956722,
+        "y": 0.6887253420919808
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "RightScoringPosition"
+      "linkedName": "RT2.1/5Pi.SS"
     }
   ],
   "rotationTargets": [

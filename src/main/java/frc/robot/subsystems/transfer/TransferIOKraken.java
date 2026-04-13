@@ -11,6 +11,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 
 public class TransferIOKraken implements TransferIO {
@@ -20,6 +21,7 @@ public class TransferIOKraken implements TransferIO {
   private final StatusSignal<Voltage> voltageSignal;
   private final StatusSignal<Current> currentSignal;
   private final StatusSignal<Current> supplyCurrent;
+  private final StatusSignal<Temperature> tempSignal;
 
   private final MotionMagicVelocityVoltage velocityRequest =
       new MotionMagicVelocityVoltage(0).withSlot(0);
@@ -61,19 +63,22 @@ public class TransferIOKraken implements TransferIO {
     voltageSignal = motor.getMotorVoltage();
     currentSignal = motor.getStatorCurrent();
     supplyCurrent = motor.getSupplyCurrent();
+    tempSignal = motor.getDeviceTemp();
 
     BaseStatusSignal.setUpdateFrequencyForAll(
-        50.0, velocitySignal, voltageSignal, currentSignal, supplyCurrent);
+        50.0, velocitySignal, voltageSignal, currentSignal, supplyCurrent, tempSignal);
   }
 
   @Override
   public void updateInputs(TransferIOInputs inputs) {
-    BaseStatusSignal.refreshAll(velocitySignal, voltageSignal, currentSignal, supplyCurrent);
+    BaseStatusSignal.refreshAll(
+        velocitySignal, voltageSignal, currentSignal, supplyCurrent, tempSignal);
 
     inputs.appliedVolts = voltageSignal.getValueAsDouble();
-    inputs.currentAmps = currentSignal.getValueAsDouble();
+    inputs.statorAmps = currentSignal.getValueAsDouble();
     inputs.supplyAmps = supplyCurrent.getValueAsDouble();
     inputs.velocityRpm = velocitySignal.getValueAsDouble() * 60.0;
+    inputs.tempCelsius = tempSignal.getValueAsDouble();
   }
 
   @Override
@@ -81,6 +86,11 @@ public class TransferIOKraken implements TransferIO {
 
     double rps = rpm / 60.0;
     motor.setControl(velocityRequest.withVelocity(rps));
+  }
+
+  @Override
+  public double getCurrentRPM() {
+    return velocitySignal.getValueAsDouble() * 60.0;
   }
 
   @Override

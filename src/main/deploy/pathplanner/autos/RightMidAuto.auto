@@ -25,7 +25,7 @@
                           {
                             "type": "path",
                             "data": {
-                              "pathName": "PrepRNZ"
+                              "pathName": "RT3.SI.NZNR3"
                             }
                           }
                         ]
@@ -34,13 +34,13 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "RSideIntake"
+                        "pathName": "NZNR3.I.NZNR2"
                       }
                     },
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "GoBackRToShoot"
+                        "pathName": "NZNR.GS.RT2"
                       }
                     },
                     {
@@ -65,7 +65,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "RightMidSweep2"
+                        "pathName": "RT2.SWI.RT2"
                       }
                     },
                     {

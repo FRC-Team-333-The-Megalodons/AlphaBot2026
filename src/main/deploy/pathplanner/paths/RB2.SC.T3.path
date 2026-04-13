@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.5939111111111117,
-        "y": 7.451366666666667
+        "x": 3.5036773428232504,
+        "y": 2.4049822064056934
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.7935705812574145,
-        "y": 7.483321470937129
+        "x": 2.5245907473309606,
+        "y": 2.555610913404508
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "RB2.2Q.SP"
     },
     {
       "anchor": {
-        "x": 0.5771767497034408,
-        "y": 7.451366666666667
+        "x": 0.9860260972716497,
+        "y": 2.6201660735468555
       },
       "prevControl": {
-        "x": 1.4056346381969167,
-        "y": 7.53711743772242
+        "x": 2.2075618173563827,
+        "y": 2.6201660735468555
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "T3.0/5Pi.SC"
     }
   ],
   "rotationTargets": [],
@@ -33,7 +33,7 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 1.2,
+    "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -66.0493191100634
+    "rotation": -0.806929455102307
   },
   "reversed": false,
-  "folder": "LeftPaths",
+  "folder": "MidPaths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -91.12330271460247
+    "rotation": 57.40288312176523
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

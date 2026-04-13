@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.622028469750891,
-        "y": 0.5866785290628707
+        "x": 3.493133333333333,
+        "y": 5.385422222222221
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.7182562277580082,
-        "y": 0.9202135231316722
+        "x": 2.2235485172004728,
+        "y": 5.288589482008697
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "LB2.1Q.SP"
     },
     {
       "anchor": {
-        "x": 0.9967852906287076,
-        "y": 0.5866785290628707
+        "x": 1.0505812574066717,
+        "y": 4.987188612092314
       },
       "prevControl": {
-        "x": 1.5670225385527887,
-        "y": 0.7050296559905109
+        "x": 2.132633333333333,
+        "y": 5.224177777777778
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "PrepOutpost"
+      "linkedName": "T1.1/5Pi.SC"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -179.2042764472607
+    "rotation": -179.35625428604143
   },
   "reversed": false,
-  "folder": "RightPaths",
+  "folder": "MidPaths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 76.8274465766732
+    "rotation": -42.443849921421716
   },
   "useDefaultConstraints": true
 }

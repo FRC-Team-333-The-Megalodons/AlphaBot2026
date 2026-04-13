@@ -21,13 +21,13 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "GoToTheMiddleRight"
+                        "pathName": "RT3.I.NZNR2"
                       }
                     },
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "GoBackRToShoot"
+                        "pathName": "NZNR.GS.RT2"
                       }
                     },
                     {
@@ -43,7 +43,7 @@
                           {
                             "type": "path",
                             "data": {
-                              "pathName": "StartingLineToOutpost"
+                              "pathName": "RT2.GS.O2"
                             }
                           }
                         ]

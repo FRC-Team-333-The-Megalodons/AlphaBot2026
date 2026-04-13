@@ -19,7 +19,7 @@ public class Climber extends SubsystemBase {
     this.batteryLogger = batteryLogger;
 
     // ── SmartDashboard commands ──
-    SmartDashboard.putData("Climber/Zero Encoder", zeroEncoder());
+    SmartDashboard.putData("Climber/Zero Climber Encoder", zeroEncoder());
     SmartDashboard.putData("Climber/Go To Zero", goToZero());
     SmartDashboard.putData("Climber/Go To Extended", extend());
     SmartDashboard.putData("Climber/Go To Climb (Retract)", retract());
@@ -54,6 +54,10 @@ public class Climber extends SubsystemBase {
   /** Returns true if the climber is at the retracted (climbed) position. */
   public boolean isRetracted() {
     return io.atTarget(ClimberConstants.kStowedPosition);
+  }
+
+  public boolean isHighEnoughToHitTunnel() {
+    return io.pastTarget(ClimberConstants.kClimberUpEnoughToHitTunnel);
   }
 
   public Command zeroEncoder() {

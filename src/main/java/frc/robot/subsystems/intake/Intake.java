@@ -103,4 +103,8 @@ public class Intake extends SubsystemBase implements Characterizable {
         runSysIdSequence(routine),
         Commands.print("Intake SysId Completed"));
   }
+
+  public boolean isStuck() {
+    return io.isStuck();
+  }
 }

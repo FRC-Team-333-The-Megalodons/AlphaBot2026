@@ -5,9 +5,22 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "LeftStageClimb"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "PivotDown"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "LB2.SC.T1"
+                }
+              }
+            ]
           }
         },
         {
