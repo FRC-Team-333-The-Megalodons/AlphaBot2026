@@ -66,19 +66,20 @@ public class Targeting extends SubsystemBase implements Initializable, Zonable {
 
           targetVisualization.setRobotPose(new Pose2d(rawTarget, Rotation2d.kZero));
 
-         // 1. Convert field-relative velocity to robot-relative velocity
-        Translation2d fieldVel = new Translation2d(vel.dx, vel.dy);
-        Translation2d robotVel = fieldVel.rotateBy(pose.getRotation().unaryMinus());
+          // 1. Convert field-relative velocity to robot-relative velocity
+          Translation2d fieldVel = new Translation2d(vel.dx, vel.dy);
+          Translation2d robotVel = fieldVel.rotateBy(pose.getRotation().unaryMinus());
 
-        // 2. Create a Twist2d representing the exact movement over the lookahead time
-        Twist2d lookaheadTwist = new Twist2d(
-           robotVel.getX() * LOOKAHEAD_TIME_SEC,
-           robotVel.getY() * LOOKAHEAD_TIME_SEC,
-           vel.dtheta * LOOKAHEAD_TIME_SEC
-);
+          // 2. Create a Twist2d representing the exact movement over the lookahead time
+          Twist2d lookaheadTwist =
+              new Twist2d(
+                  robotVel.getX() * LOOKAHEAD_TIME_SEC,
+                  robotVel.getY() * LOOKAHEAD_TIME_SEC,
+                  vel.dtheta * LOOKAHEAD_TIME_SEC);
 
-        // Added the exponential map to accurately predict the pose along a curved trajectory(before it was linear)
-        Pose2d predictedPose = pose.exp(lookaheadTwist);
+          // Added the exponential map to accurately predict the pose along a curved
+          // trajectory(before it was linear)
+          Pose2d predictedPose = pose.exp(lookaheadTwist);
 
           // All distances are measured from the turret pivot, not the robot center.
           // This matches the origin used inside velocityCompensatedCoordinates().
@@ -86,38 +87,40 @@ public class Targeting extends SubsystemBase implements Initializable, Zonable {
 
           inputs.targetDistance = predictedTurretPose.getTranslation().getDistance(rawTarget);
           inputs.targetYaw = io.getAngleTo(predictedPose, rawTarget).getDegrees();
-          
-        final int MAX_ITERATIONS = 10;
-        final double TIME_TOLERANCE_SEC = 0.01; // 10ms tolerance
 
-        // 1. Initial Guess for Time of Flight
-        double t_guess = io.getTOFFromDistance(inputs.targetDistance);
-        Translation2d velocityCompensatedTarget = rawTarget;
+          final int MAX_ITERATIONS = 10;
+          final double TIME_TOLERANCE_SEC = 0.01; // 10ms tolerance
 
-        Pose2d turretPoseAtPrediction = io.getTurretPose(predictedPose);
-        Translation2d fieldVelocity = new Translation2d(vel.dx, vel.dy);
+          // 1. Initial Guess for Time of Flight
+          double t_guess = io.getTOFFromDistance(inputs.targetDistance);
+          Translation2d velocityCompensatedTarget = rawTarget;
 
-        // 2. Dynamic Loop
-        for (int i = 0; i < MAX_ITERATIONS; i++) {
-    
-    // Shift the target based on the current guessed flight time
-    velocityCompensatedTarget = io.velocityCompensatedCoordinates(
-        predictedPose, fieldVelocity, t_guess, rawTarget);
+          Pose2d turretPoseAtPrediction = io.getTurretPose(predictedPose);
+          Translation2d fieldVelocity = new Translation2d(vel.dx, vel.dy);
 
-    // Recalculate distance from the turret to the new virtual target
-    double newDistance = io.getDistanceFrom(turretPoseAtPrediction, velocityCompensatedTarget);
+          // 2. Dynamic Loop
+          for (int i = 0; i < MAX_ITERATIONS; i++) {
 
-    // Look up the new Time of Flight based on the new distance
-    double newTof = io.getTOFFromDistance(newDistance);
+            // Shift the target based on the current guessed flight time
+            velocityCompensatedTarget =
+                io.velocityCompensatedCoordinates(predictedPose, fieldVelocity, t_guess, rawTarget);
 
-    // If the difference between our old guess and new flight time is negligible, the math has settled
-    if (Math.abs(newTof - t_guess) < TIME_TOLERANCE_SEC) {
-        break;
-    }
+            // Recalculate distance from the turret to the new virtual target
+            double newDistance =
+                io.getDistanceFrom(turretPoseAtPrediction, velocityCompensatedTarget);
 
-    // Otherwise, update the guess and repeat
-    t_guess = newTof;
-}
+            // Look up the new Time of Flight based on the new distance
+            double newTof = io.getTOFFromDistance(newDistance);
+
+            // If the difference between our old guess and new flight time is negligible, the math
+            // has settled
+            if (Math.abs(newTof - t_guess) < TIME_TOLERANCE_SEC) {
+              break;
+            }
+
+            // Otherwise, update the guess and repeat
+            t_guess = newTof;
+          }
 
           // augmentedTargetDistance is measured turret → compensated virtual target.
           inputs.augmentedTargetDistance =
